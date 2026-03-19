@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/useUserStore';
 import { useEventStore } from '@/store/useEventStore';
@@ -11,9 +11,9 @@ import { EventCard } from '@/components/EventCard';
 import { EventModal } from '@/components/EventModal';
 import { DeadlineEvent } from '@/types';
 import { isOverdue, isToday, getEffectivePriority } from '@/utils/priority';
-import { Filter, Sparkles, TrendingUp, AlertCircle, Clock, CheckCircle2, Plus, Flame } from 'lucide-react';
+import { Filter, Flame, Loader2, Sparkles, TrendingUp, Clock, AlertCircle, CheckCircle2, Plus } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
-import { cn } from '@/utils/cn';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CATEGORIES = ['all', 'Study', 'Hackathon', 'Submission', 'Personal', 'Exam'];
 const STATUSES = ['all', 'pending', 'completed'];
@@ -22,6 +22,7 @@ const CAT_COLORS: Record<string, string> = {
   Study: '#6366f1', Hackathon: '#a855f7', Submission: '#f43f5e',
   Personal: '#10b981', Exam: '#f59e0b', all: '#8b5cf6',
 };
+
 const CAT_EMOJIS: Record<string, string> = {
   Study: '📚', Hackathon: '⚡', Submission: '📨',
   Personal: '🌱', Exam: '✏️', all: '✦',
@@ -54,8 +55,6 @@ export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editEvent, setEditEvent] = useState<DeadlineEvent | null>(null);
-  const [cardsVisible, setCardsVisible] = useState(false);
-  const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/login');
@@ -67,18 +66,13 @@ export default function DashboardPage() {
     return () => unsub();
   }, [user, setEvents]);
 
-  // Stagger card entrance
-  useEffect(() => {
-    const t = setTimeout(() => setCardsVisible(true), 100);
-    return () => clearTimeout(t);
-  }, []);
-
   if (authLoading) return <LoadingScreen />;
   if (!user) return null;
 
   const displayed = filteredEvents();
   const todayEvents = events.filter((e) => isToday(e) && e.status === 'pending');
   const overdueEvents = events.filter((e) => isOverdue(e));
+  
   const focusEvent = events
     .filter((e) => e.status === 'pending')
     .sort((a, b) => {
@@ -87,280 +81,327 @@ export default function DashboardPage() {
       const pb = pOrder[getEffectivePriority(b)];
       if (pa !== pb) return pa - pb;
       const da = a.deadline instanceof Timestamp ? a.deadline.toDate() : new Date(a.deadline as string);
-      const db2 = b.deadline instanceof Timestamp ? b.deadline.toDate() : new Date(b.deadline as string);
-      return da.getTime() - db2.getTime();
+      const db = b.deadline instanceof Timestamp ? b.deadline.toDate() : new Date(b.deadline as string);
+      return da.getTime() - db.getTime();
     })[0];
 
   const openCreate = () => { setEditEvent(null); setModalOpen(true); };
   const openEdit = (ev: DeadlineEvent) => { setEditEvent(ev); setModalOpen(true); };
+  
   const completionRate = events.length
     ? Math.round((events.filter((e) => e.status === 'completed').length / events.length) * 100)
     : 0;
 
   const statsData = [
-    { label: 'Total', value: events.length, icon: TrendingUp, color: '#6366f1', bg: 'rgba(99,102,241,0.12)', glow: 'rgba(99,102,241,0.2)' },
-    { label: 'Today', value: todayEvents.length, icon: Clock, color: '#a855f7', bg: 'rgba(168,85,247,0.12)', glow: 'rgba(168,85,247,0.2)' },
-    { label: 'Overdue', value: overdueEvents.length, icon: AlertCircle, color: '#f43f5e', bg: 'rgba(244,63,94,0.12)', glow: 'rgba(244,63,94,0.2)' },
-    { label: 'Done', value: `${completionRate}%`, icon: CheckCircle2, color: '#10b981', bg: 'rgba(16,185,129,0.12)', glow: 'rgba(16,185,129,0.2)' },
+    { label: 'Total', value: events.length, icon: TrendingUp, color: '#6366f1' },
+    { label: 'Today', value: todayEvents.length, icon: Clock, color: '#a855f7' },
+    { label: 'Overdue', value: overdueEvents.length, icon: AlertCircle, color: '#f43f5e' },
+    { label: 'Done', value: `${completionRate}%`, icon: CheckCircle2, color: '#10b981' },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, scale: 0.95, y: 15 },
+    show: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-void)' }}>
+    <div className="min-h-screen flex flex-col bg-[#050505] text-white selection:bg-purple-500/30">
+      
+      {/* Background Ambience */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/10 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-500/5 blur-[150px] rounded-full mix-blend-screen" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+      </div>
+
       <Navbar onMenuToggle={() => setSidebarOpen((o) => !o)} sidebarOpen={sidebarOpen} />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative z-10">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={openCreate} />
 
-        <main ref={mainRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 scroll-smooth">
 
-          {/* ─── Welcome greeting ─── */}
-          <div className="animate-fade-up flex items-center justify-between" style={{ animationDelay: '0ms' }}>
+          {/* Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between"
+          >
             <div>
-              <h1 className="text-xl md:text-2xl font-black" style={{ color: 'var(--text-white)' }}>
+              <h1 className="text-3xl font-black">
                 Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'},{' '}
-                <span className="gradient-text">{user?.displayName?.split(' ')[0] ?? 'there'}</span> 👋
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+                  {user?.displayName?.split(' ')[0] ?? 'there'}
+                </span>
               </h1>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--text-mid)' }}>
+              <p className="text-sm font-medium text-gray-400 mt-1">
                 {overdueEvents.length > 0
-                  ? `You have ${overdueEvents.length} overdue deadline${overdueEvents.length > 1 ? 's' : ''} that need attention.`
+                  ? <span className="text-rose-400">{overdueEvents.length} overdue</span> 
                   : todayEvents.length > 0
-                  ? `${todayEvents.length} deadline${todayEvents.length > 1 ? 's' : ''} due today. Stay focused!`
-                  : "You're all caught up! Add new deadlines to stay on track."}
+                  ? <span className="text-purple-400">{todayEvents.length} due today</span>
+                  : "All caught up."}
               </p>
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={openCreate}
-              className="hidden md:flex magnetic-btn items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm text-white"
-              style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', boxShadow: '0 0 20px rgba(124,58,237,0.3)' }}
+              className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm bg-white text-black shadow-lg shadow-white/10 hover:shadow-white/20 transition-shadow"
             >
               <Plus size={16} /> New Deadline
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
 
-          {/* ─── Stats Grid ─── */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {statsData.map(({ label, value, icon: Icon, color, bg, glow }, i) => (
-              <div
+          {/* Stats */}
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          >
+            {statsData.map(({ label, value, icon: Icon, color }) => (
+              <motion.div
                 key={label}
-                className="group relative rounded-2xl p-4 overflow-hidden card-hover animate-fade-up cursor-default"
-                style={{
-                  background: 'var(--bg-elevated)',
-                  border: '1px solid var(--border-dim)',
-                  animationDelay: `${(i + 1) * 60}ms`,
-                }}
+                variants={itemVariants}
+                whileHover={{ y: -5, boxShadow: `0 10px 30px -10px ${color}40` }}
+                className="relative rounded-3xl p-5 bg-white/[0.03] border border-white/[0.05] overflow-hidden"
               >
-                {/* BG glow */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                  style={{ background: `radial-gradient(circle at 30% 30%, ${glow}, transparent 70%)` }} />
-                <div className="relative">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-faint)' }}>{label}</span>
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: bg }}>
-                      <Icon size={14} style={{ color }} />
-                    </div>
-                  </div>
-                  <p className="text-3xl font-black" style={{ color }}>
-                    <AnimatedNumber value={value} />
-                  </p>
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <Icon size={48} style={{ color }} />
                 </div>
-              </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-bold uppercase tracking-widest text-gray-500">{label}</span>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: `${color}20` }}>
+                     <Icon size={14} style={{ color }} />
+                  </div>
+                </div>
+                <p className="text-3xl font-black" style={{ color }}>
+                  <AnimatedNumber value={value} />
+                </p>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
-          {/* ─── Focus Banner ─── */}
-          {focusEvent && (
-            <div
-              className="animate-fade-up relative rounded-2xl p-5 overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, rgba(79,70,229,0.18), rgba(124,58,237,0.12), rgba(168,85,247,0.08))',
-                border: '1px solid rgba(99,102,241,0.3)',
-                boxShadow: '0 0 40px rgba(79,70,229,0.08)',
-                animationDelay: '300ms',
-              }}
-            >
-              {/* Subtle orb */}
-              <div className="absolute right-0 top-0 w-40 h-40 pointer-events-none"
-                style={{
-                  background: 'radial-gradient(circle, rgba(168,85,247,0.12), transparent 70%)',
-                  filter: 'blur(20px)',
-                }} />
-              <div className="relative flex items-start gap-4">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 animate-pulse-glow"
-                  style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
-                  <Flame size={18} className="text-white" />
+          {/* Focus Banner */}
+          <AnimatePresence>
+            {focusEvent && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginBottom: 32 }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                className="relative rounded-3xl p-6 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-purple-500/20 shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)] overflow-hidden flex flex-col sm:flex-row items-start sm:items-center gap-6"
+              >
+                <div className="absolute right-0 top-0 w-64 h-64 bg-purple-500/20 blur-[80px] rounded-full pointer-events-none" />
+                
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex flex-shrink-0 items-center justify-center shadow-lg shadow-purple-500/30">
+                  <Flame size={20} className="text-white" />
                 </div>
-                <div className="flex-1 min-w-0">
+
+                <div className="flex-1 relative z-10">
                   <div className="flex items-center gap-2 mb-1">
-                    <Sparkles size={13} style={{ color: '#a78bfa' }} />
-                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#a5b4fc' }}>Focus Now</span>
+                    <Sparkles size={14} className="text-purple-400" />
+                    <span className="text-xs font-bold tracking-widest uppercase text-purple-300">Focus Target</span>
                   </div>
-                  <h3 className="text-lg font-black truncate" style={{ color: 'var(--text-white)' }}>{focusEvent.title}</h3>
-                  <p className="text-sm mt-0.5" style={{ color: 'var(--text-mid)' }}>
-                    {focusEvent.category} · {getEffectivePriority(focusEvent)} priority · due soon
-                  </p>
+                  <h3 className="text-xl font-bold text-white mb-1 truncate pr-4">{focusEvent.title}</h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                     <span className="px-2 py-0.5 rounded bg-white/10 text-xs font-semibold">{focusEvent.category}</span>
+                     <span>·</span>
+                     <span className="text-xs font-semibold uppercase tracking-wider">{getEffectivePriority(focusEvent)} PRIORITY</span>
+                  </div>
                 </div>
-                <button
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => openEdit(focusEvent)}
-                  className="magnetic-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold text-white"
-                  style={{ background: 'rgba(124,58,237,0.4)', border: '1px solid rgba(168,85,247,0.3)' }}
+                  className="w-full sm:w-auto px-6 py-3 rounded-2xl text-sm font-bold bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md transition-colors relative z-10"
                 >
-                  View →
-                </button>
+                  Action →
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Filters */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="space-y-4 bg-white/[0.02] p-4 rounded-3xl border border-white/[0.05]"
+          >
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <div className="flex items-center gap-2 text-gray-500">
+                <Filter size={14} />
+                <span className="text-xs font-bold uppercase tracking-widest">Filter</span>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((cat) => {
+                  const active = filterCategory === cat;
+                  return (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      key={cat} onClick={() => setFilterCategory(cat)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors ${
+                        active ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 'bg-white/[0.05] text-gray-400 hover:bg-white/[0.1]'
+                      }`}
+                    >
+                      {CAT_EMOJIS[cat] && <span className="text-sm">{CAT_EMOJIS[cat]}</span>}
+                      {cat}
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              <div className="h-4 w-px bg-white/10 hidden lg:block" />
+
+              <div className="flex flex-wrap gap-2">
+                {STATUSES.map((s) => {
+                  const active = filterStatus === s;
+                  return (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      key={s} onClick={() => setFilterStatus(s)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors ${
+                        active ? 'bg-purple-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-white/[0.05] text-gray-400 hover:bg-white/[0.1]'
+                      }`}
+                    >
+                      {s}
+                    </motion.button>
+                  );
+                })}
               </div>
             </div>
-          )}
+          </motion.div>
 
-          {/* ─── Overdue ─── */}
-          {overdueEvents.length > 0 && (
-            <Section title="🚨 Overdue" count={overdueEvents.length} accentColor="#f43f5e" delay={350}>
-              {overdueEvents.map((e, i) => (
-                <EventCard key={e.id} event={e} onEdit={openEdit}
-                  style={{ animationDelay: `${i * 50}ms`, opacity: cardsVisible ? 1 : 0 }} />
-              ))}
+          {/* Event Grids */}
+          <div className="space-y-12 pb-12">
+            <AnimatePresence>
+              {overdueEvents.length > 0 && (
+                <Section title="Overdue Action Required" count={overdueEvents.length} accentColor="#f43f5e">
+                  {overdueEvents.map((e) => (
+                    <EventCard key={e.id} event={e} onEdit={openEdit} />
+                  ))}
+                </Section>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {todayEvents.length > 0 && (
+                <Section title="Due Today" count={todayEvents.length} accentColor="#a855f7">
+                  {todayEvents.map((e) => (
+                    <EventCard key={e.id} event={e} onEdit={openEdit} />
+                  ))}
+                </Section>
+              )}
+            </AnimatePresence>
+
+            <Section title="All Deadlines" count={displayed.length} accentColor="#6366f1">
+              <AnimatePresence mode="popLayout">
+                {displayed.length === 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="col-span-full py-24 border-2 border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center text-center bg-white/[0.02]"
+                  >
+                    <div className="text-6xl mb-4">🎯</div>
+                    <h3 className="text-xl font-bold mb-2">No deadlines found</h3>
+                    <p className="text-gray-400 mb-8">Ready to crush your next objective?</p>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={openCreate}
+                      className="px-8 py-4 bg-white text-black rounded-2xl font-bold flex items-center gap-2"
+                    >
+                      <Plus size={20} /> Create Objective
+                    </motion.button>
+                  </motion.div>
+                ) : (
+                  displayed.map((e) => (
+                    <EventCard key={e.id} event={e} onEdit={openEdit} />
+                  ))
+                )}
+              </AnimatePresence>
             </Section>
-          )}
-
-          {/* ─── Today ─── */}
-          {todayEvents.length > 0 && (
-            <Section title="📅 Due Today" count={todayEvents.length} accentColor="#6366f1" delay={400}>
-              {todayEvents.map((e, i) => (
-                <EventCard key={e.id} event={e} onEdit={openEdit}
-                  style={{ animationDelay: `${i * 50}ms`, opacity: cardsVisible ? 1 : 0 }} />
-              ))}
-            </Section>
-          )}
-
-          {/* ─── Filters ─── */}
-          <div className="animate-fade-up space-y-3" style={{ animationDelay: '460ms' }}>
-            <div className="flex items-center gap-2">
-              <Filter size={13} style={{ color: 'var(--text-faint)' }} />
-              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-faint)' }}>Filter</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((cat) => {
-                const active = filterCategory === cat;
-                return (
-                  <button key={cat} onClick={() => setFilterCategory(cat)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all duration-200 hover:scale-105 active:scale-95"
-                    style={{
-                      background: active ? CAT_COLORS[cat] ?? '#8b5cf6' : 'var(--bg-elevated)',
-                      color: active ? '#fff' : 'var(--text-mid)',
-                      border: `1px solid ${active ? 'transparent' : 'var(--border-dim)'}`,
-                      boxShadow: active ? `0 0 12px rgba(${cat === 'all' ? '139,92,246' : '0,0,0'},0.2)` : 'none',
-                    }}>
-                    {CAT_EMOJIS[cat] && <span className="text-[10px]">{CAT_EMOJIS[cat]}</span>}
-                    {cat}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex gap-2">
-              {STATUSES.map((s) => {
-                const active = filterStatus === s;
-                return (
-                  <button key={s} onClick={() => setFilterStatus(s)}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all duration-200 hover:scale-105 active:scale-95"
-                    style={{
-                      background: active ? 'rgba(168,85,247,0.8)' : 'var(--bg-elevated)',
-                      color: active ? '#fff' : 'var(--text-mid)',
-                      border: `1px solid ${active ? 'rgba(168,85,247,0.5)' : 'var(--border-dim)'}`,
-                    }}>
-                    {s}
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
-          {/* ─── All Events ─── */}
-          <Section title="All Deadlines" count={displayed.length} accentColor="#a855f7" delay={520}>
-            {displayed.length === 0 ? (
-              <EmptyState onCreate={openCreate} />
-            ) : (
-              displayed.map((e, i) => (
-                <EventCard key={e.id} event={e} onEdit={openEdit}
-                  style={{ animationDelay: `${i * 40}ms`, opacity: cardsVisible ? 1 : 0 }} />
-              ))
-            )}
-          </Section>
         </main>
       </div>
 
-      {modalOpen && (
-        <EventModal
-          event={editEvent}
-          onClose={() => { setModalOpen(false); setEditEvent(null); }}
-        />
-      )}
+      <AnimatePresence>
+        {modalOpen && (
+          <EventModal
+            event={editEvent}
+            onClose={() => { setModalOpen(false); setEditEvent(null); }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 function Section({
-  title, count, accentColor, children, delay = 0,
+  title, count, accentColor, children,
 }: {
-  title: string; count: number; accentColor: string; children: React.ReactNode; delay?: number;
+  title: string; count: number; accentColor: string; children: React.ReactNode;
 }) {
   return (
-    <section className="animate-fade-up" style={{ animationDelay: `${delay}ms` }}>
-      <div className="flex items-center gap-2.5 mb-4">
-        <h2 className="text-sm font-bold" style={{ color: 'var(--text-bright)' }}>{title}</h2>
-        <span className="px-2 py-0.5 rounded-full text-xs font-black"
-          style={{ background: `${accentColor}18`, color: accentColor }}>
+    <motion.section 
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      className="space-y-6"
+    >
+      <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+        <h2 className="text-2xl font-black">{title}</h2>
+        <span className="px-3 py-1 rounded-full text-sm font-bold shadow-[0_0_15px_currentColor]"
+          style={{ backgroundColor: `${accentColor}20`, color: accentColor }}>
           {count}
         </span>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">{children}</div>
-    </section>
-  );
-}
-
-function EmptyState({ onCreate }: { onCreate: () => void }) {
-  return (
-    <div className="col-span-full flex flex-col items-center justify-center py-20 rounded-2xl text-center relative overflow-hidden"
-      style={{ border: '2px dashed var(--border-dim)' }}>
-      {/* Ambient pulse */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 50% 50%, rgba(124,58,237,0.04), transparent 60%)' }} />
-      <div className="relative">
-        <div className="text-6xl mb-4 animate-float">🎯</div>
-        <p className="text-base font-bold mb-1" style={{ color: 'var(--text-bright)' }}>No deadlines here</p>
-        <p className="text-sm mb-6" style={{ color: 'var(--text-mid)' }}>Add one to get started and never miss a deadline</p>
-        <button
-          onClick={onCreate}
-          className="magnetic-btn inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold text-white"
-          style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', boxShadow: '0 0 20px rgba(124,58,237,0.3)' }}
-        >
-          <Plus size={16} /> Add First Deadline
-        </button>
-      </div>
-    </div>
+      <motion.div 
+        layout
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+      >
+        {children}
+      </motion.div>
+    </motion.section>
   );
 }
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center flex-col gap-4" style={{ background: 'var(--bg-void)' }}>
-      <div className="relative">
-        <div className="w-16 h-16 rounded-2xl animate-pulse-glow"
-          style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7)' }} />
-        <div className="absolute inset-0 rounded-2xl animate-ping opacity-30"
-          style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }} />
-      </div>
-      <div className="text-center">
-        <p className="font-bold gradient-text text-lg">DeadlineOS</p>
-        <p className="text-xs mt-1" style={{ color: 'var(--text-faint)' }}>Loading your workspace...</p>
-      </div>
-      {/* Wave bars */}
-      <div className="flex items-end gap-1 h-8">
-        {[0,1,2,3,4].map((i) => (
-          <div key={i} className="w-1 rounded-full"
-            style={{
-              background: 'var(--violet)',
-              animation: `wave 1s ease-in-out ${i * 0.12}s infinite`,
-              height: '100%',
-            }} />
-        ))}
+    <div className="min-h-screen flex items-center justify-center flex-col gap-6 bg-[#050505]">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        className="relative w-20 h-20"
+      >
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 blur-xl opacity-50" />
+        <div className="absolute inset-2 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
+           <span className="font-black text-white text-2xl">D</span>
+        </div>
+      </motion.div>
+      <div className="text-center space-y-2">
+        <h2 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Loading Workspace</h2>
+        <div className="flex justify-center gap-2">
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              className="w-2 h-2 rounded-full bg-purple-500"
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1 }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,91 +1,58 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUserStore } from '@/store/useUserStore';
 import { useRouter } from 'next/navigation';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Calendar, Bell, Zap, CheckCircle2, Shield, Layers, ChevronRight } from 'lucide-react';
 
-const WORDS = ['assignments', 'hackathons', 'exams', 'submissions', 'projects'];
+const WORDS = ['assignments', 'hackathons', 'exams', 'projects', 'submissions'];
 
 const FEATURES = [
   {
     icon: Zap,
     title: 'Smart Priority',
-    desc: 'Auto-calculates urgency. High if <24h, Medium if <3 days — always know what to focus on.',
+    desc: 'Auto-calculates urgency based on time remaining to ensure you focus on what matters most.',
     color: '#f59e0b',
-    glow: 'rgba(245,158,11,0.2)',
   },
   {
     icon: Bell,
-    title: 'Reminders',
-    desc: 'Get notified before deadlines hit. Smart auto-scheduling keeps you ahead.',
+    title: 'Intelligent Reminders',
+    desc: 'Get notified before deadlines hit. Smart auto-scheduling keeps you ahead of the curve.',
     color: '#06b6d4',
-    glow: 'rgba(6,182,212,0.2)',
   },
   {
     icon: Calendar,
     title: 'Visual Calendar',
-    desc: 'Monthly view with event dots. Click any day to see what\'s due.',
+    desc: 'Interactive monthly view with event indicators. Click any day to see your schedule.',
     color: '#8b5cf6',
-    glow: 'rgba(139,92,246,0.2)',
   },
   {
     icon: CheckCircle2,
     title: 'Real-time Sync',
-    desc: 'Firestore-powered. Change a deadline on your phone — it appears on your laptop instantly.',
+    desc: 'Firestore-powered synchronization. Change a deadline on your phone—it appears everywhere.',
     color: '#10b981',
-    glow: 'rgba(16,185,129,0.2)',
   },
   {
     icon: Shield,
     title: 'Private & Secure',
-    desc: 'Your deadlines are yours only. Firebase security rules protect every record.',
+    desc: 'Your data belongs to you. Industry-standard security rules protect every record.',
     color: '#f43f5e',
-    glow: 'rgba(244,63,94,0.2)',
   },
   {
     icon: Layers,
     title: 'Multi-category',
-    desc: 'Study, Hackathon, Exam, Submission, Personal — color-coded for instant recognition.',
+    desc: 'Customizable tags for rapid organization and color-coded instant visual recognition.',
     color: '#6366f1',
-    glow: 'rgba(99,102,241,0.2)',
   },
 ];
 
 const STATS = [
-  { value: '∞', label: 'Deadlines tracked' },
-  { value: '5', label: 'Categories' },
-  { value: '100%', label: 'Cloud synced' },
-  { value: '0', label: 'Missed deadlines' },
+  { value: '∞', label: 'Deadlines' },
+  { value: '100%', label: 'Uptime' },
+  { value: '0', label: 'Missed' },
 ];
-
-function Orb({ style }: { style: React.CSSProperties }) {
-  return (
-    <div
-      className="absolute rounded-full pointer-events-none"
-      style={{
-        filter: 'blur(80px)',
-        ...style,
-      }}
-    />
-  );
-}
-
-function Particle({ style }: { style: React.CSSProperties }) {
-  return (
-    <div
-      className="absolute rounded-full pointer-events-none"
-      style={{
-        width: 2,
-        height: 2,
-        background: 'rgba(139,92,246,0.8)',
-        animation: 'particle 3s ease-out forwards',
-        ...style,
-      }}
-    />
-  );
-}
 
 export default function HomePage() {
   const { user, loading } = useUserStore();
@@ -93,24 +60,30 @@ export default function HomePage() {
   const [wordIdx, setWordIdx] = useState(0);
   const [displayed, setDisplayed] = useState('');
   const [deleting, setDeleting] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [particles, setParticles] = useState<{ id: number; x: number; y: number; delay: number }[]>([]);
-  const heroRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const { scrollYProgress } = useScroll();
+  
+  const yParallax = useTransform(scrollYProgress, [0, 1], [0, 300]);
+  const opacityFade = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!loading && user) router.replace('/dashboard');
   }, [user, loading, router]);
 
-  // Typewriter
+  // Typewriter effect
   useEffect(() => {
     const word = WORDS[wordIdx];
     let timeout: ReturnType<typeof setTimeout>;
     if (!deleting && displayed.length < word.length) {
-      timeout = setTimeout(() => setDisplayed(word.slice(0, displayed.length + 1)), 90);
+      timeout = setTimeout(() => setDisplayed(word.slice(0, displayed.length + 1)), 80);
     } else if (!deleting && displayed.length === word.length) {
       timeout = setTimeout(() => setDeleting(true), 2000);
     } else if (deleting && displayed.length > 0) {
-      timeout = setTimeout(() => setDisplayed(displayed.slice(0, -1)), 45);
+      timeout = setTimeout(() => setDisplayed(displayed.slice(0, -1)), 40);
     } else {
       setDeleting(false);
       setWordIdx((i) => (i + 1) % WORDS.length);
@@ -118,218 +91,192 @@ export default function HomePage() {
     return () => clearTimeout(timeout);
   }, [displayed, deleting, wordIdx]);
 
-  // Mouse tracker for orb parallax
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight });
-    };
-    window.addEventListener('mousemove', handler);
-    return () => window.removeEventListener('mousemove', handler);
-  }, []);
+  if (!mounted) return null;
 
-  // Spawn particles periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const id = Date.now();
-      setParticles((p) => [
-        ...p.slice(-15),
-        { id, x: Math.random() * 100, y: Math.random() * 100, delay: Math.random() * 1000 },
-      ]);
-    }, 600);
-    return () => clearInterval(interval);
-  }, []);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100, damping: 15 }
+    }
+  };
 
   return (
-    <main className="min-h-screen flex flex-col overflow-hidden" style={{ background: 'var(--bg-void)' }}>
-
-      {/* ── Ambient Orbs ─────── */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <Orb style={{
-          width: 600, height: 600,
-          background: 'radial-gradient(circle, rgba(124,58,237,0.18), transparent 70%)',
-          top: '-10%', left: '-5%',
-          transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
-          transition: 'transform 0.8s ease',
-          animation: 'orb-drift 18s ease-in-out infinite',
-        }} />
-        <Orb style={{
-          width: 500, height: 500,
-          background: 'radial-gradient(circle, rgba(236,72,153,0.12), transparent 70%)',
-          bottom: '-5%', right: '-5%',
-          transform: `translate(${-mousePos.x * 20}px, ${-mousePos.y * 20}px)`,
-          transition: 'transform 0.8s ease',
-          animation: 'orb-drift-2 22s ease-in-out infinite',
-        }} />
-        <Orb style={{
-          width: 300, height: 300,
-          background: 'radial-gradient(circle, rgba(6,182,212,0.08), transparent 70%)',
-          top: '40%', left: '60%',
-          animation: 'orb-drift 26s ease-in-out infinite reverse',
-        }} />
-        {/* Grid overlay */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)
-          `,
-          backgroundSize: '48px 48px',
-        }} />
-        {/* Floating particles */}
-        {particles.map((p) => (
-          <Particle key={p.id} style={{ left: `${p.x}%`, top: `${p.y}%`, animationDelay: `${p.delay}ms` }} />
-        ))}
+    <main className="min-h-screen flex flex-col bg-[#050505] text-white relative overflow-hidden">
+      
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full opacity-30 blur-[120px]"
+          style={{ background: 'radial-gradient(circle, #7c3aed, #4f46e5)' }}
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.3, 1], rotate: [0, -90, 0] }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          className="absolute top-[40%] -right-[10%] w-[50%] h-[50%] rounded-full opacity-20 blur-[100px]"
+          style={{ background: 'radial-gradient(circle, #ec4899, #f43f5e)' }}
+        />
       </div>
 
-      {/* ── Navbar ─────────── */}
-      <nav className="relative z-10 flex items-center justify-between px-6 py-4 glass-mid"
-        style={{ borderBottom: '1px solid var(--border-dim)' }}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center animate-pulse-glow"
-            style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed, #ec4899)' }}>
-            <span className="text-white font-black text-sm">D</span>
-          </div>
-          <span className="text-xl font-black gradient-text tracking-tight">DeadlineOS</span>
-        </div>
+      {/* Navbar */}
+      <motion.nav 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="relative z-50 flex items-center justify-between px-6 py-5 lg:px-12 backdrop-blur-md border-b border-white/5"
+      >
         <div className="flex items-center gap-3">
-          <Link href="/login"
-            className="text-sm font-medium px-5 py-2 rounded-xl transition-all duration-200 hover:bg-white/5"
-            style={{ color: 'var(--text-mid)' }}>
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg shadow-purple-500/20">
+            <span className="font-black text-white text-lg">D</span>
+          </div>
+          <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">DeadlineOS</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <Link href="/login" className="text-sm font-semibold text-gray-300 hover:text-white transition-colors">
             Sign In
           </Link>
-          <Link href="/signup"
-            className="magnetic-btn text-sm font-bold px-5 py-2.5 rounded-xl text-white glow-indigo"
-            style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
-            Get Started →
-          </Link>
-        </div>
-      </nav>
-
-      {/* ── Hero ───────────── */}
-      <section ref={heroRef} className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 py-24 md:py-32">
-        {/* Badge */}
-        <div className="animate-fade-up inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold mb-8"
-          style={{
-            background: 'rgba(99,102,241,0.1)',
-            border: '1px solid rgba(99,102,241,0.3)',
-            color: '#a5b4fc',
-            animationDelay: '0ms',
-          }}>
-          <Zap size={12} style={{ color: '#f59e0b' }} />
-          Smart Deadline Management · Powered by AI Priority
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-        </div>
-
-        {/* Main Heading */}
-        <h1 className="animate-fade-up text-5xl md:text-7xl lg:text-8xl font-black mb-4 leading-none tracking-tight"
-          style={{ animationDelay: '80ms', color: 'var(--text-white)' }}>
-          Never miss a<br />
-          <span className="gradient-text">deadline</span>
-        </h1>
-
-        {/* Typewriter */}
-        <div className="animate-fade-up mb-8 h-14 flex items-center justify-center"
-          style={{ animationDelay: '160ms' }}>
-          <span className="text-2xl md:text-3xl font-semibold" style={{ color: 'var(--text-mid)' }}>
-            Track your{' '}
-            <span style={{ color: 'var(--violet-bright)', textShadow: '0 0 20px rgba(139,92,246,0.5)' }}>
-              {displayed}
-            </span>
-            <span className="ml-0.5 border-r-2 border-violet-400 animate-[typing-blink_0.9s_ease-in-out_infinite]" style={{ animation: 'typing-blink 0.9s ease-in-out infinite' }}>&nbsp;</span>
-          </span>
-        </div>
-
-        <p className="animate-fade-up text-base md:text-lg max-w-lg mx-auto mb-10 leading-relaxed"
-          style={{ color: 'var(--text-mid)', animationDelay: '240ms' }}>
-          Intelligent reminders, auto-priority scoring, and real-time sync across all your devices.
-          Stop forgetting. Start delivering.
-        </p>
-
-        {/* CTAs */}
-        <div className="animate-fade-up flex flex-col sm:flex-row items-center gap-4"
-          style={{ animationDelay: '320ms' }}>
-          <Link href="/signup"
-            className="magnetic-btn group flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-white text-base glow-violet"
-            style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7)' }}>
-            Start for Free
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
-          <Link href="/login"
-            className="group flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold text-base transition-all duration-200 hover:bg-white/5"
-            style={{ border: '1px solid var(--border-mid)', color: 'var(--text-mid)' }}>
-            Sign In
-            <ChevronRight size={16} className="opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-          </Link>
-        </div>
-
-        {/* Stats Row */}
-        <div className="animate-fade-up flex flex-wrap justify-center gap-8 mt-16"
-          style={{ animationDelay: '400ms' }}>
-          {STATS.map(({ value, label }) => (
-            <div key={label} className="text-center">
-              <div className="text-2xl font-black gradient-text">{value}</div>
-              <div className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>{label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Features Grid ──── */}
-      <section className="relative z-10 px-6 pb-24 max-w-6xl mx-auto w-full">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-black text-white mb-3">Everything you need</h2>
-          <p style={{ color: 'var(--text-mid)' }}>to stay on top of every deadline</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FEATURES.map(({ icon: Icon, title, desc, color, glow }, i) => (
-            <div
-              key={title}
-              className="card-hover group animate-fade-up rounded-2xl p-6 cursor-default"
-              style={{
-                background: 'var(--bg-elevated)',
-                border: '1px solid var(--border-dim)',
-                animationDelay: `${(i + 1) * 60}ms`,
-              }}
-            >
-              {/* Icon */}
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110"
-                style={{ background: glow, boxShadow: `0 0 20px ${glow}` }}>
-                <Icon size={22} style={{ color }} />
-              </div>
-              <h3 className="font-bold text-base mb-2" style={{ color: 'var(--text-white)' }}>{title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-mid)' }}>{desc}</p>
-
-              {/* Hover glow bar */}
-              <div className="mt-4 h-0.5 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"
-                style={{ background: `linear-gradient(90deg, ${color}, transparent)` }} />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── CTA Banner ─────── */}
-      <section className="relative z-10 px-6 pb-16">
-        <div className="max-w-3xl mx-auto rounded-3xl p-px"
-          style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.5), rgba(124,58,237,0.5), rgba(236,72,153,0.3))' }}>
-          <div className="rounded-3xl p-10 text-center" style={{ background: 'var(--bg-elevated)' }}>
-            <h2 className="text-3xl font-black mb-3 gradient-text">Ready to take control?</h2>
-            <p className="mb-8" style={{ color: 'var(--text-mid)' }}>
-              Join thousands who never miss a deadline again.
-            </p>
-            <Link href="/signup"
-              className="magnetic-btn inline-flex items-center gap-3 px-10 py-4 rounded-2xl font-bold text-white text-base glow-violet"
-              style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7)' }}>
-              Get Started Free <ArrowRight size={18} />
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link href="/signup" className="px-6 py-2.5 rounded-full text-sm font-bold bg-white text-black hover:bg-gray-100 transition-colors shadow-lg shadow-white/10">
+              Get Started
             </Link>
+          </motion.div>
+        </div>
+      </motion.nav>
+
+      {/* Hero Section */}
+      <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-32 text-center">
+        <motion.div
+           style={{ y: yParallax, opacity: opacityFade }}
+           className="flex flex-col items-center w-full max-w-5xl"
+        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-500/30 bg-purple-500/10 mb-8 backdrop-blur-md"
+          >
+            <Zap size={14} className="text-purple-400" />
+            <span className="text-xs font-semibold text-purple-200 tracking-wide uppercase">Meet your new command center</span>
+          </motion.div>
+
+          <motion.h1 
+            className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter mb-6 leading-[0.9]"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={itemVariants}>Never miss</motion.div>
+            <motion.div variants={itemVariants} className="bg-clip-text text-transparent bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400">
+              another deadline.
+            </motion.div>
+          </motion.h1>
+
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 1 }}
+            className="h-12 md:h-16 flex items-center justify-center text-xl md:text-3xl font-medium text-gray-400 mb-10"
+          >
+            Manage your <span className="text-white ml-2 font-semibold min-w-[150px] text-left inline-block">{displayed}<span className="animate-pulse border-r-2 border-white ml-1"></span></span>
+          </motion.div>
+
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1, duration: 0.8 }}
+          >
+            <Link href="/signup">
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg flex items-center justify-center gap-2 overflow-hidden shadow-xl shadow-white/10"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                Start for free
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </Link>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Features Showcase */}
+      <section className="relative z-20 py-32 px-6 border-t border-white/5 bg-black/50 backdrop-blur-3xl">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl md:text-5xl font-black mb-6">Designed for <span className="text-purple-400">focus.</span></h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">Everything you need to regain control over your time and prioritize like a pro.</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {FEATURES.map((feat, i) => (
+              <motion.div
+                key={feat.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="group p-8 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-all"
+              >
+                <div 
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-black/50"
+                  style={{ backgroundColor: `${feat.color}20`, color: feat.color }}
+                >
+                  <feat.icon size={24} />
+                </div>
+                <h3 className="text-xl font-bold mb-3">{feat.title}</h3>
+                <p className="text-gray-400 leading-relaxed text-sm">{feat.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Footer ─────────── */}
-      <footer className="relative z-10 text-center py-6 text-xs" style={{ color: 'var(--text-faint)', borderTop: '1px solid var(--border-dim)' }}>
-        © {new Date().getFullYear()} DeadlineOS · Built with Next.js + Firebase · 
-        <span className="gradient-text font-semibold ml-1">Never miss again.</span>
+      {/* Modern CTA */}
+      <section className="relative z-20 py-32 px-6 flex items-center justify-center border-t border-white/5">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="max-w-4xl w-full relative"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-[3rem] blur-2xl opacity-30" />
+          <div className="relative p-12 md:p-20 bg-black/80 backdrop-blur-xl border border-white/10 rounded-[3rem] text-center overflow-hidden">
+            <h2 className="text-4xl md:text-6xl font-black mb-6">Your time is <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">valuable</span>.</h2>
+            <p className="text-xl text-gray-300 mb-10 max-w-xl mx-auto">Join the new standard of deadline management. No credit card required.</p>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
+              <Link href="/signup" className="flex items-center gap-2 px-10 py-5 bg-white text-black rounded-full font-bold text-lg hover:shadow-xl hover:shadow-white/20 transition-all">
+                Create free account <ChevronRight size={20} />
+              </Link>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Clean Footer (Watermark Removed) */}
+      <footer className="relative z-20 border-t border-white/5 py-8 px-6 text-center text-gray-500 text-sm">
+        <p>© {new Date().getFullYear()} DeadlineOS · All rights reserved.</p>
       </footer>
+
     </main>
   );
 }
