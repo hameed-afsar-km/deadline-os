@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Space_Grotesk, Syne } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Toaster } from "react-hot-toast";
+import { ThemeWrapper } from "@/components/ThemeWrapper";
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-space-grotesk",
+  weight: ['300','400','500','600','700'],
+});
+
+const syne = Syne({
+  subsets: ["latin"],
+  variable: "--font-syne",
+  weight: ['400','500','600','700','800'],
 });
 
 export const metadata: Metadata = {
@@ -27,28 +35,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="antialiased">
+    <html lang="en" className={`${spaceGrotesk.variable} ${syne.variable}`} style={{ background: '#F5F2EC' }}>
+      <body className="antialiased" style={{ background: '#F5F2EC', color: '#0D0D0D' }}>
         <AuthProvider>
-          {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: "#16161f",
-                color: "#f0f0ff",
-                border: "1px solid #2a2a3d",
-                borderRadius: "10px",
-                fontSize: "14px",
-              },
-              success: {
-                iconTheme: {
-                  primary: "#6366f1",
-                  secondary: "#fff",
+          <ThemeWrapper>
+            {children}
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: '#FFFFFF',
+                  color: '#0D0D0D',
+                  border: '2px solid #0D0D0D',
+                  borderRadius: '14px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  boxShadow: '4px 4px 0 #0D0D0D',
                 },
-              },
-            }}
-          />
+                success: {
+                  iconTheme: { primary: '#00C896', secondary: '#fff' },
+                },
+                error: {
+                  iconTheme: { primary: '#FF5533', secondary: '#fff' },
+                },
+              }}
+            />
+          </ThemeWrapper>
         </AuthProvider>
       </body>
     </html>

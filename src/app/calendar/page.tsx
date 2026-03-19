@@ -11,288 +11,266 @@ import { EventModal } from '@/components/EventModal';
 import { EventCard } from '@/components/EventCard';
 import { DeadlineEvent } from '@/types';
 import { toDate } from '@/utils/dateHelpers';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
-import { cn } from '@/utils/cn';
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  isSameDay,
-  isSameMonth,
-  getDay,
-  addMonths,
-  subMonths,
-} from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getDay, addMonths, subMonths } from 'date-fns';
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Study: '#6366f1',
-  Hackathon: '#a855f7',
-  Submission: '#f43f5e',
-  Personal: '#10b981',
-  Exam: '#f59e0b',
+const CAT_COLOR: Record<string, string> = {
+  Study:      '#1A1AFF',
+  Hackathon:  '#7c3aed',
+  Submission: '#FF5533',
+  Personal:   '#00C896',
+  Exam:       '#F5A623',
 };
 
 export default function CalendarPage() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useUserStore();
-  const { events, setEvents } = useEventStore();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editEvent, setEditEvent] = useState<DeadlineEvent | null>(null);
+  const router   = useRouter();
+  const { user, loading: authLoading }  = useUserStore();
+  const { events, setEvents }           = useEventStore();
+  const [sidebarOpen,  setSidebarOpen]  = useState(false);
+  const [modalOpen,    setModalOpen]    = useState(false);
+  const [editEvent,    setEditEvent]    = useState<DeadlineEvent | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [selectedDay,  setSelectedDay]  = useState<Date | null>(null);
+  const [mounted,      setMounted]      = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!authLoading && !user) router.replace('/login');
-  }, [user, authLoading, router]);
-
+  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { if (!authLoading && !user) router.replace('/login'); }, [user, authLoading, router]);
   useEffect(() => {
     if (!user) return;
     const unsub = subscribeToEvents(user.uid, setEvents);
     return () => unsub();
   }, [user, setEvents]);
 
-  if (authLoading || !user) return <LoadingScreen />;
+  if (authLoading || !user || !mounted) return <LoadingScreen />;
 
   const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
-  const startPadding = getDay(monthStart); // 0=Sun
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const monthEnd   = endOfMonth(currentMonth);
+  const days       = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const startPad   = getDay(monthStart);
+  const WEEK       = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  const eventsOnDay = (day: Date) =>
-    events.filter((e) => isSameDay(toDate(e.deadline), day));
-
-  const selectedEvents = selectedDay ? eventsOnDay(selectedDay) : [];
+  const eventsOn      = (day: Date) => events.filter((e) => isSameDay(toDate(e.deadline), day));
+  const selectedEvents = selectedDay ? eventsOn(selectedDay) : [];
 
   const openCreate = () => { setEditEvent(null); setModalOpen(true); };
-  const openEdit = (ev: DeadlineEvent) => { setEditEvent(ev); setModalOpen(true); };
-
-  const prevMonth = () => setCurrentMonth((m) => subMonths(m, 1));
-  const nextMonth = () => setCurrentMonth((m) => addMonths(m, 1));
-  const goToday = () => {
-    setCurrentMonth(new Date());
-    setSelectedDay(new Date());
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, staggerChildren: 0.1 } }
-  };
-
-  if (!mounted) return null;
+  const openEdit   = (ev: DeadlineEvent) => { setEditEvent(ev); setModalOpen(true); };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#050505] text-white selection:bg-purple-500/30">
-      
-      {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-purple-500/10 blur-[150px] rounded-full mix-blend-screen" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
-      </div>
-
+    <div className="min-h-screen flex flex-col" style={{ color: 'var(--ink)' }}>
       <Navbar onMenuToggle={() => setSidebarOpen((o) => !o)} sidebarOpen={sidebarOpen} />
 
       <div className="flex flex-1 overflow-hidden relative z-10">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={openCreate} />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10">
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="max-w-6xl mx-auto space-y-8"
-          >
-            
-            {/* Header Area */}
-            <motion.div variants={containerVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
-              <div>
-                <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 flex items-center gap-3">
-                  <CalendarIcon size={28} className="text-purple-400" />
-                  Visual Calendar
-                </h1>
-                <p className="text-sm font-medium mt-2 text-gray-400">
-                  Bird's eye view of all your temporal commitments.
-                </p>
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-8">
+          <div className="max-w-[1100px] mx-auto space-y-8">
+
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -14 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between border-b-2 pb-6"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-2xl border-2" style={{ borderColor: 'var(--ink)', background: 'var(--white)' }}>
+                  <CalIcon size={22} style={{ color: 'var(--ink)' }} />
+                </div>
+                <div>
+                  <h1 className="font-display font-black text-3xl tracking-tight" style={{ color: 'var(--ink)' }}>Calendar</h1>
+                  <p className="text-sm font-medium" style={{ color: 'var(--ink-4)' }}>Bird's-eye view of your deadlines</p>
+                </div>
               </div>
+              <motion.button
+                whileHover={{ x: -2, y: -2, boxShadow: '4px 4px 0 var(--ink)' }}
+                whileTap={{ x: 0, y: 0, boxShadow: 'none' }}
+                onClick={openCreate}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-black text-white border-2"
+                style={{ background: 'var(--ink)', borderColor: 'var(--ink)' }}
+              >
+                <Plus size={16} /> New Deadline
+              </motion.button>
             </motion.div>
 
-            {/* Calendar Container */}
+            {/* Calendar */}
             <motion.div
-              variants={containerVariants}
-              className="rounded-3xl overflow-hidden bg-white/[0.02] border border-white/10 backdrop-blur-xl shadow-2xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="rounded-2xl border-2 overflow-hidden"
+              style={{ borderColor: 'var(--ink)', background: 'var(--white)' }}
             >
-              {/* Month Header */}
-              <div className="flex items-center justify-between px-8 py-6 bg-white/[0.02] border-b border-white/5">
+              {/* Month Nav */}
+              <div className="flex items-center justify-between px-7 py-5 border-b-2" style={{ borderColor: 'var(--ink)' }}>
                 <AnimatePresence mode="popLayout">
-                  <motion.h2 
-                    key={currentMonth.toString()}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -20, opacity: 0 }}
-                    className="text-2xl font-black tracking-tight text-white"
+                  <motion.h2
+                    key={currentMonth.getTime()}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -14 }}
+                    className="font-display font-black text-2xl tracking-tight"
+                    style={{ color: 'var(--ink)' }}
                   >
                     {format(currentMonth, 'MMMM yyyy')}
                   </motion.h2>
                 </AnimatePresence>
-
-                <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/10">
-                  <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={prevMonth} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
-                    <ChevronLeft size={18} className="text-gray-300" />
+                <div className="flex items-center gap-1 border-2 rounded-xl p-1" style={{ borderColor: 'var(--border)' }}>
+                  <motion.button
+                    whileHover={{ scale: 1.1, background: 'var(--paper)' }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setCurrentMonth((m) => subMonths(m, 1))}
+                    className="p-2 rounded-lg transition-colors"
+                    style={{ color: 'var(--ink-3)' }}
+                  >
+                    <ChevronLeft size={18} />
                   </motion.button>
-                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={goToday} className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest text-gray-300 hover:bg-white/10 hover:text-white transition-colors">
+                  <motion.button
+                    whileHover={{ background: 'var(--paper)' }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { setCurrentMonth(new Date()); setSelectedDay(new Date()); }}
+                    className="px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors"
+                    style={{ color: 'var(--ink-3)' }}
+                  >
                     Today
                   </motion.button>
-                  <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={nextMonth} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
-                    <ChevronRight size={18} className="text-gray-300" />
+                  <motion.button
+                    whileHover={{ scale: 1.1, background: 'var(--paper)' }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setCurrentMonth((m) => addMonths(m, 1))}
+                    className="p-2 rounded-lg transition-colors"
+                    style={{ color: 'var(--ink-3)' }}
+                  >
+                    <ChevronRight size={18} />
                   </motion.button>
                 </div>
               </div>
 
-              {/* Grid Context */}
-              <div className="bg-black/60">
-                {/* Weekdays */}
-                <div className="grid grid-cols-7 border-b border-white/5">
-                  {weekDays.map((d) => (
-                    <div key={d} className="py-4 text-center text-xs font-bold uppercase tracking-widest text-gray-500 bg-white/[0.02]">
-                      {d}
-                    </div>
-                  ))}
-                </div>
+              {/* Weekday headers */}
+              <div className="grid grid-cols-7 border-b-2" style={{ borderColor: 'var(--border)' }}>
+                {WEEK.map((d) => (
+                  <div key={d} className="py-3.5 text-center text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--ink-4)' }}>
+                    {d}
+                  </div>
+                ))}
+              </div>
 
-                {/* Days Grid */}
-                <div className="grid grid-cols-7 bg-white/[0.02] gap-px">
-                  {/* Padding */}
-                  {Array.from({ length: startPadding }).map((_, i) => (
-                     <div key={`pad-${i}`} className="min-h-[120px] bg-black/40" />
-                  ))}
+              {/* Days */}
+              <div className="grid grid-cols-7">
+                {Array.from({ length: startPad }).map((_, i) => (
+                  <div key={`pad-${i}`} className="min-h-[110px] border-r border-b" style={{ borderColor: 'var(--border)', background: 'var(--paper)' }} />
+                ))}
+                {days.map((day, idx) => {
+                  const dayEvs  = eventsOn(day);
+                  const isToday = isSameDay(day, new Date());
+                  const isSel   = selectedDay ? isSameDay(day, selectedDay) : false;
+                  const isLast  = (startPad + idx) % 7 === 6;
 
-                  {/* Day Cells */}
-                  {days.map((day) => {
-                    const dayEvents = eventsOnDay(day);
-                    const isToday_ = isSameDay(day, new Date());
-                    const isSelected = selectedDay ? isSameDay(day, selectedDay) : false;
-                    
-                    return (
-                      <motion.div
-                        layoutId={`day-${day.toISOString()}`}
-                        key={day.toISOString()}
-                        onClick={() => setSelectedDay(isSelected ? null : day)}
-                        whileHover={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
-                        className={cn(
-                          'min-h-[120px] p-3 cursor-pointer transition-colors relative group overflow-hidden',
-                          isSelected ? 'bg-indigo-500/10' : 'bg-transparent'
-                        )}
-                        style={{
-                          boxShadow: isSelected ? 'inset 0 0 0 1px rgba(99,102,241,0.5)' : 'none',
-                        }}
-                      >
-                        {isSelected && (
-                           <motion.div layoutId="selection-ring" className="absolute inset-0 bg-indigo-500/20 border-2 border-indigo-500 blur-[2px] rounded-sm pointer-events-none" />
-                        )}
-
-                        {/* Day Number */}
-                        <div className="flex justify-end mb-3">
-                          <span
-                            className={cn(
-                              'w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold relative z-10 transition-all duration-300',
-                              isToday_ ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/50 scale-110' : 
-                              isSelected ? 'bg-indigo-500/30 text-indigo-300' : 'text-gray-500 group-hover:text-white'
-                            )}
+                  return (
+                    <motion.div
+                      key={day.toISOString()}
+                      whileHover={{ backgroundColor: 'var(--paper-2)' }}
+                      onClick={() => setSelectedDay(isSel ? null : day)}
+                      className="min-h-[110px] p-2.5 cursor-pointer border-b transition-colors"
+                      style={{
+                        borderColor: 'var(--border)',
+                        borderRight: !isLast ? '1px solid var(--border)' : 'none',
+                        background: isSel ? 'var(--paper-2)' : undefined,
+                        outline: isSel ? '2px solid var(--ink)' : 'none',
+                        outlineOffset: '-2px',
+                      }}
+                    >
+                      <div className="flex justify-end mb-2">
+                        <span
+                          className="w-7 h-7 flex items-center justify-center rounded-full text-xs font-black transition-all"
+                          style={
+                            isToday
+                              ? { background: 'var(--ink)', color: '#fff' }
+                              : isSel
+                              ? { background: 'var(--accent)', color: '#fff' }
+                              : { color: 'var(--ink-4)' }
+                          }
+                        >
+                          {format(day, 'd')}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {dayEvs.slice(0, 2).map((e) => (
+                          <div
+                            key={e.id}
+                            className="text-[10px] px-1.5 py-0.5 rounded-md truncate font-bold border"
+                            style={{
+                              background: `${CAT_COLOR[e.category] ?? '#1A1AFF'}10`,
+                              color:       CAT_COLOR[e.category] ?? '#1A1AFF',
+                              borderColor: `${CAT_COLOR[e.category] ?? '#1A1AFF'}30`,
+                              opacity: e.status === 'completed' ? 0.4 : 1,
+                            }}
                           >
-                            {format(day, 'd')}
-                          </span>
-                        </div>
-
-                        {/* Event Tags */}
-                        <div className="space-y-1.5 relative z-10 mix-blend-luminosity hover:mix-blend-normal transition-all duration-300">
-                          {dayEvents.slice(0, 3).map((e) => (
-                            <motion.div
-                              layoutId={`event-${e.id}`}
-                              key={e.id}
-                              className="text-[10px] px-2 py-1 rounded-lg truncate font-bold text-white shadow-sm"
-                              style={{
-                                background: CATEGORY_COLORS[e.category] ?? '#6366f1',
-                                opacity: e.status === 'completed' ? 0.3 : 1,
-                              }}
-                            >
-                              {e.title}
-                            </motion.div>
-                          ))}
-                          {dayEvents.length > 3 && (
-                            <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 px-2 mt-2">
-                              +{dayEvents.length - 3} MORE
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+                            {e.title}
+                          </div>
+                        ))}
+                        {dayEvs.length > 2 && (
+                          <div className="text-[9px] font-black uppercase tracking-wider px-1" style={{ color: 'var(--ink-4)' }}>
+                            +{dayEvs.length - 2} more
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
 
-            {/* Selected Day view */}
+            {/* Day Detail */}
             <AnimatePresence mode="wait">
               {selectedDay && (
-                <motion.div 
+                <motion.div
                   key={selectedDay.toISOString()}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="pt-6"
+                  exit={{ opacity: 0, y: 12 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as any }}
+                  className="space-y-5"
                 >
-                  <div className="flex items-center gap-4 mb-8 border-b border-white/5 pb-4">
-                    <h3 className="text-3xl font-black text-white">
+                  <div className="flex items-center gap-4 border-b-2 pb-5" style={{ borderColor: 'var(--border)' }}>
+                    <h3 className="font-display font-black text-2xl" style={{ color: 'var(--ink)' }}>
                       {format(selectedDay, 'EEEE, MMMM d')}
                     </h3>
-                    <motion.span 
-                       initial={{ scale: 0 }} animate={{ scale: 1 }}
-                       className="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest shadow-lg"
-                      style={{ background: 'rgba(124,58,237,0.2)', color: '#c4b5fd', border: '1px solid rgba(139,92,246,0.3)' }}>
-                      {selectedEvents.length} Event{selectedEvents.length !== 1 && 's'}
-                    </motion.span>
+                    <span
+                      className="tag text-[11px]"
+                      style={{ color: 'var(--ink)', borderColor: 'var(--ink)', background: 'var(--paper-2)' }}
+                    >
+                      {selectedEvents.length} event{selectedEvents.length !== 1 ? 's' : ''}
+                    </span>
                   </div>
 
                   {selectedEvents.length === 0 ? (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="rounded-[2.5rem] py-20 text-center border border-white/5 bg-white/[0.02]" 
+                    <motion.div
+                      className="rounded-2xl border-2 py-16 text-center"
+                      style={{ borderColor: 'var(--border)', background: 'var(--white)' }}
                     >
-                      <div className="text-6xl mb-4 opacity-50">🍃</div>
-                      <p className="text-sm font-bold uppercase tracking-widest text-gray-500">Day is clear</p>
+                      <div className="text-5xl mb-4">🍃</div>
+                      <p className="font-display font-bold text-xl" style={{ color: 'var(--ink-3)' }}>Day is clear</p>
+                      <p className="text-sm font-medium mt-1" style={{ color: 'var(--ink-4)' }}>No deadlines on this day.</p>
                     </motion.div>
                   ) : (
-                    <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      <AnimatePresence>
-                        {selectedEvents.map((e, i) => (
-                           <EventCard key={e.id} event={e} onEdit={openEdit} />
-                        ))}
-                      </AnimatePresence>
-                    </motion.div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {selectedEvents.map((e) => (
+                        <EventCard key={e.id} event={e} onEdit={openEdit} />
+                      ))}
+                    </div>
                   )}
                 </motion.div>
               )}
             </AnimatePresence>
-            
-          </motion.div>
+
+          </div>
         </main>
       </div>
 
       <AnimatePresence>
         {modalOpen && (
-          <EventModal
-            event={editEvent}
-            onClose={() => { setModalOpen(false); setEditEvent(null); }}
-          />
+          <EventModal event={editEvent} onClose={() => { setModalOpen(false); setEditEvent(null); }} />
         )}
       </AnimatePresence>
     </div>
@@ -301,29 +279,10 @@ export default function CalendarPage() {
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center flex-col gap-6 bg-[#050505]">
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        className="relative w-20 h-20"
-      >
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 blur-xl opacity-50" />
-        <div className="absolute inset-2 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
-           <span className="font-black text-white text-2xl">D</span>
-        </div>
-      </motion.div>
-      <div className="text-center space-y-2">
-        <h2 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Loading Grid</h2>
-        <div className="flex justify-center gap-2">
-          {[0, 1, 2].map((i) => (
-             <motion.div
-               key={i}
-               className="w-2 h-2 rounded-full bg-purple-500"
-               animate={{ y: [0, -10, 0] }}
-               transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1 }}
-             />
-          ))}
-        </div>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--paper)' }}>
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 rounded-xl border-4 animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--ink)' }} />
+        <p className="font-bold text-sm" style={{ color: 'var(--ink-4)' }}>Loading Calendar...</p>
       </div>
     </div>
   );

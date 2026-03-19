@@ -2,20 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  Calendar,
-  Plus,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  X,
-  Sparkles,
-  TrendingUp,
-} from 'lucide-react';
+import { LayoutDashboard, Calendar, Plus, CheckCircle2, Clock, AlertTriangle, X, Sparkles, TrendingUp } from 'lucide-react';
 import { useEventStore } from '@/store/useEventStore';
 import { isOverdue, isToday } from '@/utils/priority';
 import { cn } from '@/utils/cn';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
   open: boolean;
@@ -23,182 +14,143 @@ interface SidebarProps {
   onCreateEvent: () => void;
 }
 
-const navItems = [
+const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/calendar', label: 'Calendar', icon: Calendar },
+  { href: '/calendar',  label: 'Calendar',  icon: Calendar },
 ];
 
 export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
-  const pathname = usePathname();
-  const events = useEventStore((s) => s.events);
+  const pathname  = usePathname();
+  const events    = useEventStore((s) => s.events);
 
-  const todayCount = events.filter((e) => isToday(e) && e.status === 'pending').length;
-  const overdueCount = events.filter((e) => isOverdue(e)).length;
-  const pendingCount = events.filter((e) => e.status === 'pending').length;
-  const completedCount = events.filter((e) => e.status === 'completed').length;
-  const completionPct = events.length ? Math.round((completedCount / events.length) * 100) : 0;
+  const todayC     = events.filter((e) => isToday(e)    && e.status === 'pending').length;
+  const overdueC   = events.filter((e) => isOverdue(e)).length;
+  const pendingC   = events.filter((e) => e.status === 'pending').length;
+  const completedC = events.filter((e) => e.status === 'completed').length;
+  const pct        = events.length ? Math.round((completedC / events.length) * 100) : 0;
 
-  const stats = [
-    { label: 'Today', count: todayCount, icon: Clock, color: '#6366f1', bg: 'rgba(99,102,241,0.12)' },
-    { label: 'Overdue', count: overdueCount, icon: AlertTriangle, color: '#f43f5e', bg: 'rgba(244,63,94,0.12)' },
-    { label: 'Pending', count: pendingCount, icon: TrendingUp, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-    { label: 'Done', count: completedCount, icon: CheckCircle2, color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+  const STATS = [
+    { label: 'Today',   count: todayC,     icon: Clock,         color: 'var(--accent-2)', bg: 'rgba(26,26,255,0.06)', border: 'rgba(26,26,255,0.25)' },
+    { label: 'Overdue', count: overdueC,   icon: AlertTriangle, color: 'var(--accent)',   bg: 'rgba(255,85,51,0.06)', border: 'rgba(255,85,51,0.25)' },
+    { label: 'Pending', count: pendingC,   icon: TrendingUp,    color: 'var(--amber)',    bg: 'rgba(245,166,35,0.06)', border: 'rgba(245,166,35,0.25)' },
+    { label: 'Done',    count: completedC, icon: CheckCircle2,  color: 'var(--accent-3)', bg: 'rgba(0,200,150,0.06)', border: 'rgba(0,200,150,0.25)' },
   ];
 
   return (
     <>
-      {/* Overlay */}
-      <div
-        className={cn(
-          'fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden transition-opacity duration-300',
-          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 md:hidden"
+            style={{ background: 'rgba(13,13,13,0.5)' }}
+            onClick={onClose}
+          />
         )}
-        onClick={onClose}
-      />
+      </AnimatePresence>
 
       <aside
         className={cn(
-          'fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 flex flex-col w-64',
+          'fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 flex flex-col w-72 border-r-2',
           'md:translate-x-0 md:static md:z-auto',
-          'transition-transform duration-300 ease-in-out',
+          'transition-transform duration-300 ease-out',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
-        style={{
-          background: 'var(--bg-deep)',
-          borderRight: '1px solid var(--border-dim)',
-        }}
+        style={{ borderColor: 'var(--ink)', background: 'var(--paper)' }}
       >
-        {/* Mobile close */}
-        <div className="flex items-center justify-between p-4 md:hidden">
-          <span className="font-bold text-sm gradient-text">Menu</span>
-          <button onClick={onClose}
-            className="p-1.5 rounded-xl hover:bg-white/5 transition-colors active:scale-90">
-            <X size={16} style={{ color: 'var(--text-mid)' }} />
-          </button>
+        {/* Mobile header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b-2 md:hidden" style={{ borderColor: 'var(--border)' }}>
+          <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--ink-4)' }}>Menu</span>
+          <motion.button whileTap={{ scale: 0.88 }} onClick={onClose} className="p-1.5 rounded-lg" style={{ color: 'var(--ink-3)' }}>
+            <X size={16} />
+          </motion.button>
         </div>
 
         {/* Create button */}
-        <div className="p-4">
-          <button
+        <div className="p-4 border-b-2" style={{ borderColor: 'var(--border)' }}>
+          <motion.button
+            whileHover={{ x: -2, y: -2, boxShadow: '4px 4px 0 var(--ink)' }}
+            whileTap={{ x: 0, y: 0, boxShadow: 'none' }}
             onClick={() => { onCreateEvent(); onClose(); }}
-            className="group relative w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-sm text-white overflow-hidden transition-all duration-200 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7)' }}
-            id="create-event-btn"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm text-white border-2 transition-all"
+            style={{ background: 'var(--ink)', borderColor: 'var(--ink)' }}
           >
-            {/* Shimmer sweep on hover */}
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{
-                background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)',
-                transform: 'translateX(-100%)',
-                transition: 'none',
-              }} />
-            <div className="absolute inset-0 group-hover:[--x:translateX(200%)] [--x:translateX(-100%)] transition-transform duration-700"
-              style={{
-                background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%)',
-              }} />
-            <Plus size={16} className="group-hover:rotate-90 transition-transform duration-300" />
-            <span>New Deadline</span>
-          </button>
+            <Plus size={16} /> New Deadline
+          </motion.button>
         </div>
 
-        {/* Nav links */}
-        <nav className="px-3 space-y-1">
-          {navItems.map(({ href, label, icon: Icon }) => {
+        {/* Nav */}
+        <nav className="p-3 space-y-1 border-b-2" style={{ borderColor: 'var(--border)' }}>
+          {NAV.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
-              <Link
-                key={href}
-                href={href}
-                onClick={onClose}
-                className={cn(
-                  'group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
-                  active ? 'text-white' : 'hover:bg-white/5'
-                )}
-                style={
-                  active
-                    ? {
-                        background: 'linear-gradient(135deg, rgba(79,70,229,0.25), rgba(124,58,237,0.15))',
-                        color: '#a5b4fc',
-                        boxShadow: 'inset 0 0 0 1px rgba(99,102,241,0.25)',
-                      }
-                    : { color: 'var(--text-mid)' }
-                }
-              >
-                <span className={cn('p-1.5 rounded-lg transition-all duration-200', active ? '' : 'group-hover:bg-white/8')}
-                  style={{ background: active ? 'rgba(99,102,241,0.2)' : 'transparent' }}>
-                  <Icon size={15} style={{ color: active ? '#818cf8' : 'var(--text-mid)' }} />
-                </span>
-                {label}
-                {active && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400" />
-                )}
+              <Link key={href} href={href} onClick={onClose}>
+                <motion.div
+                  whileHover={{ x: 4 }}
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all border-2',
+                    active ? 'text-white border-ink' : 'text-ink-3 border-transparent hover:border-ink hover:bg-white'
+                  )}
+                  style={
+                    active
+                      ? { background: 'var(--ink)', color: '#fff', borderColor: 'var(--ink)' }
+                      : { color: 'var(--ink-3)', borderColor: 'transparent' }
+                  }
+                >
+                  <Icon size={16} />
+                  {label}
+                  {active && <div className="ml-auto w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />}
+                </motion.div>
               </Link>
             );
           })}
         </nav>
 
-        {/* Divider */}
-        <div className="mx-4 my-4 h-px" style={{ background: 'var(--border-dim)' }} />
-
         {/* Stats */}
-        <div className="px-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text-faint)' }}>
-            Overview
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            {stats.map(({ label, count, icon: Icon, color, bg }, i) => (
-              <div
+        <div className="p-4 border-b-2" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-[10px] font-black uppercase tracking-widest mb-3 px-1" style={{ color: 'var(--ink-4)' }}>Overview</p>
+          <div className="grid grid-cols-2 gap-2.5">
+            {STATS.map(({ label, count, icon: Icon, color, bg, border }, i) => (
+              <motion.div
                 key={label}
-                className="rounded-xl p-3 transition-all duration-200 hover:scale-[1.03] cursor-default"
-                style={{
-                  background: 'var(--bg-elevated)',
-                  border: '1px solid var(--border-dim)',
-                  animationDelay: `${i * 60}ms`,
-                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06 }}
+                whileHover={{ y: -3, boxShadow: '3px 3px 0 var(--ink)' }}
+                className="rounded-2xl p-3.5 border-2 cursor-default bg-white transition-all"
+                style={{ background: bg, border: `2px solid ${border}` }}
               >
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center mb-2" style={{ background: bg }}>
-                  <Icon size={13} style={{ color }} />
-                </div>
-                <p className="text-xl font-black" style={{ color }}>{count}</p>
-                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-faint)' }}>{label}</p>
-              </div>
+                <Icon size={16} style={{ color }} className="mb-2" />
+                <p className="font-display font-black text-2xl" style={{ color }}>{count}</p>
+                <p className="text-[10px] font-extrabold mt-0.5 uppercase tracking-wider" style={{ color: 'var(--ink-4)' }}>{label}</p>
+              </motion.div>
             ))}
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="px-4 mt-4">
-          <div className="rounded-2xl p-4" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-dim)' }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold flex items-center gap-1.5" style={{ color: 'var(--text-mid)' }}>
-                <Sparkles size={11} style={{ color: '#a78bfa' }} />
-                Completion
+        {/* Progress */}
+        <div className="p-4">
+          <div className="rounded-2xl p-4 border-2" style={{ borderColor: 'var(--border)', background: 'var(--white)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-black uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--ink-3)' }}>
+                <Sparkles size={12} /> Velocity
               </span>
-              <span className="text-xs font-bold gradient-text">{completionPct}%</span>
+              <span className="font-display font-black text-base" style={{ color: 'var(--accent)' }}>{pct}%</span>
             </div>
-            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-raised)' }}>
-              <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{
-                  width: `${completionPct}%`,
-                  background: 'linear-gradient(90deg, #4f46e5, #a855f7)',
-                  boxShadow: '0 0 8px rgba(139,92,246,0.5)',
-                }}
+            <div className="h-2.5 rounded-full border-2 overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--paper-2)' }}>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+                className="h-full"
+                style={{ background: 'var(--ink)' }}
               />
             </div>
-            <p className="text-[10px] mt-2" style={{ color: 'var(--text-faint)' }}>
-              {completedCount} of {events.length} deadlines complete
+            <p className="text-[11px] mt-3 font-bold" style={{ color: 'var(--ink-4)' }}>
+              {completedC} of {events.length} complete
             </p>
-          </div>
-        </div>
-
-        {/* Tip */}
-        <div className="mt-auto p-4">
-          <div className="rounded-2xl p-3.5 text-xs relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.12), rgba(124,58,237,0.08))', border: '1px solid rgba(99,102,241,0.2)' }}>
-            <div className="absolute -right-3 -top-3 text-4xl opacity-10">💡</div>
-            <p className="font-semibold mb-1" style={{ color: '#a5b4fc' }}>Focus Mode Tip</p>
-            <p style={{ color: 'var(--text-dim)' }}>Tackle your highest-priority deadline first thing each morning.</p>
           </div>
         </div>
       </aside>
