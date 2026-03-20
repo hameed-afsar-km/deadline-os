@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/useUserStore';
 import { useEventStore } from '@/store/useEventStore';
-import { subscribeToEvents } from '@/lib/firestore';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import { EventModal } from '@/components/EventModal';
@@ -35,11 +34,6 @@ export default function CalendarPage() {
   const [dir,  setDir]  = useState(0);
 
   useEffect(() => { if (!authLoading && !user) router.replace('/login'); }, [user, authLoading, router]);
-  useEffect(() => {
-    if (!user) return;
-    const unsub = subscribeToEvents(user.uid, setEvents);
-    return () => unsub();
-  }, [user, setEvents]);
 
   if (authLoading) return <Spinner />;
   if (!user) return null;
