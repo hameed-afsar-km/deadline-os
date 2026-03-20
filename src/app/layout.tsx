@@ -1,57 +1,42 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, DM_Serif_Display, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import { ThemeWrapper } from "@/components/ThemeWrapper";
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
-  weight: ['300','400','500','600','700','800'],
-  style: ['normal','italic'],
-});
+const inter = Inter({ subsets:["latin"], variable:"--font-sans", weight:['400','500','600','700'] });
+const dmSerif = DM_Serif_Display({ subsets:["latin"], variable:"--font-serif", weight:'400', style:['normal','italic'] });
+const dmMono  = DM_Mono({ subsets:["latin"], variable:"--font-mono", weight:['400','500'] });
 
 export const metadata: Metadata = {
-  title: "DeadlineOS — Stay on top of what matters",
-  description: "A warm, focused deadline tracker that helps you stay ahead — smart priorities, live countdowns, and real-time sync across all your devices.",
-  keywords: "deadline management, task tracker, productivity, focus",
-  openGraph: {
-    title: "DeadlineOS",
-    description: "Stay on top of what matters most.",
-    type: "website",
-  },
+  title: "DeadlineOS — Deadline Intelligence",
+  description: "Intelligent deadline management engineered for high-performance teams and individuals.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={jakarta.variable} style={{ background: '#0C0A09' }}>
-      <body className="antialiased" style={{ background: '#0C0A09', color: '#D6C9B0' }}>
+    <html lang="en" className={`${inter.variable} ${dmSerif.variable} ${dmMono.variable}`}
+      style={{ background: '#EDE8DE', colorScheme: 'light' }}>
+      <body className="antialiased" style={{ background: '#EDE8DE', color: '#17140C', WebkitFontSmoothing: 'antialiased' }}>
         <AuthProvider>
           <ThemeWrapper>
             {children}
             <Toaster
-              position="top-right"
+              position="bottom-right"
               toastOptions={{
                 style: {
-                  background: '#1E1A17',
-                  color: '#F5EDD6',
-                  border: '1px solid rgba(255,200,120,0.15)',
-                  borderRadius: '14px',
+                  background: '#FAF8F4',
+                  color: '#17140C',
+                  border: '1.5px solid #E0DDD8',
+                  borderRadius: '4px',
                   fontSize: '13px',
+                  fontFamily: 'var(--font-sans)',
                   fontWeight: '600',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                  boxShadow: '0 8px 28px rgba(23,20,12,0.12)',
                 },
-                success: {
-                  iconTheme: { primary: '#34D399', secondary: '#1E1A17' },
-                },
-                error: {
-                  iconTheme: { primary: '#FB7185', secondary: '#1E1A17' },
-                },
+                success: { iconTheme: { primary: '#1A6635', secondary: '#FAF8F4' } },
+                error:   { iconTheme: { primary: '#C8220A', secondary: '#FAF8F4' } },
               }}
             />
           </ThemeWrapper>

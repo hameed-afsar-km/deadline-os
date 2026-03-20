@@ -2,38 +2,29 @@
 
 @layer base {
   :root {
-    /* ── Warm Surfaces ─────────────────────────── */
-    --bg:        #0C0A09;   /* warmest black */
-    --s1:        #161210;   /* card */
-    --s2:        #1E1A17;   /* elevated */
-    --s3:        #26211D;   /* input / raised */
-    --s4:        #302A25;   /* hover */
+    /* ── Paper Surfaces ── */
+    --bg:       #EDE8DE;
+    --paper:    #FAF8F4;
+    --paper-2:  #F3EFE8;
+    --paper-3:  #EDEAD3;
 
-    /* ── Warm Borders ──────────────────────────── */
-    --b0:  rgba(255,200,120,0.04);
-    --b1:  rgba(255,200,120,0.08);
-    --b2:  rgba(255,200,120,0.14);
-    --b3:  rgba(255,200,120,0.25);
+    /* ── Ink ── */
+    --ink:   #17140C;
+    --ink-2: #5A5650;
+    --ink-3: #9A9690;
+    --ink-4: #C8C4BE;
+    --ink-5: #E0DDD8;
 
-    /* ── Type ──────────────────────────────────── */
-    --t0:  #F5EDD6;  /* headline */
-    --t1:  #D6C9B0;  /* body */
-    --t2:  #A89880;  /* sub */
-    --t3:  #6E5E4A;  /* muted */
-    --t4:  #3D3028;  /* very muted */
+    /* ── THE ONE ACCENT: Vermillion Red ── */
+    --red:   #C8220A;
+    --red-l: rgba(200, 34, 10, 0.08);
+    --red-m: rgba(200, 34, 10, 0.16);
 
-    /* ── Brand amber ───────────────────────────── */
-    --amber:    #F59E0B;
-    --amber-l:  #FCD34D;
-    --amber-d:  #B45309;
-    --amber-glow: rgba(245,158,11,0.18);
-
-    /* ── Semantics ─────────────────────────────── */
-    --emerald:  #34D399;
-    --rose:     #FB7185;
-    --violet:   #C4B5FD;
-    --cyan:     #67E8F9;
-    --sky:      #7DD3FC;
+    /* ── Status (muted, printerly) ── */
+    --amber: #B35400;
+    --green: #1A6635;
+    --blue:  #1A44B4;
+    --purple:#5B21B6;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,92 +32,134 @@
 
   body {
     background: var(--bg);
-    color: var(--t1);
-    font-family: var(--font-jakarta, 'Plus Jakarta Sans'), system-ui, sans-serif;
+    color: var(--ink);
+    font-family: var(--font-sans, 'Inter'), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
     min-height: 100vh;
   }
 
-  ::selection { background: rgba(245,158,11,0.3); color: var(--t0); }
+  h1, h2, h3 {
+    font-family: var(--font-serif, 'DM Serif Display'), Georgia, serif;
+    color: var(--ink);
+  }
+
+  ::selection { background: var(--red-m); color: var(--ink); }
 
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 99px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--amber-d); }
+  ::-webkit-scrollbar-track { background: var(--paper-2); }
+  ::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 3px; }
 
-  input, textarea, select { outline: none; }
+  input, textarea, select { outline: none; font-family: var(--font-sans, 'Inter'), system-ui, sans-serif; }
 }
 
 @layer utilities {
-  /* Glass card */
-  .card {
-    background: var(--s1);
-    border: 1px solid var(--b1);
-    border-radius: 20px;
-    transition: border-color 0.2s, box-shadow 0.2s;
+  /* ── Physical Paper Card ── */
+  .paper-card {
+    background: var(--paper);
+    border: 1px solid var(--ink-5);
+    border-radius: 4px;
+    box-shadow:
+      0 1px 2px rgba(23,20,12,0.06),
+      0 4px 10px rgba(23,20,12,0.06),
+      0 12px 28px rgba(23,20,12,0.06);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
   }
-  .card:hover {
-    border-color: var(--b2);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px var(--b2);
-  }
-
-  /* Amber text gradient */
-  .amber-text {
-    background: linear-gradient(135deg, var(--amber-l) 0%, var(--amber) 60%, var(--amber-d) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .paper-card:hover {
+    box-shadow:
+      0 2px 4px rgba(23,20,12,0.08),
+      0 8px 20px rgba(23,20,12,0.1),
+      0 24px 48px rgba(23,20,12,0.1);
   }
 
-  /* Input */
-  .field {
-    background: var(--s3);
-    border: 1px solid var(--b1);
-    border-radius: 14px;
-    color: var(--t0);
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: border-color 0.2s, box-shadow 0.2s;
+  /* ── Priority Dog-ear corner ── */
+  .corner-red    { --corner-c: var(--red); }
+  .corner-amber  { --corner-c: var(--amber); }
+  .corner-green  { --corner-c: var(--green); }
+  .corner-purple { --corner-c: var(--purple); }
+
+  /* ── Red CTA Button ── */
+  .btn-red {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    background: var(--red); color: #FFFFFF;
+    font-family: var(--font-sans); font-weight: 700; font-size: .875rem; letter-spacing: .01em;
+    border: none; border-radius: 4px; cursor: pointer;
+    box-shadow: 0 2px 0 rgba(100,10,0,0.3), 0 4px 16px rgba(200,34,10,0.25);
+    transition: transform .15s, box-shadow .15s;
   }
-  .field::placeholder { color: var(--t3); }
-  .field:focus {
-    border-color: var(--amber);
-    box-shadow: 0 0 0 3px var(--amber-glow);
+  .btn-red:hover {
+    box-shadow: 0 4px 0 rgba(100,10,0,0.3), 0 8px 24px rgba(200,34,10,0.3);
+    transform: translateY(-2px);
+  }
+  .btn-red:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(100,10,0,0.4); }
+
+  /* ── Ink Ghost Button ── */
+  .btn-ink {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    background: transparent; color: var(--ink);
+    font-family: var(--font-sans); font-weight: 600; font-size: .875rem;
+    border: 1.5px solid var(--ink-4); border-radius: 4px; cursor: pointer;
+    transition: border-color .18s, background .18s;
+  }
+  .btn-ink:hover { border-color: var(--ink-2); background: var(--paper-2); }
+
+  /* ── Form Field ── */
+  .field-ink {
+    background: var(--paper);
+    border: 1.5px solid var(--ink-5);
+    border-radius: 4px;
+    color: var(--ink);
+    font-size: .875rem;
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .field-ink::placeholder { color: var(--ink-4); }
+  .field-ink:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px var(--red-l);
   }
 
-  /* Glow */
-  .glow-amber  { box-shadow: 0 0 30px rgba(245,158,11,0.3), 0 0 60px rgba(245,158,11,0.1); }
-  .glow-sm     { box-shadow: 0 0 16px rgba(245,158,11,0.2); }
+  /* ── Overdue Stamp ── */
+  .stamp {
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 2.5px solid var(--red); color: var(--red);
+    font-family: var(--font-mono, 'DM Mono'), monospace;
+    font-weight: 700; font-size: 9px; letter-spacing: .18em;
+    text-transform: uppercase; border-radius: 3px;
+    padding: 2px 6px;
+    box-shadow: inset 0 0 0 1px var(--red-l);
+    opacity: 0.85;
+  }
+
+  /* ── Tag/Badge ── */
+  .tag-ink {
+    display: inline-flex; align-items: center; gap: .25rem;
+    background: var(--paper-2); border: 1px solid var(--ink-5);
+    border-radius: 3px; font-size: .65rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: .18rem .5rem; color: var(--ink-2);
+    font-family: var(--font-mono, 'DM Mono'), monospace;
+  }
+
+  .no-sb::-webkit-scrollbar { display: none; }
+  .no-sb { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
-/* ── Keyframes ─────────────────────────────────── */
-@keyframes float  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-@keyframes orbit  { to { transform: rotate(360deg); } }
-@keyframes shimmer{
-  0%  { background-position: -200% 0; }
-  100%{ background-position:  200% 0; }
-}
-@keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
-@keyframes pulse-amber {
-  0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
-  50%      { box-shadow: 0 0 0 8px rgba(245,158,11,0.12); }
-}
-@keyframes breathe {
-  0%,100%{ opacity: 0.7; transform: scale(1); }
-  50%    { opacity: 1;   transform: scale(1.03); }
+/* ── Serif gradient text ── */
+.ink-red-text {
+  background: linear-gradient(95deg, var(--ink), var(--red));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 
-.animate-float       { animation: float 5s ease-in-out infinite; }
-.animate-pulse-amber { animation: pulse-amber 3s ease-in-out infinite; }
-.animate-breathe     { animation: breathe 4s ease-in-out infinite; }
-.animate-fade-up     { animation: fadeUp 0.55s cubic-bezier(.22,.68,0,1.2) both; }
+/* ── Animations ── */
+@keyframes slideUp  { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none} }
+@keyframes stamp-in { 0%{opacity:0;transform:scale(1.6) rotate(-20deg)} 70%{transform:scale(0.95) rotate(-5deg)} 100%{opacity:1;transform:scale(1) rotate(-6deg)} }
+@keyframes press    { 0%{transform:scale(1)} 50%{transform:scale(0.97)} 100%{transform:scale(1)} }
+@keyframes marquee  { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+@keyframes fadeUp   { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+@keyframes ticker   { 0%{background-position:0 0} 100%{background-position:500px 0} }
+@keyframes diagonal-move { 0%,100%{transform:translate(0,0)} 50%{transform:translate(2px,-2px)} }
 
-.skeleton {
-  background: linear-gradient(90deg, var(--s1) 25%, var(--s2) 50%, var(--s1) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.6s infinite;
-}
-
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.stamp-anim    { animation: stamp-in .55s cubic-bezier(.22,1,.36,1) both; }
+.slide-up      { animation: slideUp .55s cubic-bezier(.22,1,.36,1) both; }
+.fade-up       { animation: fadeUp .5s ease-out both; }
+.marquee-anim  { animation: marquee 35s linear infinite; }

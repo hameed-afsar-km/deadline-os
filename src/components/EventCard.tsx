@@ -3,220 +3,169 @@
 import { DeadlineEvent } from '@/types';
 import { getEffectivePriority, isOverdue } from '@/utils/priority';
 import { updateEvent, deleteEvent } from '@/lib/firestore';
-import { CheckCircle2, Clock, Pencil, Trash2, Loader2, AlertTriangle, Calendar } from 'lucide-react';
+import { CheckCircle2, Clock, Pencil, Trash2, Loader2, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Timestamp } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 
-const PRIORITY_CFG: Record<string, { color: string; label: string; bg: string; border: string }> = {
-  high:   { color: '#F59E0B', label: 'HIGH URGENCY', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.2)' },
-  medium: { color: '#67E8F9', label: 'MEDIUM',       bg: 'rgba(103,232,249,0.08)', border: 'rgba(103,232,249,0.2)' },
-  low:    { color: '#34D399', label: 'LOW',          bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.2)' },
-  auto:   { color: '#C4B5FD', label: 'AUTO',         bg: 'rgba(196,181,253,0.08)', border: 'rgba(196,181,253,0.2)' },
+const P_CFG: Record<string,{ c:string; bg:string; label:string; bar:string }> = {
+  high:   { c:'var(--red)',   bg:'var(--red-l)',  label:'CRITICAL', bar:'var(--red)' },
+  medium: { c:'var(--amber)', bg:'rgba(179,84,0,.07)',  label:'HIGH',     bar:'var(--amber)' },
+  low:    { c:'var(--green)', bg:'rgba(26,102,53,.07)', label:'NORMAL',   bar:'var(--green)' },
+  auto:   { c:'var(--blue)',  bg:'rgba(26,68,180,.07)', label:'AUTO',     bar:'var(--blue)' },
 };
 
-const CATEGORY_ICONS: Record<string, string> = {
-  Study:      '📚',
-  Hackathon:  '⚡',
-  Submission: '📨',
-  Personal:   '🌱',
-  Exam:       '✏️',
-};
+const CAT_ICON: Record<string,string> = { Study:'📚', Hackathon:'⚡', Submission:'📨', Personal:'🌿', Exam:'✏️' };
 
-function fmtCountdown(deadline: unknown): string {
+function fmt(dl:unknown):string {
   try {
-    const end = deadline instanceof Timestamp ? deadline.toDate() : new Date(deadline as string);
-    const ms  = end.getTime() - Date.now();
-    if (ms <= 0) return 'Overdue';
-    const h = Math.floor(ms / 3_600_000);
-    const d = Math.floor(h / 24);
-    return d > 0 ? `${d}d ${h % 24}h` : `${h}h`;
+    const d = dl instanceof Timestamp ? dl.toDate() : new Date(dl as string);
+    const ms = d.getTime()-Date.now();
+    if (ms<=0) return 'OVERDUE';
+    const h=Math.floor(ms/3_600_000), dy=Math.floor(h/24);
+    return dy>0 ? `${dy}D ${h%24}H` : `${h}H ${Math.floor((ms%3_600_000)/60_000)}M`;
   } catch { return '--'; }
 }
 
-function fmtDate(deadline: unknown): string {
+function fmtDate(dl:unknown):string {
   try {
-    const d = deadline instanceof Timestamp ? deadline.toDate() : new Date(deadline as string);
-    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(d);
-  } catch { return 'Invalid'; }
+    const d = dl instanceof Timestamp ? dl.toDate() : new Date(dl as string);
+    return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(d);
+  } catch { return ''; }
 }
 
-function getProgress(deadline: unknown): number {
+function pct(dl:unknown):number {
   try {
-    const end  = deadline instanceof Timestamp ? deadline.toDate() : new Date(deadline as string);
-    const base = new Date(end.getTime() - 7 * 86_400_000);
-    const total   = end.getTime() - base.getTime();
-    const elapsed = Date.now() - base.getTime();
-    return Math.min(100, Math.max(0, (elapsed / total) * 100));
+    const end = dl instanceof Timestamp ? dl.toDate() : new Date(dl as string);
+    const base = new Date(end.getTime()-7*86400000);
+    return Math.min(100, Math.max(0, ((Date.now()-base.getTime())/(end.getTime()-base.getTime()))*100));
   } catch { return 0; }
 }
 
-interface EventCardProps {
-  event: DeadlineEvent;
-  onEdit: (event: DeadlineEvent) => void;
-}
-
-export function EventCard({ event, onEdit }: EventCardProps) {
+export function EventCard({ event, onEdit }: { event:DeadlineEvent; onEdit:(e:DeadlineEvent)=>void }) {
   const [loading, setLoading] = useState(false);
 
-  const priority  = getEffectivePriority(event);
-  const overdue   = isOverdue(event);
-  const completed = event.status === 'completed';
-  const pCfg      = PRIORITY_CFG[priority] ?? PRIORITY_CFG.auto;
-  const cIcon     = CATEGORY_ICONS[event.category] ?? '📌';
-  const progress  = getProgress(event.deadline);
+  const p    = getEffectivePriority(event);
+  const over = isOverdue(event);
+  const done = event.status === 'completed';
+  const cfg  = P_CFG[p] ?? P_CFG.auto;
+  const prog = pct(event.deadline);
+  const icon = CAT_ICON[event.category] ?? '📌';
 
   const toggle = async () => {
     setLoading(true);
-    try { await updateEvent(event.id, { status: completed ? 'pending' : 'completed' }); }
+    try { await updateEvent(event.id, { status:done?'pending':'completed' }); }
     catch { toast.error('Update failed'); }
     finally { setLoading(false); }
   };
-
   const remove = async () => {
-    if (!confirm('Are you sure you want to delete this deadline?')) return;
+    if (!confirm('Delete?')) return;
     setLoading(true);
     try { await deleteEvent(event.id); }
     catch { toast.error('Delete failed'); }
     finally { setLoading(false); }
   };
 
-  const isHighAlert = overdue && !completed;
-
+  /* ── The "drop onto desk" entrance animation ── */
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: completed ? 0.6 : 1, scale: 1, filter: completed ? 'grayscale(0.5)' : 'none' }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      whileHover={completed ? {} : { y: -4, borderColor: isHighAlert ? 'rgba(251,113,133,0.4)' : 'var(--b2)' }}
-      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] as any }}
-      className="card p-5 flex flex-col gap-4 relative group"
-      style={{
-        borderColor: isHighAlert ? 'rgba(251,113,133,0.3)' : completed ? 'var(--b1)' : 'var(--b1)',
-        boxShadow: isHighAlert ? '0 0 20px rgba(251,113,133,0.08)' : 'none',
-        background: isHighAlert ? 'linear-gradient(180deg, rgba(251,113,133,0.04) 0%, transparent 100%), var(--s1)' : 'var(--s1)',
+      initial={{ opacity:0, y:-12, rotate: Math.random() * 2 - 1 }}
+      animate={{ opacity: done?.55:1, y:0, rotate:0, scale:1, filter:done?'grayscale(0.5)':'none' }}
+      exit={{ opacity:0, scale:.92 }}
+      transition={{ duration:.5, ease:[.22,1,.36,1] }}
+      whileHover={ done ? {} : {
+        y: -7,
+        boxShadow: '0 4px 8px rgba(23,20,12,0.1), 0 12px 32px rgba(23,20,12,0.12), 0 28px 56px rgba(23,20,12,0.08)',
       }}
+      className="group relative flex flex-col gap-3.5 p-5 paper-card cursor-default"
+      style={{ borderRadius:'3px', transition:'box-shadow .3s, transform .3s' }}
     >
-      {/* Top indicator stripe for priority focus */}
-      {!completed && (
-        <div
-          className="absolute top-0 left-6 right-6 h-[2px] rounded-b-full opacity-60"
-          style={{ background: isHighAlert ? '#FB7185' : pCfg.color, boxShadow: `0 0 10px ${isHighAlert ? '#FB7185' : pCfg.color}` }}
-        />
+      {/* Red priority top stripe */}
+      <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-sm"
+        style={{ background: over&&!done ? 'var(--red)' : cfg.c, opacity: done ? .3 : 1 }} />
+
+      {/* Overdue stamp — kinetic rotation into place */}
+      {over && !done && (
+        <motion.span
+          initial={{ opacity:0, scale:1.8, rotate:-20 }}
+          animate={{ opacity:1, scale:1, rotate:-6 }}
+          transition={{ duration:.5, ease:[.22,1,.36,1], delay:.2 }}
+          className="stamp absolute top-4 right-4"
+          style={{ transformOrigin:'center' }}
+        >
+          OVERDUE
+        </motion.span>
       )}
 
-      {/* Header tags & Actions */}
-      <div className="flex items-start justify-between">
-        <div className="flex flex-wrap gap-2">
-          <span
-            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold"
-            style={{ background: 'var(--s3)', color: 'var(--t2)' }}
-          >
-            <span className="opacity-80">{cIcon}</span> {event.category}
-          </span>
-          <span
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold tracking-wide"
-            style={{ color: pCfg.color, background: pCfg.bg, border: `1px solid ${pCfg.border}` }}
-          >
-            {pCfg.label}
-          </span>
-          {isHighAlert && (
-            <motion.span
-              animate={{ opacity: [1, 0.6, 1] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-extrabold tracking-wide"
-              style={{ color: '#FB7185', background: 'rgba(251,113,133,0.1)', border: '1px solid rgba(251,113,133,0.3)' }}
-            >
-              <AlertTriangle size={10} /> OVERDUE
-            </motion.span>
-          )}
-        </div>
-
-        {/* Action icons appear on hover */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <motion.button
-            whileHover={{ scale: 1.1, color: 'var(--t0)' }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => onEdit(event)}
-            className="p-1.5 rounded-lg transition-colors"
-            style={{ color: 'var(--t3)' }}
-          >
-            <Pencil size={14} />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1, color: 'var(--rose)' }}
-            whileTap={{ scale: 0.9 }}
-            onClick={remove}
-            disabled={loading}
-            className="p-1.5 rounded-lg transition-colors"
-            style={{ color: 'var(--t3)' }}
-          >
-            <Trash2 size={14} />
-          </motion.button>
-        </div>
+      {/* Tags */}
+      <div className="flex flex-wrap gap-1.5 pr-16">
+        <span className="tag-ink">{icon} {event.category}</span>
+        <span className="text-[9px] font-black uppercase tracking-[.12em] px-2 py-1 rounded-sm"
+          style={{ background:cfg.bg, color:cfg.c, fontFamily:'var(--font-mono)', border:`1px solid ${cfg.c}25` }}>
+          {cfg.label}
+        </span>
       </div>
 
-      {/* Title & Desc */}
+      {/* Title */}
       <div>
-        <h3
-          className={`text-base font-bold leading-snug line-clamp-2 ${completed ? 'line-through opacity-70' : ''}`}
-          style={{ color: isHighAlert ? '#FB7185' : 'var(--t0)' }}
-        >
+        <h3 className={`text-[1.05rem] font-normal leading-snug line-clamp-2 ${done?'line-through opacity-50':''}`}
+          style={{ fontFamily:'var(--font-serif)', color: over&&!done ? 'var(--red)' : 'var(--ink)' }}>
           {event.title}
         </h3>
         {event.description && (
-          <p className="text-sm font-medium line-clamp-2 mt-1.5 leading-relaxed" style={{ color: 'var(--t3)' }}>
+          <p className="text-xs leading-relaxed mt-1.5 line-clamp-2" style={{ color:'var(--ink-3)' }}>
             {event.description}
           </p>
         )}
       </div>
 
-      {/* Progress Line */}
-      {!completed && (
-        <div className="h-1 rounded-full overflow-hidden mt-1" style={{ background: 'var(--s3)' }}>
+      {/* Progress rule */}
+      {!done && (
+        <div className="h-0.5 overflow-hidden" style={{ background:'var(--ink-5)' }}>
           <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 1, ease: 'easeOut' }}
-            className="h-full rounded-full"
-            style={{
-              background: isHighAlert ? '#FB7185' : progress > 85 ? 'var(--amber)' : 'linear-gradient(90deg, #F59E0B, #FCD34D)',
-            }}
+            initial={{ width:0 }} animate={{ width:`${prog}%` }} transition={{ duration:1, ease:'easeOut' }}
+            className="h-full"
+            style={{ background: over ? 'var(--red)' : prog>80 ? 'var(--amber)' : cfg.bar }}
           />
         </div>
       )}
 
-      {/* Footer Details */}
-      <div className="flex items-center justify-between mt-auto pt-4 border-t" style={{ borderColor: 'var(--b1)' }}>
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: 'var(--t3)' }}>
-            <Calendar size={12} /> {fmtDate(event.deadline)}
-          </div>
-          <div
-            className="flex items-center gap-1.5 text-xs font-extrabold"
-            style={{ color: isHighAlert ? '#FB7185' : 'var(--t0)' }}
-          >
-            <Clock size={12} /> {fmtCountdown(event.deadline)}
-          </div>
+      {/* Footer */}
+      <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor:'var(--ink-5)' }}>
+        <div>
+          <p className="text-[10px] font-medium flex items-center gap-1" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-4)' }}>
+            <Calendar size={9} /> {fmtDate(event.deadline)}
+          </p>
+          <p className="text-xs font-black flex items-center gap-1.5 mt-0.5"
+            style={{ fontFamily:'var(--font-mono)', color: over&&!done ? 'var(--red)' : done ? 'var(--ink-4)' : 'var(--ink)' }}>
+            <Clock size={10} /> {fmt(event.deadline)}
+          </p>
         </div>
 
-        <motion.button
-          whileHover={completed ? {} : { scale: 1.05, boxShadow: '0 0 16px rgba(52,211,153,0.3)' }}
-          whileTap={{ scale: 0.95 }}
-          onClick={toggle}
-          disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all"
-          style={
-            completed
-              ? { border: '1px solid var(--b1)', color: 'var(--t3)', background: 'transparent' }
-              : { border: '1px solid rgba(52,211,153,0.3)', color: '#0C0A09', background: 'linear-gradient(135deg, #34D399, #059669)' }
-          }
-        >
-          {loading ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
-          {completed ? 'Reopen' : 'Complete'}
-        </motion.button>
+        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <motion.button whileHover={{ scale:1.15, color:'var(--ink)' }} whileTap={{ scale:.9 }}
+            onClick={() => onEdit(event)} className="p-1.5 rounded-sm" style={{ color:'var(--ink-3)' }}>
+            <Pencil size={13} />
+          </motion.button>
+          <motion.button whileHover={{ scale:1.15, color:'var(--red)' }} whileTap={{ scale:.9 }}
+            onClick={remove} disabled={loading} className="p-1.5 rounded-sm" style={{ color:'var(--ink-3)' }}>
+            <Trash2 size={13} />
+          </motion.button>
+          <motion.button
+            whileHover={ done ? {} : { scale:1.04 }} whileTap={{ scale:.95 }}
+            onClick={toggle} disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-[11px] font-bold transition-all border"
+            style={ done
+              ? { border:'1px solid var(--ink-5)', color:'var(--ink-3)', background:'transparent' }
+              : { background:'var(--paper-2)', borderColor:'var(--ink-5)', color:'var(--green)' }
+            }
+          >
+            {loading ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+            {done ? 'Undo' : 'Done'}
+          </motion.button>
+        </div>
       </div>
     </motion.div>
   );
