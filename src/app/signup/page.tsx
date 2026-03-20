@@ -1,114 +1,101 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { signUpWithEmail, signInWithGoogle } from '@/lib/auth';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Mail, Lock, User, UserPlus, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Mail, Lock, User, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function SignupPage() {
-  const [name,     setName]     = useState('');
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [loading,  setLoading]  = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const onSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name||!email||!password) return toast.error('Fill all fields');
-    if (password.length < 6) return toast.error('Password needs 6+ characters');
     setLoading(true);
-    try { await signUpWithEmail(email, password, name); toast.success('Account created!'); router.push('/dashboard'); }
-    catch (err:any) { toast.error(err.message || 'Sign-up failed.'); }
+    try {
+      await signUpWithEmail(form.email, form.password, form.name);
+      toast.success('ENTITY_ALLOCATED_SUCCESS');
+      router.push('/dashboard');
+    } catch { toast.error('PROTOCOL_ERROR'); }
     finally { setLoading(false); }
   };
 
-  const onGoogle = async () => {
-    setLoading(true);
-    try { await signInWithGoogle(); toast.success('Account created!'); router.push('/dashboard'); }
-    catch { toast.error('Google sign-in failed.'); }
-    finally { setLoading(false); }
+  const handleGoogle = async () => {
+    try {
+      await signInWithGoogle();
+      toast.success('OAUTH_BYPASS_SUCCESS');
+      router.push('/dashboard');
+    } catch { toast.error('HANDSHAKE_FAILED'); }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-20">
-      <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ duration:.55, ease:[.22,1,.36,1] }}
-        className="w-full max-w-[420px]">
+    <div className="min-h-screen flex items-center justify-center p-6 relative bg-[#020617] overflow-hidden">
+      {/* ── Fixed Accents ── */}
+      <div className="absolute top-0 left-0 w-full h-[1px] opacity-20" style={{ background: 'linear-gradient(90deg, transparent, #8B5CF6, transparent)' }} />
+      <div className="absolute bottom-0 left-0 w-full h-[1px] opacity-20" style={{ background: 'linear-gradient(90deg, transparent, #F97316, transparent)' }} />
 
-        <div className="flex items-center gap-3 mb-12">
-          <div className="w-10 h-10 rounded-sm flex items-center justify-center text-white font-bold text-base"
-            style={{ background:'var(--red)', boxShadow:'0 3px 0 rgba(100,10,0,0.4)' }}>D</div>
-          <div>
-            <p className="font-bold text-base" style={{ color:'var(--ink)' }}>DeadlineOS</p>
-            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-4)' }}>Intelligence Engine</p>
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: 'circOut' }}
+        className="relative z-10 w-full max-w-lg cyber-panel p-10 lg:p-14 glass-card border-white/10"
+      >
+        <div className="absolute bottom-0 left-0 w-32 h-32 opacity-10 bg-orange-600 blur-[80px]" />
+        
+        <div className="flex flex-col items-center mb-12">
+          <motion.div initial={{ scale:0, rotate:180 }} animate={{ scale:1, rotate:0 }} transition={{ duration:0.6, type:'spring' }}
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-3xl font-black bg-gradient-to-br from-orange-600 to-rose-600 shadow-[0_10px_30px_rgba(249,115,22,0.5)] mb-8">
+            D
+          </motion.div>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-orange-500 mb-2">// INITIALIZE_ENTITY_04</p>
+          <h1 className="text-4xl lg:text-6xl font-black tracking-tighter text-center leading-[0.9]" style={{ fontFamily:'var(--font-heading)' }}>
+            ACCELERATE <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-rose-400">YOUR_CHAIN.</span>
+          </h1>
+        </div>
+
+        <form onSubmit={handleSignup} className="space-y-6">
+          <div className="relative group">
+            <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-orange-500 transition-colors" size={18} />
+            <input type="text" required value={form.name} onChange={e=>setForm({...form,name:e.target.value})}
+              placeholder="DISPLAY_LABEL"
+              className="w-full pl-14 pr-6 py-5 text-xs font-black tracking-widest uppercase bg-white/5 border border-white/10 rounded-2xl focus:border-orange-500/50 outline-none transition-all placeholder:text-slate-700 font-mono" />
           </div>
-        </div>
 
-        <h1 className="text-5xl font-normal tracking-tight mb-2" style={{ fontFamily:'var(--font-serif)' }}>
-          Join the<br /><em style={{ color:'var(--red)' }}>flow.</em>
-        </h1>
-        <p className="text-sm mb-10" style={{ color:'var(--ink-2)' }}>Create your deadline intelligence workspace.</p>
+          <div className="relative group">
+            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-orange-500 transition-colors" size={18} />
+            <input type="email" required value={form.email} onChange={e=>setForm({...form,email:e.target.value})}
+              placeholder="IDENTITY_STRING"
+              className="w-full pl-14 pr-6 py-5 text-xs font-black tracking-widest uppercase bg-white/5 border border-white/10 rounded-2xl focus:border-orange-500/50 outline-none transition-all placeholder:text-slate-700 font-mono" />
+          </div>
 
-        <motion.button onClick={onGoogle} disabled={loading}
-          whileHover={{ borderColor:'var(--ink-2)' }} whileTap={{ scale:.98 }}
-          className="w-full flex items-center justify-center gap-3 py-3 mb-8 text-sm font-semibold rounded-sm border transition-all"
-          style={{ background:'var(--paper)', borderColor:'var(--ink-5)', color:'var(--ink)' }}>
-          <svg className="w-4 h-4" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
-          Continue with Google
-        </motion.button>
+          <div className="relative group">
+            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-orange-500 transition-colors" size={18} />
+            <input type="password" required value={form.password} onChange={e=>setForm({...form,password:e.target.value})}
+              placeholder="ACCESS_TOKEN"
+              className="w-full pl-14 pr-6 py-5 text-xs font-black tracking-widest uppercase bg-white/5 border border-white/10 rounded-2xl focus:border-orange-500/50 outline-none transition-all placeholder:text-slate-700 font-mono" />
+          </div>
 
-        <div className="flex items-center gap-4 mb-8">
-          <div className="flex-1 h-px" style={{ background:'var(--ink-5)' }} />
-          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-4)' }}>or email</span>
-          <div className="flex-1 h-px" style={{ background:'var(--ink-5)' }} />
-        </div>
-
-        <form onSubmit={onSignup} className="space-y-5">
-          {[
-            { label:'Name',     type:'text',     v:name,     s:setName,     ph:'Alex Johnson',    icon:User },
-            { label:'Email',    type:'email',    v:email,    s:setEmail,    ph:'you@example.com', icon:Mail },
-            { label:'Password', type:'password', v:password, s:setPassword, ph:'6+ characters',   icon:Lock },
-          ].map(({ label, type, v, s, ph, icon:Icon }) => (
-            <div key={label}>
-              <label className="text-xs font-bold uppercase tracking-wider block mb-2" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-3)' }}>
-                {label}
-              </label>
-              <div className="relative">
-                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={14} style={{ color:'var(--ink-4)' }} />
-                <input type={type} required value={v} onChange={e=>s(e.target.value)} placeholder={ph}
-                  className="field-ink w-full pl-9 pr-4 py-3" />
-              </div>
-            </div>
-          ))}
-
-          <motion.button type="submit" disabled={loading}
-            whileHover={{ y:-2, boxShadow:'0 4px 0 rgba(100,10,0,0.35), 0 8px 20px rgba(200,34,10,0.25)' }}
-            whileTap={{ y:1, boxShadow:'0 1px 0 rgba(100,10,0,0.4)' }}
-            className="btn-red w-full py-4 text-base mt-4 flex gap-2 items-center justify-center">
-            {loading ? <Loader2 size={18} className="animate-spin" /> : <>Create account <ArrowRight size={18}/></>}
+          <motion.button disabled={loading} type="submit" whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}
+            className="w-full py-5 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-widest shadow-xl shadow-white/10 hover:bg-slate-100 transition-all flex items-center justify-center gap-3">
+            {loading ? 'ALLOCATING...' : 'INITIALIZE_SEQUENCE →'}
           </motion.button>
         </form>
 
-        <div className="border-t mt-8 pt-6 space-y-2" style={{ borderColor:'var(--ink-5)' }}>
-          {['Free forever','No credit card required','Real-time sync on all devices'].map(p => (
-            <p key={p} className="flex items-center gap-2 text-xs font-medium" style={{ color:'var(--ink-3)' }}>
-              <CheckCircle2 size={13} style={{ color:'var(--green)' }} /> {p}
-            </p>
-          ))}
+        <div className="relative my-10 py-4">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5" /></div>
+          <div className="relative flex justify-center"><span className="px-4 text-[9px] font-bold text-slate-700 uppercase tracking-[0.3em] bg-[#020617]">OAUTH_LINKAGE</span></div>
         </div>
 
-        <p className="text-sm text-center mt-6" style={{ color:'var(--ink-3)' }}>
-          Have an account?{' '}
-          <Link href="/login" style={{ color:'var(--red)', fontWeight:600, textDecoration:'underline', textUnderlineOffset:'3px' }}>
-            Sign in →
-          </Link>
+        <motion.button onClick={handleGoogle} whileHover={{ scale:1.02, backgroundColor:'rgba(255,255,255,0.06)' }} whileTap={{ scale:0.98 }}
+          className="w-full py-4 rounded-2xl border border-white/10 bg-white/5 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3">
+          <img src="https://www.google.com/favicon.ico" className="w-4 h-4 grayscale opacity-60" alt="" />
+          OAUTH_PROTOCOL
+        </motion.button>
+
+        <p className="text-center text-slate-600 text-[10px] font-bold uppercase tracking-[0.2em] mt-12">
+          ENTITY_ALREADY_EXISTS? <Link href="/login" className="text-orange-500 hover:text-orange-400 font-black transition-all">BYPASS_SECURITY</Link>
         </p>
       </motion.div>
     </div>

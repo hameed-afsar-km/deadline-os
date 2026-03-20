@@ -2,28 +2,46 @@
 
 export function ThemeWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-screen w-full" style={{ background: 'var(--bg)' }}>
-      {/* ── Dot grid — like Moleskine paper ── */}
-      <div
+    <div className="relative min-h-screen w-full flex flex-col" style={{ background: 'var(--bg)' }}>
+      {/* ── Background Mesh ── */}
+      <div 
         aria-hidden
-        className="fixed inset-0 z-0 pointer-events-none"
+        className="fixed inset-0 z-0 pointer-events-none opacity-40"
         style={{
-          backgroundImage: 'radial-gradient(circle, #B8B3A8 1px, transparent 1px)',
-          backgroundSize: '22px 22px',
-          opacity: 0.35,
+          background: `
+            radial-gradient(at 10% 10%, rgba(139, 92, 246, 0.45) 0px, transparent 40%),
+            radial-gradient(at 90% 15%, rgba(249, 115, 22, 0.35) 0px, transparent 40%),
+            radial-gradient(at 85% 90%, rgba(6, 182, 212, 0.4) 0px, transparent 40%),
+            radial-gradient(at 15% 85%, rgba(244, 63, 94, 0.35) 0px, transparent 40%)
+          `
         }}
       />
 
-      {/* ── Subtle warm vignette at edges ── */}
-      <div
+      {/* ── Industrial Grid Layer ── */}
+      <div 
         aria-hidden
-        className="fixed inset-0 z-0 pointer-events-none"
+        className="fixed inset-0 z-0 pointer-events-none opacity-[0.05]"
         style={{
-          background: 'radial-gradient(ellipse at 50% 0%, rgba(200,180,140,0.08) 0%, transparent 65%), radial-gradient(ellipse at 50% 100%, rgba(180,160,120,0.06) 0%, transparent 65%)',
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px'
         }}
       />
 
-      <div className="relative z-10 min-h-screen flex flex-col">
+      {/* ── Horizontal Scanline ── */}
+      <div 
+        aria-hidden
+        className="fixed inset-0 z-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: `linear-gradient(transparent 50%, rgba(0,0,0,0.5) 50%)`,
+          backgroundSize: '100% 4px'
+        }}
+      />
+
+      {/* ── Flowing Content ── */}
+      <div className="relative z-10 flex-1 flex flex-col min-h-screen">
         {children}
       </div>
     </div>

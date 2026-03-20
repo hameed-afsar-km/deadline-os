@@ -1,232 +1,185 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useMemo } from 'react';
 import { useUserStore } from '@/store/useUserStore';
 import { useEventStore } from '@/store/useEventStore';
-import { subscribeToEvents } from '@/lib/firestore';
-import { Navbar } from '@/components/Navbar';
-import { Sidebar } from '@/components/Sidebar';
 import { EventCard } from '@/components/EventCard';
 import { EventModal } from '@/components/EventModal';
+import { Navbar } from '@/components/Navbar';
+import { Sidebar } from '@/components/Sidebar';
 import { DeadlineEvent } from '@/types';
-import { isOverdue, isToday, getEffectivePriority } from '@/utils/priority';
-import { Plus, Sparkles } from 'lucide-react';
-import { Timestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Activity, Plus, Filter, LayoutGrid, Search, AlertCircle, Zap } from 'lucide-react';
 
-function countdown(dl: unknown): string {
-  try {
-    const d = dl instanceof Timestamp ? dl.toDate() : new Date(dl as string);
-    const ms = d.getTime() - Date.now();
-    if (ms <= 0) return 'OVERDUE';
-    const h = Math.floor(ms / 3_600_000), dy = Math.floor(h / 24);
-    return dy > 0 ? `${dy}D ${h % 24}H` : `${h}H ${Math.floor((ms % 3_600_000) / 60_000)}M`;
-  } catch { return '--'; }
-}
-
-const STATUS_F = [{ v: 'all', l: 'All' }, { v: 'pending', l: 'Pending' }, { v: 'completed', l: 'Done' }];
-const CATS = ['Study', 'Hackathon', 'Submission', 'Personal', 'Exam'];
-
-export default function DashboardPage() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useUserStore();
-  const { events, setEvents, filteredEvents, filterCategory, filterStatus, setFilterCategory, setFilterStatus } = useEventStore();
+export default function Dashboard() {
+  const { user } = useUserStore();
+  const { events, searchQuery } = useEventStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editEvent, setEditEvent] = useState<DeadlineEvent | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<DeadlineEvent|null>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'pending' | 'completed'>('all');
 
-  useEffect(() => { if (!authLoading && !user) router.replace('/login'); }, [user, authLoading, router]);
-  useEffect(() => {
-    if (!user) return;
-    const unsub = subscribeToEvents(user.uid, setEvents);
-    return () => unsub();
-  }, [user, setEvents]);
+  const filtered = useMemo(() => {
+    return events.filter(e => {
+      const matchSearch = e.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          e.category.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchFilter = activeFilter === 'all' || e.status === activeFilter;
+      return matchSearch && matchFilter;
+    });
+  }, [events, searchQuery, activeFilter]);
 
-  if (authLoading) return <Spinner />;
-  if (!user) return null;
+  const stats = useMemo(() => {
+    const overdue = events.filter(e => e.status==='pending' && new Date(e.deadline as any) < new Date()).length;
+    const completed = events.filter(e => e.status==='completed').length;
+    const pending = events.filter(e => e.status==='pending').length;
+    return { overdue, completed, pending };
+  }, [events]);
 
-  const displayed = filteredEvents();
-  const todayEvs = events.filter(e => isToday(e) && e.status === 'pending');
-  const overdueEvs = events.filter(e => isOverdue(e));
+  const priorityOne = useMemo(() => {
+    return events.filter(e => e.status === 'pending')
+      .sort((a,b) => new Date(a.deadline as any).getTime() - new Date(b.deadline as any).getTime())[0];
+  }, [events]);
 
-  const focus = events.filter(e => e.status === 'pending').sort((a, b) => {
-    const ord = { high: 0, medium: 1, low: 2, auto: 3 } as const;
-    const pa = ord[getEffectivePriority(a) as keyof typeof ord] ?? 3;
-    const pb = ord[getEffectivePriority(b) as keyof typeof ord] ?? 3;
-    if (pa !== pb) return pa - pb;
-    const da = a.deadline instanceof Timestamp ? a.deadline.toDate() : new Date(a.deadline as string);
-    const db = b.deadline instanceof Timestamp ? b.deadline.toDate() : new Date(b.deadline as string);
-    return da.getTime() - db.getTime();
-  })[0];
-
-  const openCreate = () => { setEditEvent(null); setModalOpen(true); };
-  const openEdit = (ev: DeadlineEvent) => { setEditEvent(ev); setModalOpen(true); };
-
-  const hr = new Date().getHours();
-  const greeting = hr < 12 ? 'morning' : hr < 17 ? 'afternoon' : 'evening';
+  const openEdit = (e: DeadlineEvent) => { setEditingEvent(e); setIsModalOpen(true); };
+  const close = () => { setEditingEvent(null); setIsModalOpen(false); };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar onMenuToggle={() => setSidebarOpen(o => !o)} sidebarOpen={sidebarOpen} />
+    <div className="flex flex-col min-h-screen bg-[#020617] text-white">
+      <Navbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} sidebarOpen={sidebarOpen} />
+      
+      <div className="flex flex-1 relative overflow-hidden">
+        <Sidebar 
+          open={sidebarOpen} 
+          onClose={() => setSidebarOpen(false)} 
+          onCreateEvent={() => setIsModalOpen(true)}
+        />
 
-      <div className="flex flex-1 overflow-hidden w-full max-w-[1600px] mx-auto">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={openCreate} />
+        <main className="flex-1 p-6 lg:p-12 overflow-y-auto no-sb relative z-10">
+          {/* Header Section */}
+          <div className="flex flex-col gap-2 mb-12">
+            <h1 className="text-4xl lg:text-7xl font-black tracking-tighter leading-none" style={{ fontFamily: 'var(--font-heading)' }}>
+              SYSTEM_READY, <span className="text-violet-500">{user?.displayName?.toUpperCase() || 'USER'}</span>
+            </h1>
+            <p className="text-slate-500 font-bold uppercase tracking-[0.4em] flex items-center gap-2 text-[10px]">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              NODE_ID: {user?.uid.slice(0, 12)} // STATUS: OPTIMIZED
+            </p>
+          </div>
 
-        <main className="flex-1 overflow-y-auto px-5 md:px-12 py-10 no-sb">
-
-          {/* Masthead */}
-          <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[.3em] mb-1"
-                  style={{ fontFamily: 'var(--font-mono)', color: 'var(--ink-3)' }}>
-                  {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                </p>
-                <h1 className="text-5xl md:text-7xl font-normal tracking-tight leading-none"
-                  style={{ fontFamily: 'var(--font-serif)' }}>
-                  Good {greeting},<br />
-                  <em style={{ color: 'var(--red)' }}>{user.displayName?.split(' ')[0] ?? 'there'}.</em>
-                </h1>
-              </div>
-              <motion.button
-                whileHover={{ y: -2, boxShadow: '0 4px 0 rgba(100,10,0,0.35), 0 8px 20px rgba(200,34,10,0.2)' }}
-                whileTap={{ y: 1, boxShadow: '0 1px 0 rgba(100,10,0,0.4)' }}
-                onClick={openCreate}
-                className="btn-red hidden sm:flex px-5 py-3 text-sm shrink-0 mt-2 items-center gap-2">
-                <Plus size={16} /> New Deadline
-              </motion.button>
-            </div>
-          </motion.div>
-
-          {/* Priority Focus — large editorial block */}
-          {focus && (
-            <motion.section
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .15 }}
-              className="paper-card mb-10 relative overflow-hidden"
-              style={{ borderRadius: '3px' }}>
-              <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: 'var(--red)' }} />
-              <div className="p-8 md:p-12">
-                <p className="text-[10px] font-bold uppercase tracking-[.3em] mb-5 flex items-center gap-2"
-                  style={{ fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
-                  ❶ Priority Focus
-                </p>
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                  <div>
-                    <h2 className="text-4xl md:text-6xl font-normal tracking-tight mb-4 leading-tight"
-                      style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)' }}>
-                      {focus.title}
-                    </h2>
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <span className="text-2xl font-bold" style={{ fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
-                        {countdown(focus.deadline)}
-                      </span>
-                      <span className="tag-ink">{focus.category}</span>
-                    </div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
+            {/* Critical Focus Indicator */}
+            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
+              className="lg:col-span-3 cyber-panel p-8 glass-card border-violet-500/20 shadow-[0_20px_60px_-15px_rgba(139,92,246,0.15)] group overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 opacity-5 bg-violet-500 blur-3xl pointer-events-none group-hover:opacity-10 transition-all" />
+              
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2">
+                    <Zap size={18} className="text-violet-500 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-violet-400">APEX_PRIORITY_NODE</span>
                   </div>
-                  <motion.button whileHover={{ y: -2 }} whileTap={{ y: 1 }}
-                    onClick={() => openEdit(focus)}
-                    className="btn-ink px-6 py-3 text-sm shrink-0">
-                    View & edit →
-                  </motion.button>
+                  {priorityOne ? (
+                    <div className="space-y-3">
+                      <h2 className="text-4xl lg:text-6xl font-black tracking-tighter max-w-xl leading-none">
+                        CRITICAL: &ldquo;{priorityOne.title}&rdquo;
+                      </h2>
+                      <p className="text-slate-400 text-lg font-medium max-w-md">Immediate attention required by the command chain. Execution window closing soon.</p>
+                    </div>
+                  ) : (
+                    <h2 className="text-4xl lg:text-5xl font-black tracking-tighter text-slate-700 leading-none">All clusters operational. No priority nodes.</h2>
+                  )}
                 </div>
-              </div>
-            </motion.section>
-          )}
 
-          {/* Status summary bar */}
-          {(todayEvs.length > 0 || overdueEvs.length > 0) && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .2 }}
-              className="flex items-center gap-6 mb-10 p-4 border-l-4"
-              style={{ borderColor: 'var(--amber)', background: 'rgba(179,84,0,.05)' }}>
-              {overdueEvs.length > 0 && <p className="text-sm font-semibold" style={{ color: 'var(--red)' }}>⚡ {overdueEvs.length} overdue</p>}
-              {todayEvs.length > 0 && <p className="text-sm font-semibold" style={{ color: 'var(--amber)' }}>📅 {todayEvs.length} due today</p>}
+                {priorityOne && (
+                  <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.04] text-center min-w-[240px]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">TIME_WINDOW</p>
+                    <p className="text-4xl font-black text-rose-500 tracking-tighter">
+                      -{Math.max(0, Math.round((new Date(priorityOne.deadline as any).getTime() - new Date().getTime()) / 3600000))}HRS
+                    </p>
+                    <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:0.95 }}
+                      onClick={() => openEdit(priorityOne)}
+                      className="w-full mt-6 py-3 rounded-xl bg-violet-600 text-[10px] font-black tracking-widest uppercase text-white shadow-xl hover:bg-violet-500 transition-all">
+                      INITIALIZE_REDO
+                    </motion.button>
+                  </div>
+                )}
+              </div>
             </motion.div>
-          )}
 
-          {/* Queue */}
-          <div>
-            {/* Queue header + filters */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 pb-4 border-b"
-              style={{ borderColor: 'var(--ink-5)' }}>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[.3em]" style={{ fontFamily: 'var(--font-mono)', color: 'var(--ink-3)' }}>§ Queue</p>
-                <h2 className="text-2xl font-normal" style={{ fontFamily: 'var(--font-serif)' }}>Active Deadlines</h2>
+            {/* Quick Metrics */}
+            <div className="flex flex-col gap-6">
+              <div className="flex-1 cyber-panel p-6 glass-card bg-orange-500/5 border-orange-500/20">
+                <div className="flex items-center justify-between mb-4">
+                  <AlertCircle className="text-orange-500" size={18} />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">STATUS: HEAT</span>
+                </div>
+                <p className="text-4xl font-black tracking-tighter mb-1 text-orange-500">{stats.overdue}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">LATENCY_WARNING</p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {/* Status */}
-                <div className="flex gap-0 border border-[var(--ink-5)] rounded-sm overflow-hidden">
-                  {STATUS_F.map(({ v, l }) => (
-                    <motion.button key={v} whileTap={{ scale: .95 }}
-                      onClick={() => setFilterStatus(v)}
-                      className="px-3 py-1.5 text-xs font-bold transition-colors"
-                      style={filterStatus === v
-                        ? { background: 'var(--ink)', color: 'var(--bg)', fontFamily: 'var(--font-mono)' }
-                        : { background: 'transparent', color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
-                      {l}
-                    </motion.button>
-                  ))}
+              <div className="flex-1 cyber-panel p-6 glass-card bg-emerald-500/5 border-emerald-500/20">
+                <div className="flex items-center justify-between mb-4">
+                  <CheckCircle2 className="text-emerald-500" size={18} />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400">STATUS: SYNK</span>
                 </div>
-                {/* Category */}
-                <div className="flex gap-0 border border-[var(--ink-5)] rounded-sm overflow-hidden">
-                  <motion.button whileTap={{ scale: .95 }}
-                    onClick={() => setFilterCategory('all')}
-                    className="px-3 py-1.5 text-xs font-bold transition-colors"
-                    style={filterCategory === 'all'
-                      ? { background: 'var(--ink)', color: 'var(--bg)', fontFamily: 'var(--font-mono)' }
-                      : { background: 'transparent', color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
-                    All
-                  </motion.button>
-                  {CATS.map(cat => (
-                    <motion.button key={cat} whileTap={{ scale: .95 }}
-                      onClick={() => setFilterCategory(cat)}
-                      className="px-3 py-1.5 text-xs font-bold transition-colors"
-                      style={filterCategory === cat
-                        ? { background: 'var(--ink)', color: 'var(--bg)', fontFamily: 'var(--font-mono)' }
-                        : { background: 'transparent', color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
-                      {cat}
-                    </motion.button>
-                  ))}
-                </div>
+                <p className="text-4xl font-black tracking-tighter mb-1 text-emerald-500">{stats.completed}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">NODES_FINALIZED</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Controls Bar */}
+          <div className="sticky top-24 z-20 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 py-3 backdrop-blur-3xl border-y border-white/5 bg-slate-900/10">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-6 py-2 rounded-xl bg-white/5 border border-white/10">
+                <Filter size={14} className="text-violet-500" />
+                <span className="text-[10px] font-black tracking-[0.3em] text-slate-400 uppercase">FILTERS:</span>
+              </div>
+              <div className="flex items-center gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl">
+                {['all', 'pending', 'completed'].map((f) => (
+                  <button key={f}
+                    onClick={() => setActiveFilter(f as any)}
+                    className={cn(
+                      "px-5 py-2 text-[10px] font-black tracking-widest uppercase transition-all rounded-xl",
+                      activeFilter === f ? "bg-violet-600 text-white shadow-lg" : "text-slate-500 hover:text-white"
+                    )}>
+                    {f}
+                  </button>
+                ))}
               </div>
             </div>
 
+            <motion.button whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}
+              onClick={() => setIsModalOpen(true)}
+              className="px-8 py-3.5 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white shadow-xl shadow-violet-600/20 flex gap-3 items-center text-xs font-black uppercase tracking-[0.2em]">
+              <Plus size={18} strokeWidth={3} />
+              NEW_NODE_ENTRY
+            </motion.button>
+          </div>
+
+          {/* Grid Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
             <AnimatePresence mode="popLayout">
-              {displayed.length === 0 ? (
-                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="paper-card py-24 flex flex-col items-center text-center" style={{ borderRadius: '3px' }}>
-                  <Sparkles size={36} className="mb-4" style={{ color: 'var(--ink-4)' }} />
-                  <h3 className="text-3xl font-normal mb-3" style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)' }}>Empty queue.</h3>
-                  <p className="text-sm mb-8 max-w-xs" style={{ color: 'var(--ink-2)' }}>Your momentum is clear. Add a deadline to build it back.</p>
-                  <motion.button whileHover={{ y: -2 }} whileTap={{ y: 1 }}
-                    onClick={openCreate} className="btn-red px-6 py-3 text-sm">
-                    <Plus size={16} /> Add deadline
-                  </motion.button>
-                </motion.div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {displayed.map(e => <EventCard key={e.id} event={e} onEdit={openEdit} />)}
-                </div>
-              )}
+              {filtered.map((e) => (
+                <EventCard key={e.id} event={e} onEdit={openEdit} />
+              ))}
             </AnimatePresence>
           </div>
+
+          {filtered.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-40 border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.01]">
+              <div className="w-16 h-16 rounded-full border-2 border-slate-800 flex items-center justify-center mb-6">
+                <LayoutGrid size={24} className="text-slate-800" />
+              </div>
+              <p className="text-lg font-black tracking-tight text-slate-700 uppercase italic">Empty Cluster. No signals detected.</p>
+            </div>
+          )}
         </main>
       </div>
 
       <AnimatePresence>
-        {modalOpen && <EventModal event={editEvent} onClose={() => { setModalOpen(false); setEditEvent(null); }} />}
+        {isModalOpen && <EventModal event={editingEvent} onClose={close} />}
       </AnimatePresence>
-    </div>
-  );
-}
-
-function Spinner() {
-  return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 rounded-sm flex items-center justify-center text-white font-bold mono" style={{ background: 'var(--red)' }}>D</div>
-        <p className="text-[10px] font-bold uppercase tracking-[.3em]" style={{ fontFamily: 'var(--font-mono)', color: 'var(--ink-3)' }}>Loading workspace...</p>
-      </div>
     </div>
   );
 }

@@ -26,10 +26,10 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
   const pct      = events.length ? Math.round((doneN/events.length)*100) : 0;
 
   const STATS = [
-    { label:'TODAY',   n:todayN,   c:'var(--blue)'  },
-    { label:'OVERDUE', n:overdueN, c:'var(--red)'   },
-    { label:'PENDING', n:pendingN, c:'var(--amber)' },
-    { label:'DONE',    n:doneN,    c:'var(--green)' },
+    { label:'NOW',   n:todayN,   c:'#3B82F6'  },
+    { label:'HOT',   n:overdueN, c:'#F43F5E'   },
+    { label:'OPEN',  n:pendingN, c:'#F97316' },
+    { label:'SYNK',  n:doneN,    c:'#10B981' },
   ];
 
   return (
@@ -37,90 +37,94 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
       <AnimatePresence>
         {open && (
           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} onClick={onClose}
-            className="fixed inset-0 z-40 md:hidden" style={{ background:'rgba(23,20,12,0.5)', backdropFilter:'blur(4px)' }} />
+            className="fixed inset-0 z-40 md:hidden bg-black/60 backdrop-blur-sm" />
         )}
       </AnimatePresence>
 
       <aside
         className={cn(
-          'fixed left-0 top-14 h-[calc(100vh-3.5rem)] z-40 w-64 flex flex-col border-r',
-          'md:translate-x-0 md:static md:z-auto transition-transform duration-300',
+          'fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 w-72 flex flex-col border-r border-white/5',
+          'md:translate-x-0 md:static md:z-auto transition-all duration-300 ease-in-out',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
-        style={{ borderColor:'var(--ink-5)', background:'var(--paper-2)' }}
+        style={{ background: 'rgba(2, 6, 23, 0.4)', backdropFilter: 'blur(16px)' }}
       >
         {/* Mobile close */}
-        <div className="flex items-center justify-between px-4 py-3 border-b md:hidden" style={{ borderColor:'var(--ink-5)' }}>
-          <span className="text-[9px] font-bold uppercase tracking-[.3em]" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-4)' }}>Menu</span>
-          <button onClick={onClose} style={{ color:'var(--ink-3)' }}><X size={16} /></button>
+        <div className="flex items-center justify-between px-6 h-14 border-b border-white/10 md:hidden">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">// CONTROL</span>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white transition-colors"><X size={20} /></button>
         </div>
 
         {/* CTA */}
-        <div className="p-4">
+        <div className="p-6">
           <motion.button
-            whileHover={{ y:-2, boxShadow:'0 4px 0 rgba(100,10,0,0.35), 0 8px 20px rgba(200,34,10,0.2)' }}
-            whileTap={{ y:1, boxShadow:'0 1px 0 rgba(100,10,0,0.4)' }}
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
             onClick={() => { onCreateEvent(); onClose(); }}
-            className="btn-red w-full py-3 rounded-sm flex gap-2 items-center justify-center text-sm transition-all"
+            className="w-full py-4 rounded-xl bg-violet-600 hover:bg-violet-500 shadow-[0_8px_20px_rgba(139,92,246,0.3)] transition-all flex gap-3 items-center justify-center text-sm font-black uppercase tracking-widest text-white"
           >
-            <Plus size={16} /> New Deadline
+            <Plus size={20} strokeWidth={3} /> INITIALIZE_TASK
           </motion.button>
         </div>
 
         {/* Nav */}
-        <nav className="px-3 space-y-0.5">
-          <p className="px-3 py-2 text-[9px] font-bold uppercase tracking-[.3em]" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-4)' }}>Navigation</p>
+        <nav className="px-4 space-y-1">
+          <p className="px-4 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">// MAIN_CHAIN</p>
           {NAV.map(({ href, label, icon:Icon }) => {
             const active = pathname === href;
             return (
               <Link key={href} href={href} onClick={onClose}>
-                <motion.div whileHover={{ x:3 }}
-                  className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-colors relative"
-                  style={ active
-                    ? { color:'var(--red)', borderLeft:'2px solid var(--red)', background:'var(--red-l)' }
-                    : { color:'var(--ink-2)', borderLeft:'2px solid transparent' }
-                  }
+                <motion.div whileHover={{ x:4 }}
+                  className={cn(
+                    "flex items-center gap-4 px-4 py-3.5 text-sm font-bold transition-all rounded-xl relative",
+                    active ? "bg-violet-600/10 text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
+                  )}
                 >
-                  <Icon size={16} style={{ color: active ? 'var(--red)' : 'var(--ink-3)' }} />
+                  <Icon size={20} className={cn("transition-all", active ? "text-violet-500" : "text-slate-500")}/>
                   {label}
+                  {active && <motion.div layoutId="sidebar-active" className="absolute left-0 w-1 h-6 bg-violet-500 rounded-full" />}
                 </motion.div>
               </Link>
             );
           })}
         </nav>
 
-        <div className="mx-4 my-4 h-px" style={{ background:'var(--ink-5)' }} />
+        <div className="px-8 my-6 h-[1px] bg-white/5" />
 
         {/* Stats */}
-        <div className="px-4">
-          <p className="text-[9px] font-bold uppercase tracking-[.3em] mb-3" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-4)' }}>Overview</p>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="px-6 flex-1 overflow-y-auto no-sb space-y-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">// NODE_TELEMETRY</p>
+          <div className="grid grid-cols-2 gap-3">
             {STATS.map(({ label, n, c }) => (
-              <motion.div key={label} whileHover={{ scale:1.04, borderColor:c }}
-                className="paper-card p-4 flex flex-col gap-1 cursor-default transition-all" style={{ borderRadius:'3px' }}>
-                <p className="text-3xl font-normal leading-none" style={{ fontFamily:'var(--font-serif)', color:c }}>{n}</p>
-                <p className="text-[9px] font-bold uppercase tracking-widest" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-3)' }}>{label}</p>
+              <motion.div key={label} whileHover={{ y: -4, borderColor: c }}
+                className="p-4 flex flex-col gap-1 cursor-default transition-all border border-white/5 rounded-2xl bg-white/[0.02]"
+              >
+                <p className="text-3xl font-black leading-none tracking-tighter" style={{ color: c }}>{n}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{label}</p>
               </motion.div>
             ))}
           </div>
-        </div>
 
-        {/* Velocity */}
-        <div className="p-4 mt-auto">
-          <div className="paper-card p-4" style={{ borderRadius:'3px' }}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[9px] font-bold uppercase tracking-[.25em] flex items-center gap-1.5" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-3)' }}>
-                <Activity size={11} style={{ color:'var(--red)' }} /> Velocity
+          <div className="p-5 rounded-2xl border border-white/5 bg-white/[0.02] mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-violet-400">
+                <Activity size={14} /> MOMENTUM
               </span>
-              <span className="text-sm font-bold" style={{ fontFamily:'var(--font-serif)', color:'var(--red)' }}>{pct}%</span>
+              <span className="text-sm font-black text-violet-500 tracking-tighter">{pct}%</span>
             </div>
-            <div className="h-1 overflow-hidden rounded-sm" style={{ background:'var(--ink-5)' }}>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-900 border border-white/5">
               <motion.div
-                initial={{ width:0 }} animate={{ width:`${pct}%` }} transition={{ duration:1.2, ease:'easeOut' }}
-                className="h-full" style={{ background:'var(--red)' }}
+                initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1.5, ease: 'circOut' }}
+                className="h-full bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500"
               />
             </div>
-            <p className="text-[10px] mt-2" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-4)' }}>{doneN} of {events.length} complete</p>
+            <p className="text-[10px] font-bold text-slate-600 mt-3 tracking-widest uppercase">{doneN} UNITS / {events.length} TOTAL</p>
+          </div>
+        </div>
+
+        <div className="p-6 border-t border-white/5">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+            <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+            <span className="text-[10px] font-black tracking-widest text-orange-400 uppercase">System: Optimized</span>
           </div>
         </div>
       </aside>

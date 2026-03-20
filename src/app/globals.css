@@ -2,29 +2,22 @@
 
 @layer base {
   :root {
-    /* ── Paper Surfaces ── */
-    --bg:       #EDE8DE;
-    --paper:    #FAF8F4;
-    --paper-2:  #F3EFE8;
-    --paper-3:  #EDEAD3;
+    /* ── Cyberbase ── */
+    --bg:       #020617;
+    --panel:    rgba(15, 23, 42, 0.4);
+    --glass:    rgba(255, 255, 255, 0.03);
+    --border:   rgba(255, 255, 255, 0.06);
+    --glass-lit:rgba(255, 255, 255, 0.1);
 
-    /* ── Ink ── */
-    --ink:   #17140C;
-    --ink-2: #5A5650;
-    --ink-3: #9A9690;
-    --ink-4: #C8C4BE;
-    --ink-5: #E0DDD8;
+    /* ── Accents ── */
+    --neon-violet: #8B5CF6;
+    --neon-orange: #F97316;
+    --neon-cyan:   #06B6D4;
+    --neon-rose:   #F43F5E;
 
-    /* ── THE ONE ACCENT: Vermillion Red ── */
-    --red:   #C8220A;
-    --red-l: rgba(200, 34, 10, 0.08);
-    --red-m: rgba(200, 34, 10, 0.16);
-
-    /* ── Status (muted, printerly) ── */
-    --amber: #B35400;
-    --green: #1A6635;
-    --blue:  #1A44B4;
-    --purple:#5B21B6;
+    /* ── Surface Texts ── */
+    --text-primary: #F8FAFC;
+    --text-muted:   #94A3B8;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,134 +25,113 @@
 
   body {
     background: var(--bg);
-    color: var(--ink);
-    font-family: var(--font-sans, 'Inter'), system-ui, sans-serif;
+    color: var(--text-primary);
+    font-family: var(--font-sans, 'Space Grotesk'), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
-    min-height: 100vh;
   }
 
   h1, h2, h3 {
-    font-family: var(--font-serif, 'DM Serif Display'), Georgia, serif;
-    color: var(--ink);
+    font-family: var(--font-heading, 'Clash Display'), system-ui, sans-serif;
+    font-weight: 700;
   }
 
-  ::selection { background: var(--red-m); color: var(--ink); }
+  ::selection { background: var(--neon-violet); color: white; }
 
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--paper-2); }
-  ::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 3px; }
-
-  input, textarea, select { outline: none; font-family: var(--font-sans, 'Inter'), system-ui, sans-serif; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--neon-violet); }
 }
 
 @layer utilities {
-  /* ── Physical Paper Card ── */
-  .paper-card {
-    background: var(--paper);
-    border: 1px solid var(--ink-5);
-    border-radius: 4px;
-    box-shadow:
-      0 1px 2px rgba(23,20,12,0.06),
-      0 4px 10px rgba(23,20,12,0.06),
-      0 12px 28px rgba(23,20,12,0.06);
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
-  }
-  .paper-card:hover {
-    box-shadow:
-      0 2px 4px rgba(23,20,12,0.08),
-      0 8px 20px rgba(23,20,12,0.1),
-      0 24px 48px rgba(23,20,12,0.1);
+  .cyber-panel {
+    background: var(--panel);
+    backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   }
 
-  /* ── Priority Dog-ear corner ── */
-  .corner-red    { --corner-c: var(--red); }
-  .corner-amber  { --corner-c: var(--amber); }
-  .corner-green  { --corner-c: var(--green); }
-  .corner-purple { --corner-c: var(--purple); }
-
-  /* ── Red CTA Button ── */
-  .btn-red {
-    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-    background: var(--red); color: #FFFFFF;
-    font-family: var(--font-sans); font-weight: 700; font-size: .875rem; letter-spacing: .01em;
-    border: none; border-radius: 4px; cursor: pointer;
-    box-shadow: 0 2px 0 rgba(100,10,0,0.3), 0 4px 16px rgba(200,34,10,0.25);
-    transition: transform .15s, box-shadow .15s;
+  .glass-card {
+    background: var(--glass);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
   }
-  .btn-red:hover {
-    box-shadow: 0 4px 0 rgba(100,10,0,0.3), 0 8px 24px rgba(200,34,10,0.3);
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glass-lit), transparent);
+  }
+
+  .glow-violet { box-shadow: 0 0 20px -3px var(--neon-violet); }
+  .glow-orange { box-shadow: 0 0 20px -3px var(--neon-orange); }
+
+  .text-neon-violet { color: var(--neon-violet); text-shadow: 0 0 8px var(--neon-violet); }
+  .text-neon-orange { color: var(--neon-orange); text-shadow: 0 0 8px var(--neon-orange); }
+
+  .btn-cyber-primary {
+    background: var(--neon-violet);
+    color: white;
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px -2px var(--neon-violet);
+  }
+  .btn-cyber-primary:hover {
     transform: translateY(-2px);
-  }
-  .btn-red:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(100,10,0,0.4); }
-
-  /* ── Ink Ghost Button ── */
-  .btn-ink {
-    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-    background: transparent; color: var(--ink);
-    font-family: var(--font-sans); font-weight: 600; font-size: .875rem;
-    border: 1.5px solid var(--ink-4); border-radius: 4px; cursor: pointer;
-    transition: border-color .18s, background .18s;
-  }
-  .btn-ink:hover { border-color: var(--ink-2); background: var(--paper-2); }
-
-  /* ── Form Field ── */
-  .field-ink {
-    background: var(--paper);
-    border: 1.5px solid var(--ink-5);
-    border-radius: 4px;
-    color: var(--ink);
-    font-size: .875rem;
-    transition: border-color .18s, box-shadow .18s;
-  }
-  .field-ink::placeholder { color: var(--ink-4); }
-  .field-ink:focus {
-    border-color: var(--red);
-    box-shadow: 0 0 0 3px var(--red-l);
+    box-shadow: 0 6px 20px -2px var(--neon-violet);
   }
 
-  /* ── Overdue Stamp ── */
-  .stamp {
-    display: inline-flex; align-items: center; justify-content: center;
-    border: 2.5px solid var(--red); color: var(--red);
-    font-family: var(--font-mono, 'DM Mono'), monospace;
-    font-weight: 700; font-size: 9px; letter-spacing: .18em;
-    text-transform: uppercase; border-radius: 3px;
-    padding: 2px 6px;
-    box-shadow: inset 0 0 0 1px var(--red-l);
-    opacity: 0.85;
+  .btn-cyber-ghost {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(4px);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
   }
-
-  /* ── Tag/Badge ── */
-  .tag-ink {
-    display: inline-flex; align-items: center; gap: .25rem;
-    background: var(--paper-2); border: 1px solid var(--ink-5);
-    border-radius: 3px; font-size: .65rem; font-weight: 700;
-    letter-spacing: .1em; text-transform: uppercase;
-    padding: .18rem .5rem; color: var(--ink-2);
-    font-family: var(--font-mono, 'DM Mono'), monospace;
+  .btn-cyber-ghost:hover {
+    border-color: var(--neon-violet);
+    background: rgba(139, 92, 246, 0.1);
   }
 
   .no-sb::-webkit-scrollbar { display: none; }
   .no-sb { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .mesh-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: -1;
+    background-color: #020617;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(249, 115, 22, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(244, 63, 94, 0.1) 0px, transparent 50%);
+  }
+
+  .cyber-grid {
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: linear-gradient(to bottom, black, transparent);
+  }
 }
 
-/* ── Serif gradient text ── */
-.ink-red-text {
-  background: linear-gradient(95deg, var(--ink), var(--red));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+@keyframes rush {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
 }
 
-/* ── Animations ── */
-@keyframes slideUp  { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none} }
-@keyframes stamp-in { 0%{opacity:0;transform:scale(1.6) rotate(-20deg)} 70%{transform:scale(0.95) rotate(-5deg)} 100%{opacity:1;transform:scale(1) rotate(-6deg)} }
-@keyframes press    { 0%{transform:scale(1)} 50%{transform:scale(0.97)} 100%{transform:scale(1)} }
-@keyframes marquee  { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-@keyframes fadeUp   { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
-@keyframes ticker   { 0%{background-position:0 0} 100%{background-position:500px 0} }
-@keyframes diagonal-move { 0%,100%{transform:translate(0,0)} 50%{transform:translate(2px,-2px)} }
+@keyframes pulse-neon {
+  0%, 100% { opacity: 0.5; filter: blur(2px); }
+  50% { opacity: 1; filter: blur(4px); }
+}
 
-.stamp-anim    { animation: stamp-in .55s cubic-bezier(.22,1,.36,1) both; }
-.slide-up      { animation: slideUp .55s cubic-bezier(.22,1,.36,1) both; }
-.fade-up       { animation: fadeUp .5s ease-out both; }
-.marquee-anim  { animation: marquee 35s linear infinite; }
+.animate-pulse-neon {
+  animation: pulse-neon 2s infinite ease-in-out;
+}

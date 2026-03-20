@@ -1,42 +1,47 @@
 import type { Metadata } from "next";
-import { Inter, DM_Serif_Display, DM_Mono } from "next/font/google";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import { ThemeWrapper } from "@/components/ThemeWrapper";
 
-const inter = Inter({ subsets:["latin"], variable:"--font-sans", weight:['400','500','600','700'] });
-const dmSerif = DM_Serif_Display({ subsets:["latin"], variable:"--font-serif", weight:'400', style:['normal','italic'] });
-const dmMono  = DM_Mono({ subsets:["latin"], variable:"--font-mono", weight:['400','500'] });
+const fontSans = Space_Grotesk({ subsets: ["latin"], variable: "--font-sans" });
+const fontMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "DeadlineOS — Deadline Intelligence",
-  description: "Intelligent deadline management engineered for high-performance teams and individuals.",
+  title: "DeadlineOS — Momentum Intelligence",
+  description: "High-octane deadline management for builders.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${dmSerif.variable} ${dmMono.variable}`}
-      style={{ background: '#EDE8DE', colorScheme: 'light' }}>
-      <body className="antialiased" style={{ background: '#EDE8DE', color: '#17140C', WebkitFontSmoothing: 'antialiased' }}>
+    <html lang="en" className={`${fontSans.variable} ${fontMono.variable}`}>
+      <body className="antialiased min-h-screen Selection:bg-purple-500/30 selection:text-white" style={{ background: '#020617' }}>
         <AuthProvider>
           <ThemeWrapper>
             {children}
-            <Toaster
-              position="bottom-right"
+            <Toaster 
+              position="top-right"
               toastOptions={{
                 style: {
-                  background: '#FAF8F4',
-                  color: '#17140C',
-                  border: '1.5px solid #E0DDD8',
-                  borderRadius: '4px',
-                  fontSize: '13px',
-                  fontFamily: 'var(--font-sans)',
+                  background: 'rgba(15, 23, 42, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  color: '#fff',
+                  border: '1px solid rgba(139, 92, 246, 0.3)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                  borderRadius: '12px',
+                  // JetBrains Mono for a technical, high-performance feel
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '12px',
                   fontWeight: '600',
-                  boxShadow: '0 8px 28px rgba(23,20,12,0.12)',
+                  letterSpacing: '0.02em',
                 },
-                success: { iconTheme: { primary: '#1A6635', secondary: '#FAF8F4' } },
-                error:   { iconTheme: { primary: '#C8220A', secondary: '#FAF8F4' } },
+                success: {
+                  iconTheme: { primary: '#8B5CF6', secondary: '#fff' }
+                },
+                error: {
+                  iconTheme: { primary: '#F43F5E', secondary: '#fff' }
+                }
               }}
             />
           </ThemeWrapper>
