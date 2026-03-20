@@ -11,9 +11,16 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// Prerendering / build step might not have environment variables.
+// initializeApp would fail with "auth/invalid-api-key" if apiKey is undefined.
+const app = 
+  !getApps().length && firebaseConfig.apiKey 
+    ? initializeApp(firebaseConfig) 
+    : (getApps().length > 0 ? getApp() : undefined);
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Export auth/db. If app is undefined, they'll be undefined, preventing crash during import.
+// These services will not be functional, but the build (where they aren't actually called) will succeed.
+export const auth = app ? getAuth(app) : undefined as unknown as any;
+export const db = app ? getFirestore(app) : undefined as unknown as any;
 
 export default app;

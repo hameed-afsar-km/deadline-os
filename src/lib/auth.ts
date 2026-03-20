@@ -38,8 +38,10 @@ export const signUpWithEmail = async (
 
 export const logOut = () => signOut(auth);
 
-export const onAuthChange = (callback: (user: User | null) => void) =>
-  onAuthStateChanged(auth, callback);
+export const onAuthChange = (callback: (user: User | null) => void) => {
+  if (!auth) return () => {};
+  return onAuthStateChanged(auth, callback);
+};
 
 async function ensureUserDoc(user: User, name?: string) {
   const ref = doc(db, 'users', user.uid);

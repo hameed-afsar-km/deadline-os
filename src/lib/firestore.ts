@@ -18,6 +18,7 @@ export const subscribeToEvents = (
   userId: string,
   callback: (events: DeadlineEvent[]) => void
 ) => {
+  if (!db) return () => {};
   const q = query(
     collection(db, 'events'),
     where('userId', '==', userId),
