@@ -18,7 +18,7 @@ export default function HomePage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { const timer = setTimeout(() => setMounted(true), 0); return () => clearTimeout(timer); }, []);
   useEffect(() => { if (!loading && user) router.replace('/dashboard'); }, [user, loading, router]);
 
   if (!mounted) return null;
@@ -57,7 +57,7 @@ export default function HomePage() {
           initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}
           className="px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-mono font-bold tracking-widest uppercase"
         >
-          // VERSION 4.0 // ACTIVE_SYNC
+          {"// VERSION 4.0 // ACTIVE_SYNC"}
         </motion.div>
 
         <motion.h1 
@@ -105,7 +105,7 @@ export default function HomePage() {
               <Icon size={24} style={{ color: c }} />
             </div>
 
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-3" style={{ color: c }}>// {t}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-3" style={{ color: c }}>{"//"} {t}</p>
             <h3 className="text-3xl font-black mb-4 tracking-tighter">{label}</h3>
             <p className="text-slate-400 text-sm leading-relaxed font-medium">{desc}</p>
           </motion.div>

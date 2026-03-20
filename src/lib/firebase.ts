@@ -20,7 +20,9 @@ const app =
 
 // Export auth/db. If app is undefined, they'll be undefined, preventing crash during import.
 // These services will not be functional, but the build (where they aren't actually called) will succeed.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const auth = app ? getAuth(app) : undefined as unknown as any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const db = app ? getFirestore(app) : undefined as unknown as any;
 
 export default app;

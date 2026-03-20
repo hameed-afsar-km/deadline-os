@@ -50,7 +50,7 @@ export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClo
         toast.success('NEW_NODE_ENTRY_SYNC');
       }
       onClose();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       toast.error('SYNC_FAULT: VERIFY_KEYS_AND_CONNECTION');
     } finally {

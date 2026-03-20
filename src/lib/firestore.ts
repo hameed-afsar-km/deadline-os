@@ -44,7 +44,7 @@ export const createEvent = async (
     throw new Error('Database not initialized');
   }
 
-  const payload: any = {
+  const payload: Record<string, unknown> = {
     ...data,
     userId,
     createdAt: serverTimestamp(),

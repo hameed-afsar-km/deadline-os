@@ -50,3 +50,27 @@ export function defaultReminders(deadline: string): string[] {
 
   return [dayBefore.toISOString(), onDay.toISOString()];
 }
+
+export function getPriorityColor(event: DeadlineEvent): string {
+  const p = getEffectivePriority(event);
+  if (p === 'high') return '#F43F5E';
+  if (p === 'medium') return '#F97316';
+  if (p === 'low') return '#10B981';
+  return '#8B5CF6';
+}
+
+export function getTimeRemaining(deadline: Timestamp | string): string {
+  const d = deadline instanceof Timestamp ? deadline.toDate() : new Date(deadline);
+  const now = new Date();
+  const diffMs = d.getTime() - now.getTime();
+  
+  if (diffMs < 0) return 'OVERDUE';
+  
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  
+  if (diffDays > 0) return `${diffDays}D ${diffHours}H`;
+  if (diffHours > 0) return `${diffHours}H`;
+  const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  return `${diffMins}M`;
+}

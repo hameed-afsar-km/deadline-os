@@ -1,0 +1,4 @@
+﻿src/app/dashboard/page.tsx(122,20): error TS2304: Cannot find name 'CheckCircle2'.
+src/app/dashboard/page.tsx(142,32): error TS2304: Cannot find name 'cn'.
+src/components/EventCard.tsx(8,10): error TS2305: Module '"@/utils/priority"' has no exported member 'getPriorityColor'.
+src/components/EventCard.tsx(8,28): error TS2305: Module '"@/utils/priority"' has no exported member 'getTimeRemaining'.

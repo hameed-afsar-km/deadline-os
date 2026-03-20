@@ -9,7 +9,8 @@ import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import { DeadlineEvent } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Plus, Filter, LayoutGrid, Search, AlertCircle, Zap } from 'lucide-react';
+import { Activity, Plus, Filter, LayoutGrid, Search, AlertCircle, Zap, CheckCircle2 } from 'lucide-react';
+import { cn } from '@/utils/cn';
 
 export default function Dashboard() {
   const { user } = useUserStore();
@@ -29,7 +30,7 @@ export default function Dashboard() {
   }, [events, searchQuery, activeFilter]);
 
   const stats = useMemo(() => {
-    const overdue = events.filter(e => e.status==='pending' && new Date(e.deadline as any) < new Date()).length;
+    const overdue = events.filter(e => e.status==='pending' && new Date(e.deadline as unknown as string) < new Date()).length;
     const completed = events.filter(e => e.status==='completed').length;
     const pending = events.filter(e => e.status==='pending').length;
     return { overdue, completed, pending };
@@ -37,7 +38,7 @@ export default function Dashboard() {
 
   const priorityOne = useMemo(() => {
     return events.filter(e => e.status === 'pending')
-      .sort((a,b) => new Date(a.deadline as any).getTime() - new Date(b.deadline as any).getTime())[0];
+      .sort((a,b) => new Date(a.deadline as unknown as string).getTime() - new Date(b.deadline as unknown as string).getTime())[0];
   }, [events]);
 
   const openEdit = (e: DeadlineEvent) => { setEditingEvent(e); setIsModalOpen(true); };
@@ -62,7 +63,7 @@ export default function Dashboard() {
             </h1>
             <p className="text-slate-500 font-bold uppercase tracking-[0.4em] flex items-center gap-2 text-[10px]">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              NODE_ID: {user?.uid.slice(0, 12)} // STATUS: OPTIMIZED
+              NODE_ID: {user?.uid.slice(0, 12)} {"//"} STATUS: OPTIMIZED
             </p>
           </div>
 
@@ -95,7 +96,7 @@ export default function Dashboard() {
                   <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.04] text-center min-w-[240px]">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">TIME_WINDOW</p>
                     <p className="text-4xl font-black text-rose-500 tracking-tighter">
-                      -{Math.max(0, Math.round((new Date(priorityOne.deadline as any).getTime() - new Date().getTime()) / 3600000))}HRS
+                      -{Math.max(0, Math.round((new Date(priorityOne.deadline as unknown as string).getTime() - new Date().getTime()) / 3600000))}HRS
                     </p>
                     <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:0.95 }}
                       onClick={() => openEdit(priorityOne)}
@@ -138,7 +139,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl">
                 {['all', 'pending', 'completed'].map((f) => (
                   <button key={f}
-                    onClick={() => setActiveFilter(f as any)}
+                    onClick={() => setActiveFilter(f as 'all' | 'pending' | 'completed')}
                     className={cn(
                       "px-5 py-2 text-[10px] font-black tracking-widest uppercase transition-all rounded-xl",
                       activeFilter === f ? "bg-violet-600 text-white shadow-lg" : "text-slate-500 hover:text-white"

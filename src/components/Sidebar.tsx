@@ -51,7 +51,7 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
       >
         {/* Mobile close */}
         <div className="flex items-center justify-between px-6 h-14 border-b border-white/10 md:hidden">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">// CONTROL</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{"// CONTROL"}</span>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-white transition-colors"><X size={20} /></button>
         </div>
 
@@ -68,7 +68,7 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
 
         {/* Nav */}
         <nav className="px-4 space-y-1">
-          <p className="px-4 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">// MAIN_CHAIN</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{"// MAIN_CHAIN"}</p>
           {NAV.map(({ href, label, icon:Icon }) => {
             const active = pathname === href;
             return (
@@ -92,7 +92,7 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
 
         {/* Stats */}
         <div className="px-6 flex-1 overflow-y-auto no-sb space-y-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">// NODE_TELEMETRY</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{"// NODE_TELEMETRY"}</p>
           <div className="grid grid-cols-2 gap-3">
             {STATS.map(({ label, n, c }) => (
               <motion.div key={label} whileHover={{ y: -4, borderColor: c }}

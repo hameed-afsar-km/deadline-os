@@ -49,7 +49,7 @@ export default function LoginPage() {
             className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-3xl font-black bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-[0_10px_30px_rgba(139,92,246,0.5)] mb-8">
             D
           </motion.div>
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-violet-500 mb-2">// SECURITY_GATE_04</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-violet-500 mb-2">{"// SECURITY_GATE_04"}</p>
           <h1 className="text-4xl lg:text-6xl font-black tracking-tighter text-center leading-[0.9]" style={{ fontFamily:'var(--font-heading)' }}>
             RECLAIM THE <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-orange-400">FLOWSTATE.</span>
           </h1>
@@ -83,6 +83,7 @@ export default function LoginPage() {
 
         <motion.button onClick={handleGoogle} whileHover={{ scale:1.02, backgroundColor:'rgba(255,255,255,0.06)' }} whileTap={{ scale:0.98 }}
           className="w-full py-4 rounded-2xl border border-white/10 bg-white/5 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="https://www.google.com/favicon.ico" className="w-4 h-4 grayscale opacity-60" alt="" />
           OAUTH_PROTOCOL
         </motion.button>
