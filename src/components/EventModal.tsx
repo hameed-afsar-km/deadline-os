@@ -3,13 +3,12 @@
 import { DeadlineEvent } from '@/types';
 import { createEvent, updateEvent } from '@/lib/firestore';
 import { useUserStore } from '@/store/useUserStore';
-import { X, Loader2, Save } from 'lucide-react';
+import { X, Loader2, Save, Terminal } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Timestamp } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { toDate } from '@/utils/dateHelpers';
-import { Category, Priority, Status } from '@/types';
+import { Priority, Status } from '@/types';
 
 const SUGGESTED_CATS = ['Study','Hackathon','Submission','Personal','Exam'];
 
@@ -33,10 +32,9 @@ export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClo
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return toast.error('Not authenticated');
+    if (!user) return toast.error('PROTOCOL_DENIED: AUTHENTICATION_NULL');
     setLoading(true);
     try {
-      // Pass raw strings to firestore.ts; it handles Timestamp conversion
       const data = {
         ...form,
         reminders: [] as string[],
@@ -46,15 +44,15 @@ export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClo
 
       if (event) {
         await updateEvent(event.id, data);
-        toast.success('Deadline updated.');
+        toast.success('NODE_UPDATED_SYNC');
       } else {
         await createEvent(user.uid, data);
-        toast.success('Deadline created.');
+        toast.success('NEW_NODE_ENTRY_SYNC');
       }
       onClose();
     } catch (err: any) {
       console.error(err);
-      toast.error('Save failed. Check your connection or keys.');
+      toast.error('SYNC_FAULT: VERIFY_KEYS_AND_CONNECTION');
     } finally {
       setLoading(false);
     }
@@ -64,94 +62,92 @@ export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClo
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       {/* Backdrop */}
       <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-        onClick={onClose} className="absolute inset-0"
-        style={{ background:'rgba(23,20,12,0.35)', backdropFilter:'blur(6px)' }} />
+        onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
 
-      {/* Modal — drops in like a piece of paper */}
+      {/* Modal — HUD Aesthetic */}
       <motion.div
-        initial={{ opacity:0, y:-20, rotate:-1.5 }}
-        animate={{ opacity:1, y:0, rotate:0 }}
-        exit={{ opacity:0, y:16, scale:.97 }}
-        transition={{ duration:.4, ease:[.22,1,.36,1] }}
-        className="relative z-10 w-full max-w-lg paper-card overflow-hidden"
-        style={{ borderRadius:'3px' }}>
+        initial={{ opacity:0, scale:0.92, y:20 }}
+        animate={{ opacity:1, scale:1, y:0 }}
+        exit={{ opacity:0, scale:0.95, y:12 }}
+        transition={{ duration:.4, type:'spring', bounce:.3 }}
+        className="relative z-10 w-full max-w-lg cyber-panel p-0 glass-card bg-[#020617]/90 border-white/10 overflow-hidden shadow-[0_32px_128px_-10px_rgba(0,0,0,0.8)]"
+        style={{ borderRadius:'24px' }}>
 
-        {/* Red top stripe */}
-        <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background:'var(--red)' }} />
+        {/* Neon Accent */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500 shadow-[0_0_15px_rgba(139,92,246,0.6)]" />
 
         {/* Header */}
-        <div className="flex items-center justify-between px-7 pt-7 pb-5 border-b" style={{ borderColor:'var(--ink-5)' }}>
+        <div className="flex items-center justify-between px-8 pt-10 pb-6">
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-[.3em] mb-1" style={{ fontFamily:'var(--font-mono)', color:'var(--red)' }}>
-              {event ? '§ Edit deadline' : '§ New deadline'}
-            </p>
-            <h2 className="text-2xl font-normal" style={{ fontFamily:'var(--font-serif)' }}>
-              {event ? 'Update record' : 'Add to queue'}
+            <div className="flex items-center gap-2 mb-2">
+              <Terminal size={14} className="text-violet-500 animate-pulse" />
+              <p className="text-[10px] font-black uppercase tracking-[.4em] text-violet-500">
+                {event ? '§ PATCH_EXISTING_NODE' : '§ INITIALIZE_NEW_NODE'}
+              </p>
+            </div>
+            <h2 className="text-4xl font-black tracking-tighter" style={{ fontFamily:'var(--font-heading)' }}>
+              {event ? 'Update Sync' : 'Initialize Queue'}
             </h2>
           </div>
-          <motion.button whileHover={{ scale:1.1, backgroundColor:'var(--paper-2)' }} whileTap={{ scale:.9 }}
-            onClick={onClose} className="p-2 rounded-sm transition-all" style={{ color:'var(--ink-3)' }}>
+          <motion.button whileHover={{ scale:1.1, backgroundColor:'rgba(255,255,255,0.06)' }} whileTap={{ scale:.9 }}
+            onClick={onClose} className="p-3 rounded-xl border border-white/5 transition-all text-slate-500 hover:text-white">
             <X size={20} />
           </motion.button>
         </div>
 
-        <form onSubmit={submit} className="px-7 py-6 space-y-5">
+        <form onSubmit={submit} className="px-8 pb-10 space-y-6">
           {/* Title */}
-          <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider block mb-2" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-3)' }}>
-              Label
+          <div className="space-y-2">
+            <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 ml-1">
+              Label_Identifier
             </label>
             <input type="text" required autoFocus value={form.title} onChange={e=>setForm({...form,title:e.target.value})}
-              placeholder="e.g. Submit final prototype"
-              className="field-ink w-full px-4 py-3" />
+              placeholder="e.g. SUBMIT_FINAL_PROTOTYPE"
+              className="w-full px-5 py-4 text-xs font-black tracking-widest uppercase bg-white/[0.03] border border-white/5 rounded-2xl focus:border-violet-500/40 focus:ring-4 focus:ring-violet-500/5 outline-none transition-all placeholder:text-slate-800" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider block mb-2" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-3)' }}>
-                Deadline
+            <div className="space-y-2">
+              <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 ml-1">
+                Termination_Window
               </label>
               <input type="datetime-local" required value={form.deadline} onChange={e=>setForm({...form,deadline:e.target.value})}
-                className="field-ink w-full px-3 py-2.5 text-sm" />
+                className="w-full px-5 py-4 text-xs font-black tracking-widest uppercase bg-white/[0.03] border border-white/5 rounded-2xl focus:border-violet-500/40 outline-none transition-all" />
             </div>
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider block mb-2" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-3)' }}>
-                Category
+            <div className="space-y-2">
+              <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 ml-1">
+                Category_Cluster
               </label>
-              <input 
-                list="cats"
-                type="text"
-                required
-                value={form.category}
-                onChange={e => setForm({...form, category: e.target.value})}
-                placeholder="Select or type..."
-                className="field-ink w-full px-3 py-2.5 text-sm"
-              />
+              <input list="cats" type="text" required value={form.category} onChange={e=>setForm({...form,category:e.target.value})}
+                placeholder="SELECT_CLUSTER..."
+                className="w-full px-5 py-4 text-xs font-black tracking-widest uppercase bg-white/[0.03] border border-white/5 rounded-2xl focus:border-violet-500/40 outline-none transition-all placeholder:text-slate-800" />
               <datalist id="cats">
                 {SUGGESTED_CATS.map(c => <option key={c} value={c}>{c}</option>)}
               </datalist>
             </div>
           </div>
 
-          <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider block mb-2" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-3)' }}>
-              Notes
+          <div className="space-y-2">
+            <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 ml-1">
+              Node_Metadata
             </label>
             <textarea rows={3} value={form.description} onChange={e=>setForm({...form,description:e.target.value})}
-              placeholder="Links, references, additional context..."
-              className="field-ink w-full px-4 py-3 resize-none" />
+              placeholder="ADDITIONAL_CONTEXTS_LINKS_RESOURCES..."
+              className="w-full px-5 py-4 text-xs font-black tracking-widest uppercase bg-white/[0.03] border border-white/5 rounded-2xl focus:border-violet-500/40 outline-none transition-all resize-none placeholder:text-slate-800" />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t" style={{ borderColor:'var(--ink-5)' }}>
+          <div className="flex items-center gap-4 pt-4">
             <motion.button type="button" onClick={onClose} disabled={loading}
-              whileHover={{ borderColor:'var(--ink-2)' }} whileTap={{ scale:.96 }}
-              className="btn-ink px-5 py-2.5 text-sm">Cancel</motion.button>
+              whileHover={{ backgroundColor:'rgba(255,255,255,0.06)' }} whileTap={{ scale:.96 }}
+              className="flex-1 py-4 text-xs font-black tracking-widest uppercase rounded-2xl border border-white/5 text-slate-500 transition-all">
+              ABORT_SEQUENCE
+            </motion.button>
             <motion.button type="submit" disabled={loading}
-              whileHover={{ y:-2, boxShadow:'0 4px 0 rgba(100,10,0,0.35)' }}
-              whileTap={{ y:1 }}
-              className="btn-red inline-flex items-center gap-2 px-6 py-2.5 text-sm">
-              {loading ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-              {event ? 'Save changes' : 'Add deadline'}
+              whileHover={{ scale:1.02, backgroundColor:'var(--neon-violet)' }}
+              whileTap={{ scale:0.98 }}
+              className="flex-[2] py-4 rounded-2xl bg-violet-600 text-[10px] font-black tracking-[0.3em] uppercase text-white shadow-xl shadow-violet-600/20 flex items-center justify-center gap-3 transition-all">
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              {event ? 'PATCH_EXISTING_NODE' : 'COMMIT_ENTRY'}
             </motion.button>
           </div>
         </form>
