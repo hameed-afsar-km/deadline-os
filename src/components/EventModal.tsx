@@ -44,89 +44,91 @@ export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClo
 
       if (event) {
         await updateEvent(event.id, data);
-        toast.success('Task updated');
+        toast.success('Sequence updated');
       } else {
         await createEvent(user.uid, data);
-        toast.success('Task created');
+        toast.success('Node injected successfully');
       }
       onClose();
     } catch (err) {
       console.error(err);
-      toast.error('Failed to sync. Please check your connection.');
+      toast.error('Connection fault detected.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 perspective-1000">
       {/* Backdrop */}
-      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration: 0.15 }}
-        onClick={onClose} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration: 0.5 }}
+        onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-3xl" />
 
-      {/* Modal */}
+      {/* Modal / Panel */}
       <motion.div
-        initial={{ opacity:0, scale:0.95, y:10 }}
-        animate={{ opacity:1, scale:1, y:0 }}
-        exit={{ opacity:0, scale:0.95, y:10 }}
-        transition={{ duration:.2, type:'spring', bounce:.1 }}
-        className="relative z-10 w-full max-w-[480px] bg-white rounded-3xl shadow-2xl overflow-hidden"
+        initial={{ opacity:0, scale:0.9, rotateX: 10, y:20 }}
+        animate={{ opacity:1, scale:1, rotateX: 0, y:0 }}
+        exit={{ opacity:0, scale:0.95, rotateX: -10, y:20 }}
+        transition={{ duration:.4, type:'spring', bounce:0.3 }}
+        className="relative z-10 w-full max-w-[500px] glass-panel rounded-[40px] shadow-[0_30px_100px_rgba(0,0,0,1)] border border-white/10 overflow-hidden"
       >
+        <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/20 rounded-full blur-[80px] -mx-20 -mt-20 pointer-events-none" />
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+        <div className="flex items-center justify-between px-8 py-8 border-b border-white/5 relative z-10">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-slate-900">
-              {event ? 'Edit Task' : 'New Task'}
+            <h2 className="text-3xl font-black tracking-tight text-white drop-shadow-lg">
+              {event ? 'Modify Node' : 'Initialize Node'}
             </h2>
-            <p className="text-xs text-slate-500 font-medium">Add a new deadline to your queue.</p>
+            <p className="text-xs text-cyan-400 uppercase tracking-widest font-bold mt-2">Configure target parameters</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 flex items-center justify-center transition-colors text-zinc-400 hover:text-white">
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={submit} className="p-6 space-y-5">
+        <form onSubmit={submit} className="p-8 space-y-6 relative z-10">
           {/* Title */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 ml-0.5">Title</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 drop-shadow-sm">Designation</label>
             <input type="text" required autoFocus value={form.title} onChange={e=>setForm({...form,title:e.target.value})}
-              placeholder="What needs to be done?"
-              className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900" />
+              placeholder="Primary objective"
+              className="w-full px-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-black/60 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 outline-none transition-all placeholder:text-zinc-600 text-white shadow-inner" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 ml-0.5">Due Date</label>
+          <div className="grid grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Terminal State (T-0)</label>
               <input type="datetime-local" required value={form.deadline} onChange={e=>setForm({...form,deadline:e.target.value})}
-                className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900" />
+                className="w-full px-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-black/60 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 outline-none transition-all text-white shadow-inner" />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 ml-0.5">Category</label>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Vector Category</label>
               <input list="cats" type="text" required value={form.category} onChange={e=>setForm({...form,category:e.target.value})}
-                placeholder="Ex. Project"
-                className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900" />
+                placeholder="Ex. Core"
+                className="w-full px-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-black/60 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 outline-none transition-all placeholder:text-zinc-600 text-white shadow-inner" />
               <datalist id="cats">
                 {SUGGESTED_CATS.map(c => <option key={c} value={c}>{c}</option>)}
               </datalist>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 ml-0.5">Description (Optional)</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Directive Details (Optional)</label>
             <textarea rows={3} value={form.description} onChange={e=>setForm({...form,description:e.target.value})}
-              placeholder="Add links, context, or notes..."
-              className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none placeholder:text-slate-400 text-slate-900" />
+              placeholder="Attach relevant telemetry data..."
+              className="w-full px-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-black/60 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 outline-none transition-all resize-none placeholder:text-zinc-600 text-white shadow-inner" />
           </div>
 
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-4 pt-4 border-t border-white/5">
             <button type="button" onClick={onClose} disabled={loading}
-              className="flex-1 py-3.5 text-sm font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
-              Cancel
+              className="flex-1 py-4 text-xs tracking-widest font-black uppercase rounded-2xl glass-panel hover:bg-white/10 text-zinc-400 hover:text-white transition-colors border border-white/5">
+              Abort
             </button>
             <button type="submit" disabled={loading}
-              className="flex-[2] py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
-              {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              {event ? 'Save Changes' : 'Create Task'}
+              className="flex-[2] py-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-400 hover:scale-[1.02] active:scale-95 text-white shadow-[0_0_30px_rgba(99,102,241,0.3)] font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 transition-all disabled:opacity-50">
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Terminal size={14} />}
+              {event ? 'Update Protocol' : 'Deploy Node'}
             </button>
           </div>
         </form>

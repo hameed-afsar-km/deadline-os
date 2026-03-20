@@ -30,69 +30,65 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
   }, []);
 
   const initial = user?.displayName?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? 'U';
-  const name    = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
 
   return (
-    <header className="sticky top-0 z-50 h-[72px] px-6 lg:px-8 flex items-center justify-between glass-header">
+    <header className="sticky top-0 z-50 h-[80px] px-6 lg:px-10 flex items-center justify-between bg-transparent border-b border-white/5 backdrop-blur-2xl">
 
       {/* Left */}
-      <div className="flex items-center gap-4">
-        <motion.button onClick={onMenuToggle} whileTap={{ scale:.95 }}
-          className="md:hidden p-2 rounded-md hover:bg-slate-100 text-slate-500 transition-colors">
+      <div className="flex items-center gap-6">
+        <motion.button onClick={onMenuToggle} whileTap={{ scale:.9 }}
+          className="md:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-white transition-colors">
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </motion.button>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm bg-blue-600 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm bg-gradient-to-br from-indigo-500 to-cyan-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]">
             D
           </div>
-          <span className="font-bold hidden md:block text-lg tracking-tight text-slate-900">DeadlineOS</span>
+          <span className="font-extrabold hidden md:block text-xl tracking-tight text-white drop-shadow-lg">DeadlineOS</span>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="flex-1 max-w-md hidden sm:block mx-8">
+      {/* Search Bar - Center */}
+      <div className="flex-1 max-w-xl hidden sm:block mx-8 relative z-10">
         <div className="relative group">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500 group-focus-within:text-cyan-400 transition-colors" />
           <input type="search" value={local} onChange={onChange}
-            placeholder="Search tasks, categories..."
-            className="w-full pl-10 pr-4 py-2.5 text-sm font-medium bg-slate-100 border border-transparent rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-500" />
+            placeholder="Search objectives, files, categories..."
+            className="w-full pl-12 pr-4 py-3 text-sm font-medium bg-white/[0.03] border border-white/10 rounded-2xl focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all placeholder:text-zinc-600 text-white shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]" />
         </div>
       </div>
 
-      {/* Right */}
-      <div className="flex items-center gap-4">
-        <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:.95 }}
-          className="relative p-2 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all">
-          <Bell size={20} />
-          <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-blue-500 border-2 border-white" />
+      {/* Right User Actions */}
+      <div className="flex items-center gap-5">
+        <motion.button whileHover={{ scale:1.1, backgroundColor:'rgba(255,255,255,0.1)' }} whileTap={{ scale:.9 }}
+          className="relative w-10 h-10 flex items-center justify-center rounded-full text-zinc-400 hover:text-white glass-panel transition-all">
+          <Bell size={18} />
+          <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)] border border-black/50" />
         </motion.button>
 
-        {/* User menu */}
-        <div ref={menuRef} className="relative">
-          <motion.button onClick={() => setMenuOpen(s => !s)} whileHover={{ scale:1.02 }} whileTap={{ scale:.98 }}
-            className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full hover:bg-slate-100 transition-colors border border-transparent">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-blue-700 bg-blue-50 border border-blue-100 font-bold text-sm">
+        {/* User menu dropdown */}
+        <div ref={menuRef} className="relative z-50">
+          <motion.button onClick={() => setMenuOpen(s => !s)} whileHover={{ scale:1.05 }} whileTap={{ scale:.95 }}
+            className="flex items-center gap-2 p-1.5 pr-2 rounded-full glass-panel hover:bg-white/[0.15] transition-all border border-white/10 shadow-lg">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-gradient-to-tr from-cyan-600 to-indigo-600 font-bold text-sm shadow-inner">
               {initial}
             </div>
-            <div className="flex flex-col items-start leading-tight hidden lg:flex">
-              <span className="text-sm font-semibold text-slate-900">{name}</span>
-            </div>
-            <ChevronDown size={14} className={`transition-transform duration-200 ml-1 text-slate-400 ${menuOpen?'rotate-180':''}`} />
+            <ChevronDown size={14} className={`transition-transform duration-300 ml-1 text-zinc-400 ${menuOpen?'rotate-180 text-white':''}`} />
           </motion.button>
 
           <AnimatePresence>
             {menuOpen && (
-              <motion.div initial={{ opacity:0, y:8, scale:.98 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, y:4, scale:.98 }} transition={{ duration: 0.15 }}
-                className="absolute right-0 top-[calc(100%+8px)] w-64 rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden py-2"
+              <motion.div initial={{ opacity:0, y:12, scale:.95 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, y:8, scale:.95 }} transition={{ duration: 0.2, type: 'spring', bounce: 0.3 }}
+                className="absolute right-0 top-[calc(100%+12px)] w-64 rounded-3xl glass-panel overflow-hidden py-2"
                 style={{ transformOrigin: 'top right' }}>
-                <div className="px-5 py-3 border-b border-slate-100 mb-2">
-                  <p className="text-sm font-bold text-slate-900">{user?.displayName || 'User'}</p>
-                  <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{user?.email}</p>
+                <div className="px-5 py-4 border-b border-white/10 mb-2 bg-white/5">
+                  <p className="text-sm font-bold text-white tracking-tight">{user?.displayName || 'User'}</p>
+                  <p className="text-xs text-zinc-400 font-medium truncate mt-1">{user?.email}</p>
                 </div>
-                <div className="px-2">
-                  <button onClick={async() => { await logOut(); toast.success('Signed out successfully'); router.replace('/login'); }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold rounded-lg transition-colors text-red-600 hover:bg-red-50">
-                    <LogOut size={16} /> Sign out
+                <div className="px-3 pb-2">
+                  <button onClick={async() => { await logOut(); toast.success('Signed out'); router.replace('/login'); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-2xl transition-all text-red-400 hover:bg-red-500/10 hover:text-red-300">
+                    <LogOut size={18} /> Sign out
                   </button>
                 </div>
               </motion.div>
