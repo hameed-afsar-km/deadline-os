@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { signInWithEmail, signInWithGoogle } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Lock, LogIn, ChevronRight, Zap } from 'lucide-react';
+import { Mail, Lock, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -18,78 +18,77 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithEmail(form.email, form.password);
-      toast.success('DECRYPTION_SUCCESS');
+      toast.success('Signed in successfully');
       router.push('/dashboard');
-    } catch { toast.error('INVALID_SYSTEM_KEYS'); }
+    } catch { toast.error('Invalid email or password'); }
     finally { setLoading(false); }
   };
 
   const handleGoogle = async () => {
     try {
       await signInWithGoogle();
-      toast.success('OAUTH_BYPASS_SUCCESS');
+      toast.success('Signed in with Google');
       router.push('/dashboard');
-    } catch { toast.error('HANDSHAKE_FAILED'); }
+    } catch { toast.error('Google sign-in failed'); }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative bg-[#020617] overflow-hidden">
-      {/* ── Fixed Accents ── */}
-      <div className="absolute top-0 left-0 w-full h-[1px] opacity-20" style={{ background: 'linear-gradient(90deg, transparent, #8B5CF6, transparent)' }} />
-      <div className="absolute bottom-0 left-0 w-full h-[1px] opacity-20" style={{ background: 'linear-gradient(90deg, transparent, #F97316, transparent)' }} />
-
+    <div className="min-h-screen flex items-center justify-center p-6 relative bg-slate-50 font-sans">
       <motion.div 
-        initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: 'circOut' }}
-        className="relative z-10 w-full max-w-lg cyber-panel p-10 lg:p-14 glass-card border-white/10"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="relative z-10 w-full max-w-[420px] bg-white p-8 sm:p-10 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
       >
-        <div className="absolute top-0 right-0 w-32 h-32 opacity-10 bg-violet-600 blur-[80px]" />
-        
-        <div className="flex flex-col items-center mb-12">
-          <motion.div initial={{ scale:0, rotate:-180 }} animate={{ scale:1, rotate:0 }} transition={{ duration:0.6, type:'spring' }}
-            className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-3xl font-black bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-[0_10px_30px_rgba(139,92,246,0.5)] mb-8">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl font-bold bg-blue-600 shadow-md shadow-blue-600/20 mb-6">
             D
-          </motion.div>
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-violet-500 mb-2">{"// SECURITY_GATE_04"}</p>
-          <h1 className="text-4xl lg:text-6xl font-black tracking-tighter text-center leading-[0.9]" style={{ fontFamily:'var(--font-heading)' }}>
-            RECLAIM THE <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-orange-400">FLOWSTATE.</span>
+          </div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-2">
+            Welcome back
           </h1>
+          <p className="text-sm text-slate-500 font-medium">Please enter your details to sign in.</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="relative group">
-            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-violet-500 transition-colors" size={18} />
-            <input type="email" required value={form.email} onChange={e=>setForm({...form,email:e.target.value})}
-              placeholder="IDENTITY_STRING"
-              className="w-full pl-14 pr-6 py-5 text-xs font-black tracking-widest uppercase bg-white/5 border border-white/10 rounded-2xl focus:border-violet-500/50 outline-none transition-all placeholder:text-slate-700 font-mono" />
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 ml-0.5">Email address</label>
+            <div className="relative group">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+              <input type="email" required value={form.email} onChange={e=>setForm({...form,email:e.target.value})}
+                placeholder="you@company.com"
+                className="w-full pl-10 pr-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900" />
+            </div>
           </div>
 
-          <div className="relative group">
-            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-violet-500 transition-colors" size={18} />
-            <input type="password" required value={form.password} onChange={e=>setForm({...form,password:e.target.value})}
-              placeholder="ACCESS_TOKEN"
-              className="w-full pl-14 pr-6 py-5 text-xs font-black tracking-widest uppercase bg-white/5 border border-white/10 rounded-2xl focus:border-violet-500/50 outline-none transition-all placeholder:text-slate-700 font-mono" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 ml-0.5">Password</label>
+            <div className="relative group">
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+              <input type="password" required value={form.password} onChange={e=>setForm({...form,password:e.target.value})}
+                placeholder="••••••••"
+                className="w-full pl-10 pr-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900" />
+            </div>
           </div>
 
-          <motion.button disabled={loading} type="submit" whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}
-            className="w-full py-5 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-widest shadow-xl shadow-white/10 hover:bg-slate-100 transition-all flex items-center justify-center gap-3">
-            {loading ? 'INITIALIZING...' : 'BYPASS_SECURITY →'}
-          </motion.button>
+          <button disabled={loading} type="submit"
+            className="w-full py-3 mt-4 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+            {loading ? 'Signing in...' : 'Sign in'} <ArrowRight size={16} />
+          </button>
         </form>
 
-        <div className="relative my-10 py-4">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5" /></div>
-          <div className="relative flex justify-center"><span className="px-4 text-[9px] font-bold text-slate-700 uppercase tracking-[0.3em] bg-[#020617]">OR_HANDSHAKE_VIA</span></div>
+        <div className="relative my-8">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200" /></div>
+          <div className="relative flex justify-center"><span className="px-4 text-xs font-medium text-slate-400 bg-white">Or continue with</span></div>
         </div>
 
-        <motion.button onClick={handleGoogle} whileHover={{ scale:1.02, backgroundColor:'rgba(255,255,255,0.06)' }} whileTap={{ scale:0.98 }}
-          className="w-full py-4 rounded-2xl border border-white/10 bg-white/5 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3">
+        <button onClick={handleGoogle}
+          className="w-full py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold transition-colors flex items-center justify-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://www.google.com/favicon.ico" className="w-4 h-4 grayscale opacity-60" alt="" />
-          OAUTH_PROTOCOL
-        </motion.button>
+          <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="" />
+          Google
+        </button>
 
-        <p className="text-center text-slate-600 text-[10px] font-bold uppercase tracking-[0.2em] mt-12">
-          NEW ENTITY? <Link href="/signup" className="text-violet-500 hover:text-violet-400 font-black transition-all">INITIALIZE_SEQUENCE</Link>
+        <p className="text-center text-slate-500 text-sm font-medium mt-8">
+          Don't have an account? <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">Sign up</Link>
         </p>
       </motion.div>
     </div>

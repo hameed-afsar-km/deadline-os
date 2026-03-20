@@ -10,12 +10,12 @@ import { useEffect, useState } from 'react';
 import { toDate } from '@/utils/dateHelpers';
 import { Priority, Status } from '@/types';
 
-const SUGGESTED_CATS = ['Study','Hackathon','Submission','Personal','Exam'];
+const SUGGESTED_CATS = ['Study','Hackathon','Submission','Personal','Project'];
 
 export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClose:()=>void }) {
   const { user } = useUserStore();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ title:'', description:'', deadline:'', category:'Study' });
+  const [form, setForm] = useState({ title:'', description:'', deadline:'', category:'Project' });
 
   useEffect(() => {
     if (event) {
@@ -32,7 +32,7 @@ export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClo
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return toast.error('PROTOCOL_DENIED: AUTHENTICATION_NULL');
+    if (!user) return toast.error('Authentication Error');
     setLoading(true);
     try {
       const data = {
@@ -44,111 +44,90 @@ export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClo
 
       if (event) {
         await updateEvent(event.id, data);
-        toast.success('NODE_UPDATED_SYNC');
+        toast.success('Task updated');
       } else {
         await createEvent(user.uid, data);
-        toast.success('NEW_NODE_ENTRY_SYNC');
+        toast.success('Task created');
       }
       onClose();
     } catch (err) {
       console.error(err);
-      toast.error('SYNC_FAULT: VERIFY_KEYS_AND_CONNECTION');
+      toast.error('Failed to sync. Please check your connection.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-        onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration: 0.15 }}
+        onClick={onClose} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
 
-      {/* Modal — HUD Aesthetic */}
+      {/* Modal */}
       <motion.div
-        initial={{ opacity:0, scale:0.92, y:20 }}
+        initial={{ opacity:0, scale:0.95, y:10 }}
         animate={{ opacity:1, scale:1, y:0 }}
-        exit={{ opacity:0, scale:0.95, y:12 }}
-        transition={{ duration:.4, type:'spring', bounce:.3 }}
-        className="relative z-10 w-full max-w-lg cyber-panel p-0 glass-card bg-[#020617]/90 border-white/10 overflow-hidden shadow-[0_32px_128px_-10px_rgba(0,0,0,0.8)]"
-        style={{ borderRadius:'24px' }}>
-
-        {/* Neon Accent */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500 shadow-[0_0_15px_rgba(139,92,246,0.6)]" />
-
+        exit={{ opacity:0, scale:0.95, y:10 }}
+        transition={{ duration:.2, type:'spring', bounce:.1 }}
+        className="relative z-10 w-full max-w-[480px] bg-white rounded-3xl shadow-2xl overflow-hidden"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-8 pt-10 pb-6">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Terminal size={14} className="text-violet-500 animate-pulse" />
-              <p className="text-[10px] font-black uppercase tracking-[.4em] text-violet-500">
-                {event ? '§ PATCH_EXISTING_NODE' : '§ INITIALIZE_NEW_NODE'}
-              </p>
-            </div>
-            <h2 className="text-4xl font-black tracking-tighter" style={{ fontFamily:'var(--font-heading)' }}>
-              {event ? 'Update Sync' : 'Initialize Queue'}
+            <h2 className="text-xl font-bold tracking-tight text-slate-900">
+              {event ? 'Edit Task' : 'New Task'}
             </h2>
+            <p className="text-xs text-slate-500 font-medium">Add a new deadline to your queue.</p>
           </div>
-          <motion.button whileHover={{ scale:1.1, backgroundColor:'rgba(255,255,255,0.06)' }} whileTap={{ scale:.9 }}
-            onClick={onClose} className="p-3 rounded-xl border border-white/5 transition-all text-slate-500 hover:text-white">
+          <button onClick={onClose} className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
             <X size={20} />
-          </motion.button>
+          </button>
         </div>
 
-        <form onSubmit={submit} className="px-8 pb-10 space-y-6">
+        <form onSubmit={submit} className="p-6 space-y-5">
           {/* Title */}
-          <div className="space-y-2">
-            <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 ml-1">
-              Label_Identifier
-            </label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 ml-0.5">Title</label>
             <input type="text" required autoFocus value={form.title} onChange={e=>setForm({...form,title:e.target.value})}
-              placeholder="e.g. SUBMIT_FINAL_PROTOTYPE"
-              className="w-full px-5 py-4 text-xs font-black tracking-widest uppercase bg-white/[0.03] border border-white/5 rounded-2xl focus:border-violet-500/40 focus:ring-4 focus:ring-violet-500/5 outline-none transition-all placeholder:text-slate-800" />
+              placeholder="What needs to be done?"
+              className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 ml-1">
-                Termination_Window
-              </label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700 ml-0.5">Due Date</label>
               <input type="datetime-local" required value={form.deadline} onChange={e=>setForm({...form,deadline:e.target.value})}
-                className="w-full px-5 py-4 text-xs font-black tracking-widest uppercase bg-white/[0.03] border border-white/5 rounded-2xl focus:border-violet-500/40 outline-none transition-all" />
+                className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900" />
             </div>
-            <div className="space-y-2">
-              <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 ml-1">
-                Category_Cluster
-              </label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700 ml-0.5">Category</label>
               <input list="cats" type="text" required value={form.category} onChange={e=>setForm({...form,category:e.target.value})}
-                placeholder="SELECT_CLUSTER..."
-                className="w-full px-5 py-4 text-xs font-black tracking-widest uppercase bg-white/[0.03] border border-white/5 rounded-2xl focus:border-violet-500/40 outline-none transition-all placeholder:text-slate-800" />
+                placeholder="Ex. Project"
+                className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900" />
               <datalist id="cats">
                 {SUGGESTED_CATS.map(c => <option key={c} value={c}>{c}</option>)}
               </datalist>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 ml-1">
-              Node_Metadata
-            </label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 ml-0.5">Description (Optional)</label>
             <textarea rows={3} value={form.description} onChange={e=>setForm({...form,description:e.target.value})}
-              placeholder="ADDITIONAL_CONTEXTS_LINKS_RESOURCES..."
-              className="w-full px-5 py-4 text-xs font-black tracking-widest uppercase bg-white/[0.03] border border-white/5 rounded-2xl focus:border-violet-500/40 outline-none transition-all resize-none placeholder:text-slate-800" />
+              placeholder="Add links, context, or notes..."
+              className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none placeholder:text-slate-400 text-slate-900" />
           </div>
 
-          <div className="flex items-center gap-4 pt-4">
-            <motion.button type="button" onClick={onClose} disabled={loading}
-              whileHover={{ backgroundColor:'rgba(255,255,255,0.06)' }} whileTap={{ scale:.96 }}
-              className="flex-1 py-4 text-xs font-black tracking-widest uppercase rounded-2xl border border-white/5 text-slate-500 transition-all">
-              ABORT_SEQUENCE
-            </motion.button>
-            <motion.button type="submit" disabled={loading}
-              whileHover={{ scale:1.02, backgroundColor:'var(--neon-violet)' }}
-              whileTap={{ scale:0.98 }}
-              className="flex-[2] py-4 rounded-2xl bg-violet-600 text-[10px] font-black tracking-[0.3em] uppercase text-white shadow-xl shadow-violet-600/20 flex items-center justify-center gap-3 transition-all">
+          <div className="flex items-center gap-3 pt-2">
+            <button type="button" onClick={onClose} disabled={loading}
+              className="flex-1 py-3.5 text-sm font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" disabled={loading}
+              className="flex-[2] py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
               {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              {event ? 'PATCH_EXISTING_NODE' : 'COMMIT_ENTRY'}
-            </motion.button>
+              {event ? 'Save Changes' : 'Create Task'}
+            </button>
           </div>
         </form>
       </motion.div>

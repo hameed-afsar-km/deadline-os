@@ -13,18 +13,26 @@ import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, isToday } from 'date-fns';
+import { cn } from '@/utils/cn';
 
 const P_CFG: Record<string, string> = {
-  high:   'bg-rose-500',
-  medium: 'bg-orange-500',
+  high:   'bg-red-500',
+  medium: 'bg-amber-500',
   low:    'bg-emerald-500',
-  auto:   'bg-violet-500',
+  auto:   'bg-blue-500',
+};
+
+const P_TEXT: Record<string, string> = {
+  high:   'text-red-700',
+  medium: 'text-amber-700',
+  low:    'text-emerald-700',
+  auto:   'text-blue-700',
 };
 
 export default function CalendarPage() {
   const router = useRouter();
   const { user, loading:authLoading } = useUserStore();
-  const { events, setEvents } = useEventStore();
+  const { events } = useEventStore();
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [modalOpen,   setModalOpen]   = useState(false);
@@ -43,7 +51,6 @@ export default function CalendarPage() {
   const onPrev = () => { setDir(-1); setCurr(subMonths(curr, 1)); };
   const onNext = () => { setDir(1);  setCurr(addMonths(curr, 1)); };
 
-  // Generate grid
   const startM = startOfMonth(curr);
   const endM   = endOfMonth(startM);
   const startW = startOfWeek(startM);
@@ -56,59 +63,52 @@ export default function CalendarPage() {
     currentD = addDays(currentD, 1);
   }
 
-  // Anim variants
   const variants = {
-    enter: (d:number) => ({ x: d > 0 ? 40 : -40, opacity: 0 }),
+    enter: (d:number) => ({ x: d > 0 ? 30 : -30, opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit: (d:number) => ({ x: d < 0 ? 40 : -40, opacity: 0 }),
+    exit: (d:number) => ({ x: d < 0 ? 30 : -30, opacity: 0 }),
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative z-20">
+    <div className="min-h-screen flex flex-col relative z-20 bg-slate-50 font-sans">
       <Navbar onMenuToggle={() => setSidebarOpen(o=>!o)} sidebarOpen={sidebarOpen} />
 
-      <div className="flex flex-1 overflow-hidden w-full max-w-[1600px] mx-auto mt-6 px-4">
+      <div className="flex flex-1 overflow-hidden w-full max-w-7xl mx-auto px-4 mt-6">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={openCreate} />
 
         <main className="flex-1 overflow-y-auto px-4 md:px-8 pb-12 pt-2 no-sb flex flex-col items-center">
           
-          <div className="w-full max-w-6xl glass-panel p-6 md:p-8 rounded-[32px] border border-white/5 flex flex-col shadow-2xl relative overflow-hidden">
-            {/* Ambient gradients */}
-            <div className="absolute -top-40 -right-40 w-96 h-96 bg-cyan-500/10 blur-[100px] pointer-events-none rounded-full" />
-            <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-violet-600/10 blur-[100px] pointer-events-none rounded-full" />
-
+          <div className="w-full bg-white p-6 md:p-8 rounded-[32px] border border-slate-200 shadow-sm flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8 relative z-10">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white" style={{ fontFamily:'var(--font-outfit)' }}>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900">
                 {format(curr, 'MMMM yyyy')}
               </h2>
               <div className="flex gap-2">
-                <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:.9 }} onClick={onPrev}
-                  className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-300 transition-all border border-white/10 shadow-sm">
-                  <ChevronLeft size={24} />
-                </motion.button>
-                <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:.9 }} onClick={onNext}
-                  className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-300 transition-all border border-white/10 shadow-sm">
-                  <ChevronRight size={24} />
-                </motion.button>
+                <button onClick={onPrev}
+                  className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors border border-slate-200">
+                  <ChevronLeft size={20} />
+                </button>
+                <button onClick={onNext}
+                  className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors border border-slate-200">
+                  <ChevronRight size={20} />
+                </button>
               </div>
             </div>
 
-            {/* Calendar Grid Container */}
-            <div className="relative z-10">
-              {/* Day Headers */}
+            {/* Calendar Grid */}
+            <div className="relative z-10 w-full overflow-hidden">
               <div className="grid grid-cols-7 mb-4">
                 {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-                  <div key={d} className="text-center text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-500">{d}</div>
+                  <div key={d} className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">{d}</div>
                 ))}
               </div>
 
-              {/* Grid body */}
-              <div className="relative overflow-hidden min-h-[500px] border border-white/5 bg-black/20 rounded-2xl backdrop-blur-md">
+              <div className="relative overflow-hidden min-h-[500px] border border-slate-100 bg-white rounded-2xl shadow-sm">
                 <AnimatePresence custom={dir} mode="wait" initial={false}>
                   <motion.div key={curr.toString()} custom={dir}
-                    variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration:0.4, ease:[0.16,1,0.3,1] }}
-                    className="grid grid-cols-7 h-full w-full absolute inset-0 divide-x divide-y divide-white/5">
+                    variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration:0.3, ease:'easeInOut' }}
+                    className="grid grid-cols-7 h-full w-full absolute inset-0 divide-x divide-y divide-slate-100">
                     
                     {days.map((d, i) => {
                       const evs = events.filter(e => {
@@ -119,11 +119,10 @@ export default function CalendarPage() {
                       const isTod   = isToday(d);
 
                       return (
-                        <div key={i} className={`min-h-[100px] md:min-h-[120px] p-2 flex flex-col gap-1 overflow-y-auto no-sb transition-colors hover:bg-white/5 ${!sameMo?'opacity-30':''}`}>
-                          <div className={`text-xs font-bold mb-1 w-7 h-7 flex items-center justify-center rounded-full ${
-                            isTod ? 'bg-gradient-to-tr from-cyan-400 to-violet-500 text-white shadow-[0_0_12px_rgba(6,182,212,0.5)]' 
-                                  : 'text-slate-400'
-                          }`} style={{ fontFamily:'var(--font-outfit)' }}>
+                        <div key={i} className={`min-h-[100px] md:min-h-[120px] p-2 flex flex-col gap-1.5 overflow-y-auto no-sb transition-colors hover:bg-slate-50 ${!sameMo?'opacity-40 bg-slate-50':''}`}>
+                          <div className={`text-xs font-bold mb-1 w-7 h-7 flex items-center justify-center rounded-full mx-1 mt-1 ${
+                            isTod ? 'bg-blue-600 text-white shadow-md' : 'text-slate-700'
+                          }`}>
                             {format(d, 'd')}
                           </div>
 
@@ -131,13 +130,15 @@ export default function CalendarPage() {
                             const p = getEffectivePriority(ev);
                             const done = ev.status === 'completed';
                             const over = isOverdue(ev);
+                            
                             return (
                               <motion.div key={ev.id} whileHover={done?{}:{scale:1.02}} onClick={() => { setEditEvent(ev); setModalOpen(true); }}
-                                className={`px-2 py-1.5 rounded-lg text-[10px] font-bold truncate cursor-pointer transition-all border ${
-                                  done ? 'opacity-40 line-through bg-white/5 border-transparent text-slate-400' :
-                                  over ? 'bg-rose-500/10 text-rose-300 border-rose-500/30' :
-                                  'bg-white/5 text-white border-white/10 hover:border-white/20'
-                                }`}>
+                                className={cn(
+                                  "px-2.5 py-1.5 rounded-lg text-xs font-semibold truncate cursor-pointer transition-colors border shadow-sm",
+                                  done ? "opacity-50 bg-slate-100 border-slate-200 text-slate-500 line-through" :
+                                  over ? "bg-red-50 text-red-700 border-red-200 hover:bg-red-100" :
+                                  `bg-white border-slate-200 hover:border-slate-300 shadow-sm ${P_TEXT[p]}`
+                                )}>
                                 <div className="flex items-center gap-1.5">
                                   {!done && <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${P_CFG[p]}`} />}
                                   <span className="truncate">{ev.title}</span>
@@ -148,7 +149,6 @@ export default function CalendarPage() {
                         </div>
                       );
                     })}
-
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -166,10 +166,10 @@ export default function CalendarPage() {
 
 function Spinner() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#030305]">
-      <div className="flex flex-col items-center gap-6">
-        <Loader2 size={40} className="animate-spin text-violet-500" />
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Loading Map...</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 size={32} className="animate-spin text-blue-600" />
+        <p className="text-sm font-semibold text-slate-500">Loading Workspace...</p>
       </div>
     </div>
   );

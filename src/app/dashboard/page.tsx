@@ -9,8 +9,7 @@ import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import { DeadlineEvent } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Plus, Filter, LayoutGrid, Search, AlertCircle, Zap, CheckCircle2 } from 'lucide-react';
-import { cn } from '@/utils/cn';
+import { Plus, Filter, LayoutGrid, Clock, CheckCircle2 } from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useUserStore();
@@ -45,7 +44,7 @@ export default function Dashboard() {
   const close = () => { setEditingEvent(null); setIsModalOpen(false); };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#020617] text-white">
+    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 font-sans">
       <Navbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} sidebarOpen={sidebarOpen} />
       
       <div className="flex flex-1 relative overflow-hidden">
@@ -55,126 +54,129 @@ export default function Dashboard() {
           onCreateEvent={() => setIsModalOpen(true)}
         />
 
-        <main className="flex-1 p-6 lg:p-12 overflow-y-auto no-sb relative z-10">
+        <main className="flex-1 p-6 lg:p-10 overflow-y-auto no-sb relative z-10 w-full max-w-7xl mx-auto">
           {/* Header Section */}
-          <div className="flex flex-col gap-2 mb-12">
-            <h1 className="text-4xl lg:text-7xl font-black tracking-tighter leading-none" style={{ fontFamily: 'var(--font-heading)' }}>
-              SYSTEM_READY, <span className="text-violet-500">{user?.displayName?.toUpperCase() || 'USER'}</span>
+          <div className="flex flex-col gap-2 mb-10">
+            <h1 className="text-3xl lg:text-5xl font-extrabold tracking-tight text-slate-900">
+              Welcome back, {user?.displayName || 'User'}
             </h1>
-            <p className="text-slate-500 font-bold uppercase tracking-[0.4em] flex items-center gap-2 text-[10px]">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              NODE_ID: {user?.uid.slice(0, 12)} {"//"} STATUS: OPTIMIZED
+            <p className="text-slate-500 font-medium text-15">
+              Here's what's happening with your projects today.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
-            {/* Critical Focus Indicator */}
-            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
-              className="lg:col-span-3 cyber-panel p-8 glass-card border-violet-500/20 shadow-[0_20px_60px_-15px_rgba(139,92,246,0.15)] group overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-64 h-64 opacity-5 bg-violet-500 blur-3xl pointer-events-none group-hover:opacity-10 transition-all" />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
+            {/* Primary Focus Banner */}
+            <div className="lg:col-span-3 bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm relative overflow-hidden transition-shadow hover:shadow-md">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -mx-20 -my-20 pointer-events-none" />
               
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
-                <div className="space-y-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 relative z-10 w-full h-full">
+                <div className="flex-1 space-y-4">
                   <div className="flex items-center gap-2">
-                    <Zap size={18} className="text-violet-500 animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-violet-400">APEX_PRIORITY_NODE</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.5)] animate-pulse" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700">Top Priority</span>
                   </div>
                   {priorityOne ? (
-                    <div className="space-y-3">
-                      <h2 className="text-4xl lg:text-6xl font-black tracking-tighter max-w-xl leading-none">
-                        CRITICAL: &ldquo;{priorityOne.title}&rdquo;
+                    <div className="space-y-2">
+                      <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                        {priorityOne.title}
                       </h2>
-                      <p className="text-slate-400 text-lg font-medium max-w-md">Immediate attention required by the command chain. Execution window closing soon.</p>
+                      <p className="text-slate-500 text-base font-medium max-w-md line-clamp-2">
+                        {priorityOne.description || 'Action required before the deadline window closes.'}
+                      </p>
                     </div>
                   ) : (
-                    <h2 className="text-4xl lg:text-5xl font-black tracking-tighter text-slate-700 leading-none">All clusters operational. No priority nodes.</h2>
+                    <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-400 leading-tight">
+                      You're all caught up. No pending deadlines.
+                    </h2>
                   )}
                 </div>
 
                 {priorityOne && (
-                  <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.04] text-center min-w-[240px]">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">TIME_WINDOW</p>
-                    <p className="text-4xl font-black text-rose-500 tracking-tighter">
-                      -{Math.max(0, Math.round((new Date(priorityOne.deadline as unknown as string).getTime() - new Date().getTime()) / 3600000))}HRS
+                  <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm text-center min-w-[200px] flex flex-col items-center justify-center">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Time Remaining</p>
+                    <p className="text-3xl font-extrabold text-blue-600 tracking-tight">
+                      {Math.max(0, Math.round((new Date(priorityOne.deadline as unknown as string).getTime() - new Date().getTime()) / 3600000))} hrs
                     </p>
-                    <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:0.95 }}
+                    <button
                       onClick={() => openEdit(priorityOne)}
-                      className="w-full mt-6 py-3 rounded-xl bg-violet-600 text-[10px] font-black tracking-widest uppercase text-white shadow-xl hover:bg-violet-500 transition-all">
-                      INITIALIZE_REDO
-                    </motion.button>
+                      className="w-full mt-5 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold transition-colors">
+                      View Details
+                    </button>
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
 
             {/* Quick Metrics */}
             <div className="flex flex-col gap-6">
-              <div className="flex-1 cyber-panel p-6 glass-card bg-orange-500/5 border-orange-500/20">
-                <div className="flex items-center justify-between mb-4">
-                  <AlertCircle className="text-orange-500" size={18} />
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">STATUS: HEAT</span>
+              <div className="flex-1 bg-white p-6 rounded-2xl border border-red-100 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="p-2 bg-red-50 text-red-600 rounded-lg"><Clock size={16} strokeWidth={2.5} /></span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-red-600">Overdue</span>
                 </div>
-                <p className="text-4xl font-black tracking-tighter mb-1 text-orange-500">{stats.overdue}</p>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">LATENCY_WARNING</p>
+                <p className="text-3xl font-extrabold tracking-tight text-slate-900">{stats.overdue}</p>
+                <p className="text-xs font-medium text-slate-500 mt-1">Requires attention</p>
               </div>
-              <div className="flex-1 cyber-panel p-6 glass-card bg-emerald-500/5 border-emerald-500/20">
-                <div className="flex items-center justify-between mb-4">
-                  <CheckCircle2 className="text-emerald-500" size={18} />
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400">STATUS: SYNK</span>
+              <div className="flex-1 bg-white p-6 rounded-2xl border border-emerald-100 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><CheckCircle2 size={16} strokeWidth={2.5} /></span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Completed</span>
                 </div>
-                <p className="text-4xl font-black tracking-tighter mb-1 text-emerald-500">{stats.completed}</p>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">NODES_FINALIZED</p>
+                <p className="text-3xl font-extrabold tracking-tight text-slate-900">{stats.completed}</p>
+                <p className="text-xs font-medium text-slate-500 mt-1">Successfully resolved</p>
               </div>
             </div>
           </div>
 
           {/* Controls Bar */}
-          <div className="sticky top-24 z-20 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 py-3 backdrop-blur-3xl border-y border-white/5 bg-slate-900/10">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 px-6 py-2 rounded-xl bg-white/5 border border-white/10">
-                <Filter size={14} className="text-violet-500" />
-                <span className="text-[10px] font-black tracking-[0.3em] text-slate-400 uppercase">FILTERS:</span>
-              </div>
-              <div className="flex items-center gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 p-1 bg-slate-200/50 rounded-xl">
                 {['all', 'pending', 'completed'].map((f) => (
                   <button key={f}
                     onClick={() => setActiveFilter(f as 'all' | 'pending' | 'completed')}
-                    className={cn(
-                      "px-5 py-2 text-[10px] font-black tracking-widest uppercase transition-all rounded-xl",
-                      activeFilter === f ? "bg-violet-600 text-white shadow-lg" : "text-slate-500 hover:text-white"
-                    )}>
+                    className={`px-4 py-2 text-sm font-semibold capitalize transition-all rounded-lg ${
+                      activeFilter === f ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                    }`}>
                     {f}
                   </button>
                 ))}
               </div>
             </div>
 
-            <motion.button whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}
+            <button
               onClick={() => setIsModalOpen(true)}
-              className="px-8 py-3.5 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white shadow-xl shadow-violet-600/20 flex gap-3 items-center text-xs font-black uppercase tracking-[0.2em]">
-              <Plus size={18} strokeWidth={3} />
-              NEW_NODE_ENTRY
-            </motion.button>
+              className="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white shadow-md shadow-slate-900/10 flex gap-2 items-center text-sm font-semibold transition-all">
+              <Plus size={16} strokeWidth={2.5} /> New Task
+            </button>
           </div>
 
           {/* Grid Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
             <AnimatePresence mode="popLayout">
               {filtered.map((e) => (
                 <EventCard key={e.id} event={e} onEdit={openEdit} />
               ))}
             </AnimatePresence>
-          </div>
 
-          {filtered.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-40 border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.01]">
-              <div className="w-16 h-16 rounded-full border-2 border-slate-800 flex items-center justify-center mb-6">
-                <LayoutGrid size={24} className="text-slate-800" />
+            {filtered.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center py-32 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50">
+                <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-6 text-slate-400">
+                  <LayoutGrid size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">No deadlines found</h3>
+                <p className="text-sm font-medium text-slate-500 text-center max-w-sm">
+                  There are no tasks matching your current filters. Add a new deadline to get started.
+                </p>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="mt-6 px-6 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 font-semibold shadow-sm hover:bg-slate-50 transition-colors">
+                  Create First Task &gt;
+                </button>
               </div>
-              <p className="text-lg font-black tracking-tight text-slate-700 uppercase italic">Empty Cluster. No signals detected.</p>
-            </div>
-          )}
+            )}
+          </div>
         </main>
       </div>
 

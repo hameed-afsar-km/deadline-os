@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import { ThemeWrapper } from "@/components/ThemeWrapper";
 
-const fontSans = Space_Grotesk({ subsets: ["latin"], variable: "--font-sans" });
-const fontMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "DeadlineOS — Momentum Intelligence",
-  description: "High-octane deadline management for builders.",
+  title: "DeadlineOS | Intelligent Productivity",
+  description: "A professional platform for managing critical deadlines and tasks.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fontSans.variable} ${fontMono.variable}`}>
-      <body className="antialiased min-h-screen Selection:bg-purple-500/30 selection:text-white" style={{ background: '#020617' }}>
+    <html lang="en" className={inter.variable}>
+      <body className="antialiased min-h-screen text-slate-900 bg-slate-50 selection:bg-blue-500/20 selection:text-blue-900">
         <AuthProvider>
           <ThemeWrapper>
             {children}
@@ -24,23 +23,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               position="top-right"
               toastOptions={{
                 style: {
-                  background: 'rgba(15, 23, 42, 0.9)',
-                  backdropFilter: 'blur(10px)',
-                  color: '#fff',
-                  border: '1px solid rgba(139, 92, 246, 0.3)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-                  borderRadius: '12px',
-                  // JetBrains Mono for a technical, high-performance feel
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  letterSpacing: '0.02em',
+                  background: '#ffffff',
+                  color: '#0F172A',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 8px 30px rgba(0, 0, 0, 0.08)',
+                  borderRadius: '8px',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '14px',
+                  fontWeight: '500',
                 },
                 success: {
-                  iconTheme: { primary: '#8B5CF6', secondary: '#fff' }
+                  iconTheme: { primary: '#10B981', secondary: '#fff' }
                 },
                 error: {
-                  iconTheme: { primary: '#F43F5E', secondary: '#fff' }
+                  iconTheme: { primary: '#EF4444', secondary: '#fff' }
                 }
               }}
             />
