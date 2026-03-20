@@ -10,91 +10,68 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDebouncedCallback } from 'use-debounce';
 
-interface NavbarProps {
-  onMenuToggle?: () => void;
-  sidebarOpen?: boolean;
-}
+interface NavbarProps { onMenuToggle?: () => void; sidebarOpen?: boolean; }
 
 export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
   const router = useRouter();
   const { user } = useUserStore();
   const { setSearchQuery } = useEventStore();
-  const [localSearch, setLocalSearch] = useState('');
-  const [searchFocused, setSearchFocused] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
+  const [local, setLocal]         = useState('');
+  const [focused, setFocused]     = useState(false);
+  const [showMenu, setShowMenu]   = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const debouncedSearch = useDebouncedCallback((v: string) => setSearchQuery(v), 300);
-  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalSearch(e.target.value);
-    debouncedSearch(e.target.value);
-  }, [debouncedSearch]);
-
-  const handleLogout = async () => {
-    await logOut();
-    toast.success('Signed out.');
-    router.replace('/login');
-  };
+  const debSearch = useDebouncedCallback((v: string) => setSearchQuery(v), 300);
+  const onChange  = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { setLocal(e.target.value); debSearch(e.target.value); }, [debSearch]);
 
   useEffect(() => {
-    const h = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setShowUserMenu(false);
-    };
+    const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false); };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
   const avatar = user?.displayName?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? 'U';
-  const displayName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
+  const name   = user?.displayName ?? user?.email?.split('@')[0] ?? 'there';
 
   return (
     <header
-      className="sticky top-0 z-50 flex items-center justify-between px-5 md:px-8 h-16 border-b-2"
-      style={{ borderColor: 'var(--ink)', background: 'var(--paper)' }}
+      className="sticky top-0 z-50 flex items-center justify-between px-5 md:px-8 h-16 border-b transition-all"
+      style={{ borderColor: 'var(--b1)', background: 'rgba(12,10,9,0.9)', backdropFilter: 'blur(20px)' }}
     >
-      {/* Left */}
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-4">
         <motion.button
           onClick={onMenuToggle}
           whileTap={{ scale: 0.88 }}
-          className="md:hidden p-2 rounded-xl border-2 transition-colors"
-          style={{ borderColor: 'var(--border)', background: 'var(--white)' }}
+          className="md:hidden p-2 rounded-xl transition-colors"
+          style={{ color: 'var(--t2)' }}
         >
-          {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </motion.button>
-
-        <div className="flex items-center gap-3">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center font-display font-black text-white text-sm"
-            style={{ background: 'var(--ink)' }}
+        <div className="flex items-center gap-2.5">
+          <motion.div
+            whileHover={{ scale: 1.08 }}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black"
+            style={{ background: 'linear-gradient(135deg, #F59E0B, #B45309)', color: '#0C0A09' }}
           >
-            D/
-          </div>
-          <span className="font-display font-black text-lg tracking-tight hidden sm:block" style={{ color: 'var(--ink)' }}>
-            DeadlineOS
-          </span>
+            D
+          </motion.div>
+          <span className="text-sm font-bold tracking-tight hidden sm:block" style={{ color: 'var(--t0)' }}>DeadlineOS</span>
         </div>
       </div>
 
-      {/* Centre */}
+      {/* Search */}
       <div className="flex-1 max-w-sm mx-4 md:mx-8">
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-            style={{ color: searchFocused ? 'var(--accent)' : 'var(--ink-4)' }} />
-          <motion.input
-            animate={{ borderColor: searchFocused ? 'var(--ink)' : 'var(--border)' }}
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
+            style={{ color: focused ? 'var(--amber)' : 'var(--t3)' }} />
+          <input
             type="text"
-            value={localSearch}
-            onChange={handleSearch}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-            placeholder="Search deadlines..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all"
-            style={{
-              background: 'var(--white)',
-              color: 'var(--ink)',
-              boxShadow: searchFocused ? '3px 3px 0 var(--ink)' : 'none',
-            }}
+            value={local}
+            onChange={onChange}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder="Search your deadlines..."
+            className="field w-full pl-9 pr-4 py-2.5"
           />
         </div>
       </div>
@@ -104,54 +81,52 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
         <motion.button
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.88 }}
-          className="p-2.5 rounded-xl border-2 relative"
-          style={{ borderColor: 'var(--border)', background: 'var(--white)' }}
+          className="relative p-2.5 rounded-xl transition-colors"
+          style={{ color: 'var(--t2)', background: 'var(--s2)' }}
         >
-          <Bell size={18} style={{ color: 'var(--ink-3)' }} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />
+          <Bell size={18} />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: 'var(--amber)' }} />
         </motion.button>
 
-        <div className="w-px h-6" style={{ background: 'var(--border)' }} />
-
-        <div className="relative" ref={userMenuRef}>
+        <div ref={menuRef} className="relative">
           <motion.button
-            onClick={() => setShowUserMenu((s) => !s)}
+            onClick={() => setShowMenu(s => !s)}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl border-2 transition-all"
-            style={{ borderColor: 'var(--border)', background: 'var(--white)' }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all"
+            style={{ background: 'var(--s2)', border: '1px solid var(--b1)' }}
           >
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white"
-              style={{ background: 'var(--ink)' }}
+              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
+              style={{ background: 'linear-gradient(135deg, #F59E0B, #B45309)', color: '#0C0A09' }}
             >
               {avatar}
             </div>
-            <span className="text-sm font-bold hidden sm:block" style={{ color: 'var(--ink)' }}>
-              {displayName.split(' ')[0]}
+            <span className="text-sm font-semibold hidden sm:block" style={{ color: 'var(--t1)' }}>
+              {name.split(' ')[0]}
             </span>
           </motion.button>
 
           <AnimatePresence>
-            {showUserMenu && (
+            {showMenu && (
               <motion.div
                 initial={{ opacity: 0, y: 8, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.96 }}
                 transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] as any }}
-                className="absolute right-0 top-[calc(100%+8px)] w-56 rounded-2xl border-2 overflow-hidden"
-                style={{ borderColor: 'var(--ink)', background: 'var(--white)', boxShadow: '4px 4px 0 var(--ink)' }}
+                className="absolute right-0 top-[calc(100%+8px)] w-60 rounded-2xl overflow-hidden"
+                style={{ background: 'var(--s2)', border: '1px solid var(--b2)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}
               >
-                <div className="px-4 py-3.5 border-b-2" style={{ borderColor: 'var(--border)', background: 'var(--paper)' }}>
-                  <p className="text-sm font-bold truncate" style={{ color: 'var(--ink)' }}>{user?.displayName}</p>
-                  <p className="text-xs font-semibold truncate mt-0.5" style={{ color: 'var(--ink-4)' }}>{user?.email}</p>
+                <div className="px-4 py-4 border-b" style={{ borderColor: 'var(--b1)' }}>
+                  <p className="text-sm font-bold truncate" style={{ color: 'var(--t0)' }}>{user?.displayName}</p>
+                  <p className="text-xs font-medium truncate mt-0.5" style={{ color: 'var(--t3)' }}>{user?.email}</p>
                 </div>
                 <div className="p-2">
                   <motion.button
-                    whileHover={{ background: '#FFF0EE' }}
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold rounded-xl transition-colors"
-                    style={{ color: 'var(--accent)' }}
+                    whileHover={{ backgroundColor: 'rgba(251,113,133,0.08)' }}
+                    onClick={async () => { await logOut(); toast.success('Signed out.'); router.replace('/login'); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-semibold rounded-xl transition-colors"
+                    style={{ color: 'var(--rose)' }}
                   >
                     <LogOut size={15} /> Sign out
                   </motion.button>

@@ -11,16 +11,16 @@ import { EventModal } from '@/components/EventModal';
 import { EventCard } from '@/components/EventCard';
 import { DeadlineEvent } from '@/types';
 import { toDate } from '@/utils/dateHelpers';
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getDay, addMonths, subMonths } from 'date-fns';
 
 const CAT_COLOR: Record<string, string> = {
-  Study:      '#1A1AFF',
-  Hackathon:  '#7c3aed',
-  Submission: '#FF5533',
-  Personal:   '#00C896',
-  Exam:       '#F5A623',
+  Study:      '#FCD34D',
+  Hackathon:  '#C4B5FD',
+  Submission: '#FB7185',
+  Personal:   '#34D399',
+  Exam:       '#F59E0B',
 };
 
 export default function CalendarPage() {
@@ -57,37 +57,37 @@ export default function CalendarPage() {
   const openEdit   = (ev: DeadlineEvent) => { setEditEvent(ev); setModalOpen(true); };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ color: 'var(--ink)' }}>
+    <div className="min-h-screen flex flex-col">
       <Navbar onMenuToggle={() => setSidebarOpen((o) => !o)} sidebarOpen={sidebarOpen} />
 
-      <div className="flex flex-1 overflow-hidden relative z-10">
+      <div className="flex flex-1 overflow-hidden relative z-10 w-full max-w-[1600px] mx-auto">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={openCreate} />
 
-        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-8">
-          <div className="max-w-[1100px] mx-auto space-y-8">
+        <main className="flex-1 overflow-y-auto px-5 md:px-10 py-10 hide-scrollbar scroll-smooth">
+          <div className="max-w-[1200px] mx-auto space-y-10">
 
             {/* Header */}
             <motion.div
-              initial={{ opacity: 0, y: -14 }}
+              initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-between border-b-2 pb-6"
-              style={{ borderColor: 'var(--border)' }}
+              className="flex items-center justify-between pb-6 border-b"
+              style={{ borderColor: 'var(--b1)' }}
             >
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl border-2" style={{ borderColor: 'var(--ink)', background: 'var(--white)' }}>
-                  <CalIcon size={22} style={{ color: 'var(--ink)' }} />
+              <div className="flex items-center gap-5">
+                <div className="p-4 rounded-2xl" style={{ background: 'var(--s2)', border: '1px solid var(--b2)' }}>
+                  <CalIcon size={24} style={{ color: 'var(--amber)' }} />
                 </div>
                 <div>
-                  <h1 className="font-display font-black text-3xl tracking-tight" style={{ color: 'var(--ink)' }}>Calendar</h1>
-                  <p className="text-sm font-medium" style={{ color: 'var(--ink-4)' }}>Bird's-eye view of your deadlines</p>
+                  <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--t0)' }}>Calendar</h1>
+                  <p className="text-sm font-medium mt-1" style={{ color: 'var(--t2)' }}>Bird's-eye temporal map</p>
                 </div>
               </div>
               <motion.button
-                whileHover={{ x: -2, y: -2, boxShadow: '4px 4px 0 var(--ink)' }}
-                whileTap={{ x: 0, y: 0, boxShadow: 'none' }}
+                whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(245,158,11,0.25)' }}
+                whileTap={{ scale: 0.96 }}
                 onClick={openCreate}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-black text-white border-2"
-                style={{ background: 'var(--ink)', borderColor: 'var(--ink)' }}
+                className="hidden sm:inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold shrink-0"
+                style={{ background: 'linear-gradient(135deg, #F59E0B, #B45309)', color: '#0C0A09' }}
               >
                 <Plus size={16} /> New Deadline
               </motion.button>
@@ -97,59 +97,58 @@ export default function CalendarPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="rounded-2xl border-2 overflow-hidden"
-              style={{ borderColor: 'var(--ink)', background: 'var(--white)' }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="card overflow-hidden"
             >
               {/* Month Nav */}
-              <div className="flex items-center justify-between px-7 py-5 border-b-2" style={{ borderColor: 'var(--ink)' }}>
+              <div className="flex items-center justify-between px-8 py-6 border-b" style={{ borderColor: 'var(--b1)' }}>
                 <AnimatePresence mode="popLayout">
                   <motion.h2
                     key={currentMonth.getTime()}
                     initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -14 }}
-                    className="font-display font-black text-2xl tracking-tight"
-                    style={{ color: 'var(--ink)' }}
+                    className="text-2xl font-extrabold tracking-tight"
+                    style={{ color: 'var(--t0)' }}
                   >
                     {format(currentMonth, 'MMMM yyyy')}
                   </motion.h2>
                 </AnimatePresence>
-                <div className="flex items-center gap-1 border-2 rounded-xl p-1" style={{ borderColor: 'var(--border)' }}>
+                <div className="flex items-center gap-1.5 p-1.5 rounded-xl border" style={{ borderColor: 'var(--b1)', background: 'var(--s1)' }}>
                   <motion.button
-                    whileHover={{ scale: 1.1, background: 'var(--paper)' }}
+                    whileHover={{ scale: 1.1, background: 'var(--s3)' }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setCurrentMonth((m) => subMonths(m, 1))}
                     className="p-2 rounded-lg transition-colors"
-                    style={{ color: 'var(--ink-3)' }}
+                    style={{ color: 'var(--t2)' }}
                   >
-                    <ChevronLeft size={18} />
+                    <ChevronLeft size={16} />
                   </motion.button>
                   <motion.button
-                    whileHover={{ background: 'var(--paper)' }}
+                    whileHover={{ background: 'var(--s3)' }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => { setCurrentMonth(new Date()); setSelectedDay(new Date()); }}
-                    className="px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors"
-                    style={{ color: 'var(--ink-3)' }}
+                    className="px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors"
+                    style={{ color: 'var(--t2)' }}
                   >
                     Today
                   </motion.button>
                   <motion.button
-                    whileHover={{ scale: 1.1, background: 'var(--paper)' }}
+                    whileHover={{ scale: 1.1, background: 'var(--s3)' }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setCurrentMonth((m) => addMonths(m, 1))}
                     className="p-2 rounded-lg transition-colors"
-                    style={{ color: 'var(--ink-3)' }}
+                    style={{ color: 'var(--t2)' }}
                   >
-                    <ChevronRight size={18} />
+                    <ChevronRight size={16} />
                   </motion.button>
                 </div>
               </div>
 
               {/* Weekday headers */}
-              <div className="grid grid-cols-7 border-b-2" style={{ borderColor: 'var(--border)' }}>
+              <div className="grid grid-cols-7 border-b" style={{ borderColor: 'var(--b1)', background: 'var(--s2)' }}>
                 {WEEK.map((d) => (
-                  <div key={d} className="py-3.5 text-center text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--ink-4)' }}>
+                  <div key={d} className="py-4 text-center text-[11px] font-black uppercase tracking-widest" style={{ color: 'var(--t4)' }}>
                     {d}
                   </div>
                 ))}
@@ -158,7 +157,7 @@ export default function CalendarPage() {
               {/* Days */}
               <div className="grid grid-cols-7">
                 {Array.from({ length: startPad }).map((_, i) => (
-                  <div key={`pad-${i}`} className="min-h-[110px] border-r border-b" style={{ borderColor: 'var(--border)', background: 'var(--paper)' }} />
+                  <div key={`pad-${i}`} className="min-h-[120px] border-r border-b" style={{ borderColor: 'var(--b1)', background: 'var(--bg)' }} />
                 ))}
                 {days.map((day, idx) => {
                   const dayEvs  = eventsOn(day);
@@ -169,49 +168,51 @@ export default function CalendarPage() {
                   return (
                     <motion.div
                       key={day.toISOString()}
-                      whileHover={{ backgroundColor: 'var(--paper-2)' }}
+                      whileHover={{ backgroundColor: 'var(--s3)' }}
                       onClick={() => setSelectedDay(isSel ? null : day)}
-                      className="min-h-[110px] p-2.5 cursor-pointer border-b transition-colors"
+                      className="min-h-[120px] p-2.5 cursor-pointer border-b transition-colors"
                       style={{
-                        borderColor: 'var(--border)',
-                        borderRight: !isLast ? '1px solid var(--border)' : 'none',
-                        background: isSel ? 'var(--paper-2)' : undefined,
-                        outline: isSel ? '2px solid var(--ink)' : 'none',
-                        outlineOffset: '-2px',
+                        borderColor: 'var(--b1)',
+                        borderRight: !isLast ? '1px solid var(--b1)' : 'none',
+                        background: isSel ? 'var(--s4)' : 'transparent',
+                        boxShadow: isSel ? 'inset 0 0 0 1px var(--amber)' : 'none'
                       }}
                     >
                       <div className="flex justify-end mb-2">
                         <span
-                          className="w-7 h-7 flex items-center justify-center rounded-full text-xs font-black transition-all"
+                          className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-extrabold transition-all`}
                           style={
                             isToday
-                              ? { background: 'var(--ink)', color: '#fff' }
+                              ? { background: 'var(--amber)', color: '#0C0A09' }
                               : isSel
-                              ? { background: 'var(--accent)', color: '#fff' }
-                              : { color: 'var(--ink-4)' }
+                              ? { background: 'var(--s1)', color: 'var(--amber)', border: '1px solid var(--amber)' }
+                              : { color: 'var(--t3)' }
                           }
                         >
                           {format(day, 'd')}
                         </span>
                       </div>
-                      <div className="space-y-1">
-                        {dayEvs.slice(0, 2).map((e) => (
-                          <div
-                            key={e.id}
-                            className="text-[10px] px-1.5 py-0.5 rounded-md truncate font-bold border"
-                            style={{
-                              background: `${CAT_COLOR[e.category] ?? '#1A1AFF'}10`,
-                              color:       CAT_COLOR[e.category] ?? '#1A1AFF',
-                              borderColor: `${CAT_COLOR[e.category] ?? '#1A1AFF'}30`,
-                              opacity: e.status === 'completed' ? 0.4 : 1,
-                            }}
-                          >
-                            {e.title}
-                          </div>
-                        ))}
-                        {dayEvs.length > 2 && (
-                          <div className="text-[9px] font-black uppercase tracking-wider px-1" style={{ color: 'var(--ink-4)' }}>
-                            +{dayEvs.length - 2} more
+                      <div className="space-y-1.5">
+                        {dayEvs.slice(0, 3).map((e) => {
+                          const c = CAT_COLOR[e.category] ?? '#F59E0B';
+                          return (
+                            <div
+                              key={e.id}
+                              className="text-[10px] px-2 py-1 rounded-md truncate font-bold"
+                              style={{
+                                background: `${c}15`,
+                                color: c,
+                                border: `1px solid ${c}25`,
+                                opacity: e.status === 'completed' ? 0.3 : 1,
+                              }}
+                            >
+                              {e.title}
+                            </div>
+                          );
+                        })}
+                        {dayEvs.length > 3 && (
+                          <div className="text-[10px] font-bold px-1.5" style={{ color: 'var(--t4)' }}>
+                            +{dayEvs.length - 3} more
                           </div>
                         )}
                       </div>
@@ -221,7 +222,7 @@ export default function CalendarPage() {
               </div>
             </motion.div>
 
-            {/* Day Detail */}
+            {/* Day Detail View */}
             <AnimatePresence mode="wait">
               {selectedDay && (
                 <motion.div
@@ -229,32 +230,29 @@ export default function CalendarPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 12 }}
-                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as any }}
-                  className="space-y-5"
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as any }}
+                  className="space-y-6 pt-4"
                 >
-                  <div className="flex items-center gap-4 border-b-2 pb-5" style={{ borderColor: 'var(--border)' }}>
-                    <h3 className="font-display font-black text-2xl" style={{ color: 'var(--ink)' }}>
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-2xl font-extrabold" style={{ color: 'var(--t0)' }}>
                       {format(selectedDay, 'EEEE, MMMM d')}
                     </h3>
                     <span
-                      className="tag text-[11px]"
-                      style={{ color: 'var(--ink)', borderColor: 'var(--ink)', background: 'var(--paper-2)' }}
+                      className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider"
+                      style={{ color: 'var(--t2)', background: 'var(--s2)', border: '1px solid var(--b2)' }}
                     >
-                      {selectedEvents.length} event{selectedEvents.length !== 1 ? 's' : ''}
+                      {selectedEvents.length} Tasks
                     </span>
                   </div>
 
                   {selectedEvents.length === 0 ? (
-                    <motion.div
-                      className="rounded-2xl border-2 py-16 text-center"
-                      style={{ borderColor: 'var(--border)', background: 'var(--white)' }}
-                    >
-                      <div className="text-5xl mb-4">🍃</div>
-                      <p className="font-display font-bold text-xl" style={{ color: 'var(--ink-3)' }}>Day is clear</p>
-                      <p className="text-sm font-medium mt-1" style={{ color: 'var(--ink-4)' }}>No deadlines on this day.</p>
-                    </motion.div>
+                    <div className="card py-16 text-center border-dashed">
+                      <Sparkles size={32} className="mx-auto mb-4" style={{ color: 'var(--t4)' }} />
+                      <p className="text-lg font-bold" style={{ color: 'var(--t0)' }}>Empty day.</p>
+                      <p className="text-sm font-medium mt-1" style={{ color: 'var(--t2)' }}>Enjoy the quiet, or add a new deadline.</p>
+                    </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                       {selectedEvents.map((e) => (
                         <EventCard key={e.id} event={e} onEdit={openEdit} />
                       ))}
@@ -279,10 +277,15 @@ export default function CalendarPage() {
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--paper)' }}>
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 rounded-xl border-4 animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--ink)' }} />
-        <p className="font-bold text-sm" style={{ color: 'var(--ink-4)' }}>Loading Calendar...</p>
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg)' }}>
+      <div className="flex flex-col items-center gap-6">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full border-2 border-dashed opacity-20 animate-spin-slow" style={{ borderColor: 'var(--amber)' }} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full animate-breathe" style={{ background: 'var(--amber)', boxShadow: '0 0 20px var(--amber)' }} />
+          </div>
+        </div>
+        <p className="text-sm font-bold tracking-widest uppercase" style={{ color: 'var(--t3)' }}>Loading Map</p>
       </div>
     </div>
   );

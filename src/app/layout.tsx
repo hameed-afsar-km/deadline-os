@@ -1,30 +1,24 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Syne } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import { ThemeWrapper } from "@/components/ThemeWrapper";
 
-const spaceGrotesk = Space_Grotesk({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  weight: ['300','400','500','600','700'],
-});
-
-const syne = Syne({
-  subsets: ["latin"],
-  variable: "--font-syne",
-  weight: ['400','500','600','700','800'],
+  variable: "--font-jakarta",
+  weight: ['300','400','500','600','700','800'],
+  style: ['normal','italic'],
 });
 
 export const metadata: Metadata = {
-  title: "DeadlineOS — Smart Deadline Management",
-  description:
-    "Track deadlines, hackathons, exams, and personal events with AI-powered prioritization and real-time sync across all your devices.",
-  keywords: "deadline management, task tracker, hackathon, exam, productivity",
+  title: "DeadlineOS — Stay on top of what matters",
+  description: "A warm, focused deadline tracker that helps you stay ahead — smart priorities, live countdowns, and real-time sync across all your devices.",
+  keywords: "deadline management, task tracker, productivity, focus",
   openGraph: {
     title: "DeadlineOS",
-    description: "Smart deadline and event management system",
+    description: "Stay on top of what matters most.",
     type: "website",
   },
 };
@@ -35,8 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${syne.variable}`} style={{ background: '#F5F2EC' }}>
-      <body className="antialiased" style={{ background: '#F5F2EC', color: '#0D0D0D' }}>
+    <html lang="en" className={jakarta.variable} style={{ background: '#0C0A09' }}>
+      <body className="antialiased" style={{ background: '#0C0A09', color: '#D6C9B0' }}>
         <AuthProvider>
           <ThemeWrapper>
             {children}
@@ -44,19 +38,19 @@ export default function RootLayout({
               position="top-right"
               toastOptions={{
                 style: {
-                  background: '#FFFFFF',
-                  color: '#0D0D0D',
-                  border: '2px solid #0D0D0D',
+                  background: '#1E1A17',
+                  color: '#F5EDD6',
+                  border: '1px solid rgba(255,200,120,0.15)',
                   borderRadius: '14px',
                   fontSize: '13px',
                   fontWeight: '600',
-                  boxShadow: '4px 4px 0 #0D0D0D',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                 },
                 success: {
-                  iconTheme: { primary: '#00C896', secondary: '#fff' },
+                  iconTheme: { primary: '#34D399', secondary: '#1E1A17' },
                 },
                 error: {
-                  iconTheme: { primary: '#FF5533', secondary: '#fff' },
+                  iconTheme: { primary: '#FB7185', secondary: '#1E1A17' },
                 },
               }}
             />

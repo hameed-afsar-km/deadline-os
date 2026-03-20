@@ -10,18 +10,18 @@ import { Timestamp } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 
 const PRIORITY_CFG: Record<string, { color: string; label: string; bg: string; border: string }> = {
-  high:   { color: 'var(--accent)',   label: 'HIGH',   bg: 'rgba(255,85,51,0.08)',   border: 'rgba(255,85,51,0.4)' },
-  medium: { color: 'var(--amber)',    label: 'MEDIUM', bg: 'rgba(245,166,35,0.08)',  border: 'rgba(245,166,35,0.4)' },
-  low:    { color: 'var(--accent-3)', label: 'LOW',    bg: 'rgba(0,200,150,0.08)',   border: 'rgba(0,200,150,0.4)' },
-  auto:   { color: 'var(--accent-2)', label: 'AUTO',   bg: 'rgba(26,26,255,0.08)',   border: 'rgba(26,26,255,0.3)' },
+  high:   { color: '#F59E0B', label: 'HIGH URGENCY', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.2)' },
+  medium: { color: '#67E8F9', label: 'MEDIUM',       bg: 'rgba(103,232,249,0.08)', border: 'rgba(103,232,249,0.2)' },
+  low:    { color: '#34D399', label: 'LOW',          bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.2)' },
+  auto:   { color: '#C4B5FD', label: 'AUTO',         bg: 'rgba(196,181,253,0.08)', border: 'rgba(196,181,253,0.2)' },
 };
 
-const CATEGORY_CFG: Record<string, { color: string; emoji: string }> = {
-  Study:      { color: 'var(--accent-2)', emoji: '📚' },
-  Hackathon:  { color: 'var(--accent)',   emoji: '⚡' },
-  Submission: { color: 'var(--accent)',   emoji: '📨' },
-  Personal:   { color: 'var(--accent-3)', emoji: '🌱' },
-  Exam:       { color: 'var(--amber)',    emoji: '✏️' },
+const CATEGORY_ICONS: Record<string, string> = {
+  Study:      '📚',
+  Hackathon:  '⚡',
+  Submission: '📨',
+  Personal:   '🌱',
+  Exam:       '✏️',
 };
 
 function fmtCountdown(deadline: unknown): string {
@@ -64,7 +64,7 @@ export function EventCard({ event, onEdit }: EventCardProps) {
   const overdue   = isOverdue(event);
   const completed = event.status === 'completed';
   const pCfg      = PRIORITY_CFG[priority] ?? PRIORITY_CFG.auto;
-  const cCfg      = CATEGORY_CFG[event.category] ?? { color: 'var(--accent-2)', emoji: '📌' };
+  const cIcon     = CATEGORY_ICONS[event.category] ?? '📌';
   const progress  = getProgress(event.deadline);
 
   const toggle = async () => {
@@ -75,145 +75,146 @@ export function EventCard({ event, onEdit }: EventCardProps) {
   };
 
   const remove = async () => {
-    if (!confirm('Delete this deadline?')) return;
+    if (!confirm('Are you sure you want to delete this deadline?')) return;
     setLoading(true);
     try { await deleteEvent(event.id); }
     catch { toast.error('Delete failed'); }
     finally { setLoading(false); }
   };
 
-  const borderColor = overdue && !completed ? 'var(--accent)' : completed ? 'var(--border)' : 'var(--border)';
+  const isHighAlert = overdue && !completed;
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: completed ? 0.55 : 1, y: 0, filter: completed ? 'grayscale(0.5)' : 'none' }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={completed ? {} : {
-        y: -5,
-        boxShadow: `5px 5px 0 ${overdue ? 'var(--accent)' : 'var(--ink)'}`,
-        x: -2,
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: completed ? 0.6 : 1, scale: 1, filter: completed ? 'grayscale(0.5)' : 'none' }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      whileHover={completed ? {} : { y: -4, borderColor: isHighAlert ? 'rgba(251,113,133,0.4)' : 'var(--b2)' }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] as any }}
+      className="card p-5 flex flex-col gap-4 relative group"
+      style={{
+        borderColor: isHighAlert ? 'rgba(251,113,133,0.3)' : completed ? 'var(--b1)' : 'var(--b1)',
+        boxShadow: isHighAlert ? '0 0 20px rgba(251,113,133,0.08)' : 'none',
+        background: isHighAlert ? 'linear-gradient(180deg, rgba(251,113,133,0.04) 0%, transparent 100%), var(--s1)' : 'var(--s1)',
       }}
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] as any }}
-      className="group relative rounded-2xl p-5 flex flex-col gap-4 border-2 cursor-default"
-      style={{ borderColor, background: 'var(--white)' }}
     >
-      {/* Top cap color bar */}
-      <div
-        className="absolute top-0 left-5 right-5 h-[3px] rounded-b-full"
-        style={{ background: completed ? 'var(--border)' : overdue ? 'var(--accent)' : pCfg.color }}
-      />
+      {/* Top indicator stripe for priority focus */}
+      {!completed && (
+        <div
+          className="absolute top-0 left-6 right-6 h-[2px] rounded-b-full opacity-60"
+          style={{ background: isHighAlert ? '#FB7185' : pCfg.color, boxShadow: `0 0 10px ${isHighAlert ? '#FB7185' : pCfg.color}` }}
+        />
+      )}
 
-      {/* Header */}
-      <div className="flex items-start justify-between pt-1">
-        <div className="flex flex-wrap gap-1.5">
+      {/* Header tags & Actions */}
+      <div className="flex items-start justify-between">
+        <div className="flex flex-wrap gap-2">
           <span
-            className="tag text-[10px]"
-            style={{ color: cCfg.color, borderColor: cCfg.color, background: `${cCfg.color}10` }}
+            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold"
+            style={{ background: 'var(--s3)', color: 'var(--t2)' }}
           >
-            {cCfg.emoji} {event.category}
+            <span className="opacity-80">{cIcon}</span> {event.category}
           </span>
           <span
-            className="tag text-[10px]"
-            style={{ color: pCfg.color, borderColor: pCfg.color, background: pCfg.bg }}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold tracking-wide"
+            style={{ color: pCfg.color, background: pCfg.bg, border: `1px solid ${pCfg.border}` }}
           >
             {pCfg.label}
           </span>
-          {overdue && !completed && (
+          {isHighAlert && (
             <motion.span
-              animate={{ opacity: [1, 0.5, 1] }}
-              transition={{ repeat: Infinity, duration: 1.6 }}
-              className="tag text-[10px]"
-              style={{ color: 'var(--accent)', borderColor: 'var(--accent)', background: 'rgba(255,85,51,0.08)' }}
+              animate={{ opacity: [1, 0.6, 1] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-extrabold tracking-wide"
+              style={{ color: '#FB7185', background: 'rgba(251,113,133,0.1)', border: '1px solid rgba(251,113,133,0.3)' }}
             >
               <AlertTriangle size={10} /> OVERDUE
             </motion.span>
           )}
         </div>
 
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+        {/* Action icons appear on hover */}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <motion.button
-            whileTap={{ scale: 0.8 }}
+            whileHover={{ scale: 1.1, color: 'var(--t0)' }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => onEdit(event)}
-            className="p-1.5 rounded-lg border-2 hover:border-ink transition-all"
-            style={{ borderColor: 'var(--border)' }}
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: 'var(--t3)' }}
           >
-            <Pencil size={13} style={{ color: 'var(--ink-3)' }} />
+            <Pencil size={14} />
           </motion.button>
           <motion.button
-            whileTap={{ scale: 0.8 }}
+            whileHover={{ scale: 1.1, color: 'var(--rose)' }}
+            whileTap={{ scale: 0.9 }}
             onClick={remove}
             disabled={loading}
-            className="p-1.5 rounded-lg border-2 transition-all"
-            style={{ borderColor: 'transparent' }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'transparent')}
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: 'var(--t3)' }}
           >
-            <Trash2 size={13} style={{ color: 'var(--accent)' }} />
+            <Trash2 size={14} />
           </motion.button>
         </div>
       </div>
 
-      {/* Title */}
-      <h3
-        className={`font-display font-bold text-[15px] leading-snug line-clamp-2 ${completed ? 'line-through' : ''}`}
-        style={{ color: completed ? 'var(--ink-4)' : 'var(--ink)' }}
-      >
-        {event.title}
-      </h3>
+      {/* Title & Desc */}
+      <div>
+        <h3
+          className={`text-base font-bold leading-snug line-clamp-2 ${completed ? 'line-through opacity-70' : ''}`}
+          style={{ color: isHighAlert ? '#FB7185' : 'var(--t0)' }}
+        >
+          {event.title}
+        </h3>
+        {event.description && (
+          <p className="text-sm font-medium line-clamp-2 mt-1.5 leading-relaxed" style={{ color: 'var(--t3)' }}>
+            {event.description}
+          </p>
+        )}
+      </div>
 
-      {event.description && (
-        <p className="text-xs font-medium line-clamp-2 leading-relaxed -mt-2" style={{ color: 'var(--ink-4)' }}>
-          {event.description}
-        </p>
-      )}
-
-      {/* Progress bar */}
+      {/* Progress Line */}
       {!completed && (
-        <div className="h-2 rounded-full border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--paper-2)' }}>
+        <div className="h-1 rounded-full overflow-hidden mt-1" style={{ background: 'var(--s3)' }}>
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
-            className="h-full"
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="h-full rounded-full"
             style={{
-              background: overdue ? 'var(--accent)' : progress > 80 ? 'var(--amber)' : 'var(--ink)',
+              background: isHighAlert ? '#FB7185' : progress > 85 ? 'var(--amber)' : 'linear-gradient(90deg, #F59E0B, #FCD34D)',
             }}
           />
         </div>
       )}
 
-      {/* Footer */}
-      <div className="flex items-center justify-between mt-auto pt-3 border-t-2" style={{ borderColor: 'var(--paper-2)' }}>
+      {/* Footer Details */}
+      <div className="flex items-center justify-between mt-auto pt-4 border-t" style={{ borderColor: 'var(--b1)' }}>
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: 'var(--ink-4)' }}>
-            <Calendar size={11} /> {fmtDate(event.deadline)}
+          <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: 'var(--t3)' }}>
+            <Calendar size={12} /> {fmtDate(event.deadline)}
           </div>
           <div
-            className="flex items-center gap-1.5 text-[11px] font-black"
-            style={{ color: overdue && !completed ? 'var(--accent)' : 'var(--ink)' }}
+            className="flex items-center gap-1.5 text-xs font-extrabold"
+            style={{ color: isHighAlert ? '#FB7185' : 'var(--t0)' }}
           >
-            <Clock size={11} /> {fmtCountdown(event.deadline)}
+            <Clock size={12} /> {fmtCountdown(event.deadline)}
           </div>
         </div>
 
         <motion.button
-          whileHover={completed
-            ? { y: -1 }
-            : { x: -2, y: -2, boxShadow: '3px 3px 0 var(--ink)' }
-          }
-          whileTap={{ x: 0, y: 0, boxShadow: 'none' }}
+          whileHover={completed ? {} : { scale: 1.05, boxShadow: '0 0 16px rgba(52,211,153,0.3)' }}
+          whileTap={{ scale: 0.95 }}
           onClick={toggle}
           disabled={loading}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black border-2 transition-all"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all"
           style={
             completed
-              ? { borderColor: 'var(--border)', color: 'var(--ink-4)', background: 'var(--paper)' }
-              : { borderColor: 'var(--ink)', color: '#fff', background: 'var(--ink)' }
+              ? { border: '1px solid var(--b1)', color: 'var(--t3)', background: 'transparent' }
+              : { border: '1px solid rgba(52,211,153,0.3)', color: '#0C0A09', background: 'linear-gradient(135deg, #34D399, #059669)' }
           }
         >
-          {loading ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+          {loading ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
           {completed ? 'Reopen' : 'Complete'}
         </motion.button>
       </div>

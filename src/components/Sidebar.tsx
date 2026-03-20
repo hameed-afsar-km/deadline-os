@@ -2,38 +2,40 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Calendar, Plus, CheckCircle2, Clock, AlertTriangle, X, Sparkles, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Calendar, Plus, CheckCircle2, Clock, AlertTriangle, TrendingUp, Flame, X } from 'lucide-react';
 import { useEventStore } from '@/store/useEventStore';
 import { isOverdue, isToday } from '@/utils/priority';
 import { cn } from '@/utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface SidebarProps {
-  open: boolean;
-  onClose: () => void;
-  onCreateEvent: () => void;
-}
+interface SidebarProps { open: boolean; onClose: () => void; onCreateEvent: () => void; }
 
 const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/calendar',  label: 'Calendar',  icon: Calendar },
 ];
 
-export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
-  const pathname  = usePathname();
-  const events    = useEventStore((s) => s.events);
+const containerV = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
+const itemV = {
+  hidden: { opacity: 0, x: -12 },
+  show:   { opacity: 1, x: 0, transition: { ease: [0.22, 1, 0.36, 1] as any, duration: 0.4 } },
+};
 
-  const todayC     = events.filter((e) => isToday(e)    && e.status === 'pending').length;
-  const overdueC   = events.filter((e) => isOverdue(e)).length;
-  const pendingC   = events.filter((e) => e.status === 'pending').length;
-  const completedC = events.filter((e) => e.status === 'completed').length;
-  const pct        = events.length ? Math.round((completedC / events.length) * 100) : 0;
+export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
+  const pathname = usePathname();
+  const events   = useEventStore(s => s.events);
+
+  const todayN    = events.filter(e => isToday(e) && e.status === 'pending').length;
+  const overdueN  = events.filter(e => isOverdue(e)).length;
+  const pendingN  = events.filter(e => e.status === 'pending').length;
+  const doneN     = events.filter(e => e.status === 'completed').length;
+  const pct       = events.length ? Math.round((doneN / events.length) * 100) : 0;
 
   const STATS = [
-    { label: 'Today',   count: todayC,     icon: Clock,         color: 'var(--accent-2)', bg: 'rgba(26,26,255,0.06)', border: 'rgba(26,26,255,0.25)' },
-    { label: 'Overdue', count: overdueC,   icon: AlertTriangle, color: 'var(--accent)',   bg: 'rgba(255,85,51,0.06)', border: 'rgba(255,85,51,0.25)' },
-    { label: 'Pending', count: pendingC,   icon: TrendingUp,    color: 'var(--amber)',    bg: 'rgba(245,166,35,0.06)', border: 'rgba(245,166,35,0.25)' },
-    { label: 'Done',    count: completedC, icon: CheckCircle2,  color: 'var(--accent-3)', bg: 'rgba(0,200,150,0.06)', border: 'rgba(0,200,150,0.25)' },
+    { label: 'Today',   n: todayN,   icon: Clock,         c: 'var(--cyan)',    bg: 'rgba(103,232,249,0.08)',   b: 'rgba(103,232,249,0.15)' },
+    { label: 'Overdue', n: overdueN, icon: AlertTriangle, c: 'var(--rose)',    bg: 'rgba(251,113,133,0.08)',   b: 'rgba(251,113,133,0.15)' },
+    { label: 'Pending', n: pendingN, icon: TrendingUp,    c: 'var(--amber)',   bg: 'rgba(245,158,11,0.08)',    b: 'rgba(245,158,11,0.15)'  },
+    { label: 'Done',    n: doneN,    icon: CheckCircle2,  c: 'var(--emerald)', bg: 'rgba(52,211,153,0.08)',    b: 'rgba(52,211,153,0.15)'  },
   ];
 
   return (
@@ -41,115 +43,108 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 md:hidden"
-            style={{ background: 'rgba(13,13,13,0.5)' }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
+            className="fixed inset-0 z-40 md:hidden"
+            style={{ background: 'rgba(12,10,9,0.7)', backdropFilter: 'blur(4px)' }}
           />
         )}
       </AnimatePresence>
 
       <aside
         className={cn(
-          'fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 flex flex-col w-72 border-r-2',
-          'md:translate-x-0 md:static md:z-auto',
-          'transition-transform duration-300 ease-out',
+          'fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 flex flex-col w-72 border-r overflow-hidden',
+          'md:translate-x-0 md:static md:z-auto transition-transform duration-300 ease-out',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
-        style={{ borderColor: 'var(--ink)', background: 'var(--paper)' }}
+        style={{ borderColor: 'var(--b1)', background: 'rgba(12,10,9,0.95)', backdropFilter: 'blur(20px)' }}
       >
         {/* Mobile header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b-2 md:hidden" style={{ borderColor: 'var(--border)' }}>
-          <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--ink-4)' }}>Menu</span>
-          <motion.button whileTap={{ scale: 0.88 }} onClick={onClose} className="p-1.5 rounded-lg" style={{ color: 'var(--ink-3)' }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b md:hidden" style={{ borderColor: 'var(--b1)' }}>
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--t3)' }}>Menu</span>
+          <motion.button whileTap={{ scale: 0.85 }} onClick={onClose} style={{ color: 'var(--t2)' }}>
             <X size={16} />
           </motion.button>
         </div>
 
         {/* Create button */}
-        <div className="p-4 border-b-2" style={{ borderColor: 'var(--border)' }}>
+        <div className="p-4">
           <motion.button
-            whileHover={{ x: -2, y: -2, boxShadow: '4px 4px 0 var(--ink)' }}
-            whileTap={{ x: 0, y: 0, boxShadow: 'none' }}
+            whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(245,158,11,0.3)' }}
+            whileTap={{ scale: 0.96 }}
             onClick={() => { onCreateEvent(); onClose(); }}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm text-white border-2 transition-all"
-            style={{ background: 'var(--ink)', borderColor: 'var(--ink)' }}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all"
+            style={{ background: 'linear-gradient(135deg, #F59E0B, #B45309)', color: '#0C0A09' }}
           >
             <Plus size={16} /> New Deadline
           </motion.button>
         </div>
 
         {/* Nav */}
-        <nav className="p-3 space-y-1 border-b-2" style={{ borderColor: 'var(--border)' }}>
+        <nav className="px-3 py-2 space-y-1">
           {NAV.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
               <Link key={href} href={href} onClick={onClose}>
                 <motion.div
-                  whileHover={{ x: 4 }}
-                  className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all border-2',
-                    active ? 'text-white border-ink' : 'text-ink-3 border-transparent hover:border-ink hover:bg-white'
-                  )}
+                  whileHover={{ x: 3 }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all"
                   style={
                     active
-                      ? { background: 'var(--ink)', color: '#fff', borderColor: 'var(--ink)' }
-                      : { color: 'var(--ink-3)', borderColor: 'transparent' }
+                      ? { background: 'rgba(245,158,11,0.1)', color: 'var(--amber)', borderLeft: '2px solid var(--amber)', paddingLeft: '14px' }
+                      : { color: 'var(--t2)' }
                   }
                 >
                   <Icon size={16} />
                   {label}
-                  {active && <div className="ml-auto w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />}
                 </motion.div>
               </Link>
             );
           })}
         </nav>
 
+        <div className="mx-4 my-3 h-px" style={{ background: 'var(--b1)' }} />
+
         {/* Stats */}
-        <div className="p-4 border-b-2" style={{ borderColor: 'var(--border)' }}>
-          <p className="text-[10px] font-black uppercase tracking-widest mb-3 px-1" style={{ color: 'var(--ink-4)' }}>Overview</p>
-          <div className="grid grid-cols-2 gap-2.5">
-            {STATS.map(({ label, count, icon: Icon, color, bg, border }, i) => (
+        <div className="px-4 py-2">
+          <p className="text-[10px] font-black uppercase tracking-widest mb-3 px-1" style={{ color: 'var(--t4)' }}>Your snapshot</p>
+          <motion.div className="grid grid-cols-2 gap-2.5" variants={containerV} initial="hidden" animate="show">
+            {STATS.map(({ label, n, icon: Icon, c, bg, b }) => (
               <motion.div
                 key={label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
-                whileHover={{ y: -3, boxShadow: '3px 3px 0 var(--ink)' }}
-                className="rounded-2xl p-3.5 border-2 cursor-default bg-white transition-all"
-                style={{ background: bg, border: `2px solid ${border}` }}
+                variants={itemV}
+                whileHover={{ scale: 1.03, borderColor: b }}
+                className="rounded-2xl p-3.5 flex flex-col gap-2 cursor-default transition-all"
+                style={{ background: bg, border: `1px solid ${b.replace('0.15', '0.08')}` }}
               >
-                <Icon size={16} style={{ color }} className="mb-2" />
-                <p className="font-display font-black text-2xl" style={{ color }}>{count}</p>
-                <p className="text-[10px] font-extrabold mt-0.5 uppercase tracking-wider" style={{ color: 'var(--ink-4)' }}>{label}</p>
+                <Icon size={15} style={{ color: c }} />
+                <p className="text-2xl font-extrabold" style={{ color: c }}>{n}</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: 'var(--t3)' }}>{label}</p>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
-        {/* Progress */}
-        <div className="p-4">
-          <div className="rounded-2xl p-4 border-2" style={{ borderColor: 'var(--border)', background: 'var(--white)' }}>
+        {/* Velocity */}
+        <div className="px-4 py-4 mt-2">
+          <div className="p-4 rounded-2xl" style={{ background: 'var(--s1)', border: '1px solid var(--b1)' }}>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-black uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--ink-3)' }}>
-                <Sparkles size={12} /> Velocity
+              <span className="text-xs font-bold flex items-center gap-1.5" style={{ color: 'var(--t2)' }}>
+                <Flame size={12} style={{ color: 'var(--amber)' }} /> Momentum
               </span>
-              <span className="font-display font-black text-base" style={{ color: 'var(--accent)' }}>{pct}%</span>
+              <span className="text-sm font-extrabold amber-text">{pct}%</span>
             </div>
-            <div className="h-2.5 rounded-full border-2 overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--paper-2)' }}>
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--s3)' }}>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
-                transition={{ duration: 1, ease: 'easeOut' }}
-                className="h-full"
-                style={{ background: 'var(--ink)' }}
+                transition={{ duration: 1.2, ease: 'easeOut' }}
+                className="h-full rounded-full"
+                style={{ background: 'linear-gradient(90deg, #F59E0B, #FCD34D)' }}
               />
             </div>
-            <p className="text-[11px] mt-3 font-bold" style={{ color: 'var(--ink-4)' }}>
-              {completedC} of {events.length} complete
+            <p className="text-[11px] mt-2.5 font-medium" style={{ color: 'var(--t3)' }}>
+              {doneN} of {events.length} complete
             </p>
           </div>
         </div>
