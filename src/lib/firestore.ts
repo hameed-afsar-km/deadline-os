@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { DeadlineEvent } from '@/types';
+import toast from 'react-hot-toast';
 
 export const subscribeToEvents = (
   userId: string,
@@ -38,15 +39,32 @@ export const createEvent = async (
   userId: string,
   data: Omit<DeadlineEvent, 'id' | 'createdAt' | 'userId'>
 ) => {
-  const ref = await addDoc(collection(db, 'events'), {
+  if (!db) {
+    toast.error('Firebase database not initialized. Please check your config.');
+    throw new Error('Database not initialized');
+  }
+
+  const payload: any = {
     ...data,
     userId,
     createdAt: serverTimestamp(),
-    deadline: Timestamp.fromDate(new Date(data.deadline as unknown as string)),
-    reminders: (data.reminders as unknown as string[]).map((r) =>
-      Timestamp.fromDate(new Date(r))
-    ),
-  });
+  };
+
+  // Ensure deadline is stored as a Timestamp in Firestore
+  if (data.deadline instanceof Timestamp) {
+    payload.deadline = data.deadline;
+  } else if (data.deadline) {
+    payload.deadline = Timestamp.fromDate(new Date(data.deadline as string));
+  }
+
+  // Handle reminders
+  if (data.reminders) {
+    payload.reminders = (data.reminders as unknown as (string | Timestamp)[]).map((r) =>
+      r instanceof Timestamp ? r : Timestamp.fromDate(new Date(r))
+    );
+  }
+
+  const ref = await addDoc(collection(db, 'events'), payload);
   return ref.id;
 };
 
@@ -54,16 +72,35 @@ export const updateEvent = async (
   eventId: string,
   data: Partial<DeadlineEvent>
 ) => {
-  const ref = doc(db, 'events', eventId);
-  const payload: Record<string, unknown> = { ...data };
-  if (data.deadline) {
-    payload.deadline = Timestamp.fromDate(new Date(data.deadline as unknown as string));
+  if (!db) {
+    toast.error('Firebase database not initialized');
+    throw new Error('Database not initialized');
   }
-  if (data.reminders) {
-    payload.reminders = (data.reminders as unknown as string[]).map((r) =>
-      Timestamp.fromDate(new Date(r))
+
+  const ref = doc(db, 'events', eventId);
+  const payload: Record<string, unknown> = {};
+
+  // Copy primitives
+  if (data.title !== undefined) payload.title = data.title;
+  if (data.description !== undefined) payload.description = data.description;
+  if (data.category !== undefined) payload.category = data.category;
+  if (data.priority !== undefined) payload.priority = data.priority;
+  if (data.status !== undefined) payload.status = data.status;
+
+  // Handle deadline
+  if (data.deadline !== undefined) {
+    payload.deadline = data.deadline instanceof Timestamp
+      ? data.deadline
+      : Timestamp.fromDate(new Date(data.deadline as string));
+  }
+
+  // Handle reminders
+  if (data.reminders !== undefined) {
+    payload.reminders = (data.reminders as unknown as (string | Timestamp)[]).map((r) =>
+      r instanceof Timestamp ? r : Timestamp.fromDate(new Date(r))
     );
   }
+
   await updateDoc(ref, payload);
 };
 

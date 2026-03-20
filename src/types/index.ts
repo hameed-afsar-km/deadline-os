@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 
-export type Category = 'Study' | 'Hackathon' | 'Submission' | 'Personal' | 'Exam';
+export type Category = string;
 export type Priority = 'low' | 'medium' | 'high' | 'auto';
 export type Status = 'pending' | 'completed';
 

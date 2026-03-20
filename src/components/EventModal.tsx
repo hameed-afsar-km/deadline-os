@@ -11,12 +11,12 @@ import { useEffect, useState } from 'react';
 import { toDate } from '@/utils/dateHelpers';
 import { Category, Priority, Status } from '@/types';
 
-const CATS: Category[] = ['Study','Hackathon','Submission','Personal','Exam'];
+const SUGGESTED_CATS = ['Study','Hackathon','Submission','Personal','Exam'];
 
 export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClose:()=>void }) {
   const { user } = useUserStore();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ title:'', description:'', deadline:'', category:'Study' as Category });
+  const [form, setForm] = useState({ title:'', description:'', deadline:'', category:'Study' });
 
   useEffect(() => {
     if (event) {
@@ -36,18 +36,28 @@ export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClo
     if (!user) return toast.error('Not authenticated');
     setLoading(true);
     try {
+      // Pass raw strings to firestore.ts; it handles Timestamp conversion
       const data = {
         ...form,
-        deadline:  Timestamp.fromDate(new Date(form.deadline)),
         reminders: [] as string[],
         priority:  'auto' as Priority,
         status:    (event ? event.status : 'pending') as Status,
       };
-      if (event) { await updateEvent(event.id, data); toast.success('Deadline updated.'); }
-      else       { await createEvent(user.uid, data); toast.success('Deadline created.'); }
+
+      if (event) {
+        await updateEvent(event.id, data);
+        toast.success('Deadline updated.');
+      } else {
+        await createEvent(user.uid, data);
+        toast.success('Deadline created.');
+      }
       onClose();
-    } catch { toast.error('Save failed'); }
-    finally { setLoading(false); }
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Save failed. Check your connection or keys.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -108,10 +118,18 @@ export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClo
               <label className="text-[10px] font-bold uppercase tracking-wider block mb-2" style={{ fontFamily:'var(--font-mono)', color:'var(--ink-3)' }}>
                 Category
               </label>
-              <select value={form.category} onChange={e=>setForm({...form,category:e.target.value as Category})}
-                className="field-ink w-full px-3 py-2.5 text-sm cursor-pointer appearance-none">
-                {CATS.map(c=><option key={c} value={c}>{c}</option>)}
-              </select>
+              <input 
+                list="cats"
+                type="text"
+                required
+                value={form.category}
+                onChange={e => setForm({...form, category: e.target.value})}
+                placeholder="Select or type..."
+                className="field-ink w-full px-3 py-2.5 text-sm"
+              />
+              <datalist id="cats">
+                {SUGGESTED_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+              </datalist>
             </div>
           </div>
 
