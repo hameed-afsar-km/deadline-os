@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { BeamsBackground } from '@/components/ui/beams-background';
 
 export default function SignupPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -43,7 +44,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-5 py-12">
+    <BeamsBackground className="px-5 py-12">
       <motion.div
         initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -134,6 +135,6 @@ export default function SignupPage() {
           <Link href="/login" className="text-violet-400 font-semibold hover:text-violet-300 transition-colors">Sign in</Link>
         </p>
       </motion.div>
-    </div>
+    </BeamsBackground>
   );
 }
