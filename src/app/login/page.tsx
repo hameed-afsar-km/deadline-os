@@ -56,9 +56,7 @@ export default function LoginPage() {
 
           <div className="relative z-10">
             <div className="flex flex-col items-center mb-10 text-center">
-              <div className="w-14 h-14 rounded-2xl grad-accent flex items-center justify-center text-white mb-6 shadow-xl shadow-indigo-500/20">
-                <span className="text-2xl font-black">D</span>
-              </div>
+              <span className="font-black text-2xl text-white tracking-tighter mb-4">DeadlineOS</span>
               <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">Welcome Back</h1>
               <p className="text-sm text-zinc-400 font-medium tracking-tight">Sign in to manage your productivity orbit</p>
             </div>

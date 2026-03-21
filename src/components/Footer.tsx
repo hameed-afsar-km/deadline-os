@@ -65,8 +65,8 @@ export function Footer() {
               Made with <Heart size={14} className="text-rose-500 fill-rose-500" /> by DeepMind
             </span>
           </p>
-          <div className="flex items-center gap-6">
-            <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Build 2026.03.21-R1</span>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">All Systems Online</span>
             <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_#6366F1]" />
           </div>
         </div>
