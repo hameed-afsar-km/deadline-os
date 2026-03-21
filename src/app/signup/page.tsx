@@ -29,7 +29,10 @@ export default function SignupPage() {
       await signInWithGoogle();
       toast.success('Secure OAuth link successful');
       router.push('/dashboard');
-    } catch { toast.error('OAuth handshake failed'); }
+    } catch (err: any) { 
+      console.error(err);
+      toast.error(`OAuth Fault: ${err.code || err.message || 'Unknown'}`); 
+    }
   };
 
   return (
