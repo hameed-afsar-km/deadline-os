@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Toaster } from "react-hot-toast";
+import { SplashProvider } from "@/components/SplashProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,28 +31,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <div className="relative z-10 flex flex-col min-h-screen">
-          <AuthProvider>
-            {children}
-            <Toaster
-              position="top-right"
-              gutter={10}
-              toastOptions={{
-                duration: 3500,
-                style: {
-                  background: '#16161F',
-                  color: '#F1F0FB',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  borderRadius: '14px',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-                  backdropFilter: 'blur(20px)',
-                },
-                success: { iconTheme: { primary: '#10B981', secondary: '#0A0A0F' } },
-                error:   { iconTheme: { primary: '#F43F5E', secondary: '#0A0A0F' } },
-              }}
-            />
-          </AuthProvider>
+          <SplashProvider>
+            <AuthProvider>
+              {children}
+              <Toaster
+                position="top-right"
+                gutter={10}
+                toastOptions={{
+                  duration: 3500,
+                  style: {
+                    background: '#16161F',
+                    color: '#F1F0FB',
+                    border: '1px solid rgba(255,255,255,0.10)',
+                    borderRadius: '14px',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(20px)',
+                  },
+                  success: { iconTheme: { primary: '#10B981', secondary: '#0A0A0F' } },
+                  error:   { iconTheme: { primary: '#F43F5E', secondary: '#0A0A0F' } },
+                }}
+              />
+            </AuthProvider>
+          </SplashProvider>
         </div>
       </body>
     </html>

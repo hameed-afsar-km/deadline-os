@@ -78,7 +78,6 @@ export default function HomePage() {
         className="fixed top-0 inset-x-0 z-50 h-16 flex items-center justify-between px-6 lg:px-16 glass border-b border-white/5"
       >
         <div className="flex items-center gap-3">
-          <span className="w-8 h-8 rounded-xl grad-accent flex items-center justify-center text-white font-extrabold text-sm glow-accent">D</span>
           <span className="font-bold text-[1.05rem] tracking-tight text-white">DeadlineOS</span>
         </div>
 

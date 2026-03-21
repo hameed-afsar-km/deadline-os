@@ -88,7 +88,14 @@ export default function Dashboard() {
   const openCreate = () => { setEditingEvent(null); setModalOpen(true); };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#030303] text-white">
+    <div className="flex flex-col h-screen overflow-hidden bg-[#030303] text-white relative">
+      {/* Stunning ambient backgrounds */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-indigo-600/10 blur-[140px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-violet-600/10 blur-[140px] rounded-full mix-blend-screen" />
+        <div className="absolute top-[40%] left-[50%] w-[30vw] h-[30vw] bg-fuchsia-600/5 blur-[120px] rounded-full mix-blend-screen -translate-x-1/2 -translate-y-1/2" />
+      </div>
+
       <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
 
       <div className="flex flex-1 overflow-hidden relative">
@@ -100,11 +107,11 @@ export default function Dashboard() {
             <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="flex items-center gap-2 mb-3 text-indigo-400">
-                    <Sparkles size={16} />
-                    <span className="text-xs font-black uppercase tracking-[0.3em]">System Overload</span>
+                    <Sparkles size={16} className="animate-pulse" />
+                    <span className="text-xs font-black uppercase tracking-[0.3em] drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]">Mission Control</span>
                   </div>
-                  <h1 className="text-4xl md:text-7xl font-black tracking-tighter leading-none">
-                    ENGINEERING <br /> <span className="text-grad">SUCCESS</span>
+                  <h1 className="text-4xl md:text-7xl font-black tracking-tighter leading-[0.9] drop-shadow-2xl">
+                    COMMAND <br /> <span className="text-grad drop-shadow-[0_0_20px_rgba(165,180,252,0.4)]">CENTER</span>
                   </h1>
                </motion.div>
 

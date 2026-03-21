@@ -80,7 +80,14 @@ export default function CalendarPage() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#030303] text-white">
+    <div className="flex flex-col min-h-screen bg-[#030303] text-white relative">
+      {/* Stunning ambient backgrounds */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-indigo-600/10 blur-[150px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-cyan-600/10 blur-[150px] rounded-full mix-blend-screen" />
+        <div className="absolute top-[30%] left-[30%] w-[40vw] h-[40vw] bg-violet-600/5 blur-[120px] rounded-full mix-blend-screen" />
+      </div>
+
       <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
 
       <div className="flex flex-1 overflow-hidden relative">
@@ -93,10 +100,10 @@ export default function CalendarPage() {
               <div>
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                   className="flex items-center gap-2 mb-2 text-indigo-400">
-                  <CalIcon size={16} />
-                  <span className="text-xs font-bold uppercase tracking-widest">Chronological View</span>
+                  <CalIcon size={16} className="animate-pulse" />
+                  <span className="text-xs font-black uppercase tracking-[0.2em] drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]">Timeline Overview</span>
                 </motion.div>
-                <h1 className="text-4xl md:text-6xl font-black tracking-tight">{format(curr, 'MMMM yyyy')}</h1>
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter drop-shadow-2xl">{format(curr, 'MMMM yyyy')}</h1>
               </div>
 
               <div className="flex items-center gap-4">
