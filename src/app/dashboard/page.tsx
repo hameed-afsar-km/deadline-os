@@ -79,111 +79,148 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden bg-[#050508]">
       <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={openCreate} />
 
-        <main className="flex-1 overflow-y-auto p-5 md:p-8 space-y-8 no-sb">
+        {/* Global HUD Background Glows */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500/10 blur-[120px]" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/10 blur-[120px]" />
+        </div>
 
-          {/* ── Greeting ── */}
-          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
-              Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'},{' '}
-              <span className="text-grad">{user?.displayName?.split(' ')[0] || 'there'}</span> 👋
-            </h1>
-            <p className="text-sm text-[--c-muted] mt-1 font-medium">
-              {stats.pending > 0
-                ? `You have ${stats.pending} pending task${stats.pending > 1 ? 's' : ''}${stats.overdue > 0 ? ` — ${stats.overdue} overdue.` : '.'}`
-                : 'All caught up! No pending tasks.'}
-            </p>
-          </motion.div>
+        <main className="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 no-sb relative z-10">
 
-          {/* ── Focus Banner ── */}
-          <AnimatePresence mode="wait">
-            {nextUp && (
-              <motion.div
-                key={nextUp.id}
-                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.5 }}
-                className="glass-hi rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 border border-violet-500/10 relative overflow-hidden"
-              >
-                <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ background: 'radial-gradient(circle at 0% 50%, #7C3AED, transparent 60%)' }} />
-                <div className="space-y-1 z-10">
-                  <p className="text-[0.65rem] font-bold uppercase tracking-widest text-violet-400">Next Up</p>
-                  <h2 className="text-xl font-bold text-white tracking-tight">{nextUp.title}</h2>
-                  <p className="text-sm text-[--c-muted] font-medium">{nextUp.category}</p>
-                </div>
-                <div className="flex items-center gap-4 z-10">
-                  <div className="text-center">
-                    <p className="text-2xl font-extrabold text-white tracking-tighter">{getTimeRemaining(nextUp.deadline)}</p>
-                    <p className="text-[0.65rem] font-semibold text-[--c-muted] uppercase tracking-wide">remaining</p>
-                  </div>
-                  <button onClick={() => openEdit(nextUp)}
-                    className="px-5 py-2.5 rounded-xl text-sm font-bold text-white grad-accent hover:opacity-90 transition-opacity glow-accent whitespace-nowrap">
-                    View Task
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* ── Greeting & Stats Header ── */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2 border-b border-white/[0.05]">
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+              <span className="text-[10px] font-bold text-cyan-500 uppercase tracking-[0.3em] mb-2 block glow-text">System Initialization Complete</span>
+              <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-white">
+                WELCOME, <span className="text-grad">{user?.displayName?.split(' ')[0] || 'ADMIN'}</span>
+              </h1>
+              <p className="text-[11px] text-zinc-500 mt-2 font-bold uppercase tracking-widest flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Connectivity: Firebase Live · Latency: 24ms
+              </p>
+            </motion.div>
 
-          {/* ── Stat Cards ── */}
-          <motion.div
-            variants={staggerList} initial="hidden" animate="show"
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-          >
-            {STAT_CARDS.map(({ label, val, icon: Icon, color }) => (
-              <motion.div key={label}
-                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}
-                className="glass-hi rounded-2xl p-5 flex flex-col gap-3 card-lift relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                  style={{ background: `radial-gradient(circle at 80% 20%, ${color}14, transparent 65%)` }} />
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-[--c-muted] uppercase tracking-wide">{label}</span>
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${color}18` }}>
-                    <Icon size={15} style={{ color }} />
-                  </div>
-                </div>
-                <p className="text-3xl font-extrabold tracking-tighter text-white">{val}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* ── Completion Progress ── */}
-          <div className="glass-hi rounded-2xl p-5 flex items-center gap-5">
-            <TrendingUp size={18} className="text-violet-400 shrink-0" />
-            <div className="flex-1 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[--c-muted]">Overall progress</span>
-                <span className="text-xs font-bold text-white">{pct}%</span>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-8 px-6 py-3 glass rounded-xl border-cyan-500/10 shadow-lg shadow-cyan-500/5">
+              <div className="text-center">
+                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Queue</p>
+                <p className="text-xl font-black text-white">{stats.pending}</p>
               </div>
-              <div className="h-2 bg-white/[0.05] rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${pct}%` }}
-                  transition={{ duration: 1.2, ease: 'easeOut' }}
-                  className="h-full rounded-full grad-accent"
-                />
+              <div className="w-[1px] h-8 bg-white/[0.05]" />
+              <div className="text-center">
+                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Critical</p>
+                <p className="text-xl font-black text-rose-500">{stats.overdue}</p>
               </div>
-            </div>
-            <span className="text-xs text-[--c-muted] font-medium shrink-0">{stats.completed}/{stats.total}</span>
+              <div className="w-[1px] h-8 bg-white/[0.05]" />
+              <div className="text-center">
+                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Efficiency</p>
+                <p className="text-xl font-black text-emerald-400">{pct}%</p>
+              </div>
+            </motion.div>
           </div>
 
-          {/* ── Controls ── */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            {/* Filter tabs */}
-            <div className="flex items-center gap-1 glass-hi border border-white/[0.07] rounded-xl p-1">
+          {/* ── Focus Bento Grid ── */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            
+            {/* Urgent Task Widget */}
+            <div className="xl:col-span-8">
+              <AnimatePresence mode="wait">
+                {nextUp ? (
+                  <motion.div
+                    key={nextUp.id}
+                    initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+                    className="glass hud-border p-8 rounded-2xl h-full flex flex-col justify-between relative overflow-hidden group shadow-2xl"
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="px-2 py-0.5 rounded-sm bg-rose-500/10 border border-rose-500/20 text-[9px] font-black text-rose-400 uppercase tracking-widest">Immediate Criticality</div>
+                        <div className="px-2 py-0.5 rounded-sm bg-white/5 text-[9px] font-black text-zinc-400 uppercase tracking-widest">{nextUp.category}</div>
+                      </div>
+                      <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter leading-tight max-w-2xl">{nextUp.title}</h2>
+                    </div>
+
+                    <div className="flex flex-wrap items-end justify-between gap-6 mt-10">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Clock size={14} className="text-cyan-500" />
+                          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Temporal Remaining</p>
+                        </div>
+                        <p className="text-4xl font-black text-white tracking-tighter tabular-nums drop-shadow-xl">{getTimeRemaining(nextUp.deadline)}</p>
+                      </div>
+                      <button onClick={() => openEdit(nextUp)}
+                        className="px-8 py-3 rounded-lg text-xs font-black text-white grad-accent hover:scale-[1.02] active:scale-[0.98] transition-all glow-accent uppercase tracking-[0.2em]">
+                        View Protocol
+                      </button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="glass hud-border p-12 rounded-2xl h-full flex flex-col items-center justify-center text-center">
+                    <CheckCircle2 size={40} className="text-emerald-500 mb-4 opacity-50" />
+                    <p className="text-lg font-bold text-white">All Objectives Cleared</p>
+                    <p className="text-xs text-zinc-500 uppercase tracking-widest mt-2 font-bold">System in standby mode · awaiting NEW_INPUT</p>
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Overall Efficiency Widget */}
+            <div className="xl:col-span-4">
+              <div className="glass hud-border p-8 rounded-2xl h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-6">
+                    <TrendingUp size={16} className="text-cyan-500" />
+                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Resource Utilization</p>
+                  </div>
+                  <div className="relative w-40 h-40 mx-auto">
+                    {/* SVG Circular Progress */}
+                    <svg className="w-full h-full -rotate-90">
+                      <circle cx="80" cy="80" r="70" className="fill-none stroke-white/[0.05] stroke-[8]" />
+                      <motion.circle 
+                        cx="80" cy="80" r="70" 
+                        fill="none" stroke="url(#cyan-grad)" strokeWidth="12" strokeLinecap="round"
+                        initial={{ strokeDasharray: "0 440" }}
+                        animate={{ strokeDasharray: `${(pct / 100) * 440} 440` }}
+                        transition={{ duration: 1.5, ease: 'easeOut' }}
+                      />
+                      <defs>
+                        <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#06B6D4" />
+                          <stop offset="100%" stopColor="#6366F1" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <p className="text-4xl font-black text-white tracking-tighter tabular-nums">{pct}%</p>
+                      <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">SYNCED</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-8">
+                  <span>Processed: {stats.completed}</span>
+                  <div className="w-1 h-1 rounded-full bg-zinc-700" />
+                  <span>Remaining: {stats.pending}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Navigation & Control Panel ── */}
+          <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-white/[0.05]">
+            <div className="flex items-center gap-1.5 p-1 glass border-white/[0.05] rounded-xl overflow-hidden">
               {FILTER_TABS.map(({ key, label }) => (
                 <button key={key} onClick={() => setFilter(key)}
                   className={cn(
-                    'relative px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors',
-                    filter === key ? 'text-white' : 'text-[--c-muted] hover:text-white'
+                    'relative px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-[0.15em] transition-all',
+                    filter === key ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
                   )}>
                   {filter === key && (
-                    <motion.div layoutId="dash-filter-bg" className="absolute inset-0 grad-accent rounded-lg opacity-90" style={{ zIndex: -1 }} />
+                    <motion.div layoutId="dash-filter-bg" className="absolute inset-0 bg-white/[0.06] border border-white/5 rounded-lg" style={{ zIndex: -1 }} />
                   )}
                   {label}
                 </button>
@@ -191,18 +228,21 @@ export default function Dashboard() {
             </div>
 
             <button onClick={openCreate}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white grad-accent hover:opacity-90 transition-opacity glow-accent">
-              <Plus size={16} /> New Task
+              className="group flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black text-white grad-accent hover:scale-[1.02] transition-all glow-accent uppercase tracking-[0.2em]">
+              <Plus size={14} /> 
+              <span>Create Protocol</span>
+              <div className="w-[1px] h-3 bg-white/20 group-hover:bg-white/40 transition-colors" />
+              <span className="text-[8px] opacity-70">ADD_NEW</span>
             </button>
           </div>
 
-          {/* ── Task Grid ── */}
+          {/* ── Data Matrix (Items) ── */}
           <AnimatePresence mode="popLayout">
             {displayed.length > 0 ? (
               <motion.div
                 key="grid"
                 variants={staggerList} initial="hidden" animate="show"
-                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-16"
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20"
               >
                 {displayed.map(e => (
                   <EventCard key={e.id} event={e} onEdit={openEdit} />
@@ -212,23 +252,17 @@ export default function Dashboard() {
               <motion.div
                 key="empty"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-32 gap-5 text-center"
+                className="flex flex-col items-center justify-center py-20 gap-6 glass hud-border rounded-2xl"
               >
-                <div className="w-16 h-16 rounded-2xl glass-hi border border-white/[0.07] flex items-center justify-center text-[--c-muted]">
-                  <LayoutGrid size={26} />
+                <div className="w-16 h-16 rounded-xl border border-white/[0.05] flex items-center justify-center text-zinc-600 bg-white/[0.02]">
+                  <LayoutGrid size={24} />
                 </div>
-                <div>
-                  <p className="text-lg font-bold text-white">No tasks found</p>
-                  <p className="text-sm text-[--c-muted] mt-1">
-                    {searchQuery ? 'Try a different search term.' : 'Create your first task to get started.'}
+                <div className="text-center">
+                  <p className="text-lg font-black text-white uppercase tracking-tight">Data Matrix Empty</p>
+                  <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mt-2">
+                    {searchQuery ? 'Search query yielded zero results' : 'Awaiting initial data entry sequence'}
                   </p>
                 </div>
-                {!searchQuery && (
-                  <button onClick={openCreate}
-                    className="px-6 py-2.5 rounded-xl text-sm font-bold text-white grad-accent hover:opacity-90 transition-opacity">
-                    Create Task
-                  </button>
-                )}
               </motion.div>
             )}
           </AnimatePresence>

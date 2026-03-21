@@ -54,68 +54,66 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
       {/* Search */}
       <div className="flex-1 max-w-md hidden md:block">
         <div className="relative group">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--c-muted] group-focus-within:text-violet-400 transition-colors pointer-events-none" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-cyan-500 transition-colors pointer-events-none" />
           <input
             value={localQ}
             onChange={onChange}
-            placeholder="Search tasks, categories…"
-            className="inp pl-10 h-10 text-[0.82rem] rounded-xl"
+            placeholder="SYSTEM_SEARCH_PROTOCOL..."
+            className="inp pl-10 h-10 text-[0.75rem] rounded-xl font-mono tracking-wider"
           />
         </div>
       </div>
 
-      <div className="flex items-center gap-2 ml-auto">
+      <div className="flex items-center gap-3 ml-auto">
         {/* Bell */}
-        <button className="relative w-9 h-9 rounded-xl glass-hi border border-white/[0.07] flex items-center justify-center text-[--c-muted] hover:text-white transition-colors">
-          <Bell size={17} />
-          <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-violet-500 ring-2 ring-[--c-bg]" />
+        <button className="relative w-9 h-9 rounded-xl glass border border-white/[0.05] flex items-center justify-center text-zinc-500 hover:text-white transition-colors">
+          <Bell size={16} />
+          <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-cyan-500 glow-accent" />
         </button>
 
         {/* Avatar dropdown */}
         <div ref={menuRef} className="relative">
           <motion.button
             onClick={() => setMenuOpen(s => !s)}
-            whileTap={{ scale: 0.96 }}
-            className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-2xl glass-hi border border-white/[0.07] hover:border-white/20 transition-colors"
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-xl glass border border-white/[0.05] hover:border-white/20 transition-all shadow-lg shadow-cyan-500/5"
           >
-            <div className="w-7 h-7 rounded-lg grad-accent flex items-center justify-center text-white text-xs font-bold shrink-0">
+            <div className="w-7 h-7 rounded-lg grad-accent flex items-center justify-center text-white text-[10px] font-black shrink-0 glow-accent">
               {initial}
             </div>
-            <span className="text-[0.82rem] font-semibold text-white hidden sm:block max-w-[120px] truncate">
+            <span className="text-[11px] font-black text-white hidden sm:block max-w-[120px] truncate uppercase tracking-widest">
               {user?.displayName || user?.email?.split('@')[0] || 'User'}
             </span>
-            <ChevronDown size={14} className={`text-[--c-muted] transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown size={12} className={`text-zinc-500 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
           </motion.button>
 
           <AnimatePresence>
             {menuOpen && (
               <motion.div
-                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                initial={{ opacity: 0, y: 8, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                transition={{ duration: 0.18, ease: 'easeOut' }}
-                className="absolute right-0 top-[calc(100%+8px)] w-60 glass-hi rounded-2xl border border-white/[0.07] shadow-[0_20px_60px_rgba(0,0,0,0.7)] overflow-hidden z-50"
+                exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="absolute right-0 top-[calc(100%+12px)] w-64 glass-hi hud-border rounded-xl shadow-[0_30px_90px_rgba(0,0,0,0.8)] overflow-hidden z-50 p-1"
               >
                 {/* Profile section */}
-                <div className="px-4 py-4 border-b border-white/[0.07] bg-white/[0.02]">
+                <div className="px-4 py-4 border-b border-white/[0.05] mb-1">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl grad-accent flex items-center justify-center text-white text-sm font-bold shrink-0">{initial}</div>
+                    <div className="w-10 h-10 rounded-lg grad-accent flex items-center justify-center text-white text-xs font-black shrink-0 glow-accent">{initial}</div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{user?.displayName || 'User'}</p>
-                      <p className="text-xs text-[--c-muted] truncate">{user?.email}</p>
+                      <p className="text-[11px] font-black text-white truncate uppercase tracking-tighter">{user?.displayName || 'OPERATOR'}</p>
+                      <p className="text-[9px] text-zinc-500 truncate font-mono">{user?.email}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="p-2">
-                  <button
-                    onClick={async () => { await logOut(); toast.success('Signed out'); router.replace('/login'); }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#F43F5E] hover:bg-rose-500/10 transition-colors"
-                  >
-                    <LogOut size={16} /> Sign out
-                  </button>
-                </div>
+                <button
+                  onClick={async () => { await logOut(); toast.success('Signed out'); router.replace('/login'); }}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-[10px] font-black text-rose-500 hover:bg-rose-500/10 transition-colors uppercase tracking-[0.2em]"
+                >
+                  Terminate Session <LogOut size={14} />
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
