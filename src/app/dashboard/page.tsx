@@ -88,12 +88,10 @@ export default function Dashboard() {
   const openCreate = () => { setEditingEvent(null); setModalOpen(true); };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#030303] text-white relative">
-      {/* Stunning ambient backgrounds */}
+    <div className="flex flex-col h-screen overflow-hidden bg-[#000000] text-zinc-100 relative selection:bg-white/20">
+      {/* Subtle modern background */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-indigo-600/10 blur-[140px] rounded-full mix-blend-screen" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-violet-600/10 blur-[140px] rounded-full mix-blend-screen" />
-        <div className="absolute top-[40%] left-[50%] w-[30vw] h-[30vw] bg-fuchsia-600/5 blur-[120px] rounded-full mix-blend-screen -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[100vw] h-[50vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800/20 via-[#000000]/0 to-transparent" />
       </div>
 
       <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
@@ -105,38 +103,35 @@ export default function Dashboard() {
           <div className="max-w-[1400px] mx-auto space-y-16">
             
             <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                  <div className="flex items-center gap-2 mb-3 text-indigo-400">
-                    <Sparkles size={16} className="animate-pulse" />
-                    <span className="text-xs font-black uppercase tracking-[0.3em] drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]">Mission Control</span>
+               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: 'easeOut' }}>
+                  <div className="flex items-center gap-2 mb-4 text-zinc-500">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                    <span className="text-xs font-semibold tracking-widest uppercase">Overview Panel</span>
                   </div>
-                  <h1 className="text-4xl md:text-7xl font-black tracking-tighter leading-[0.9] drop-shadow-2xl">
-                    COMMAND <br /> <span className="text-grad drop-shadow-[0_0_20px_rgba(165,180,252,0.4)]">CENTER</span>
+                  <h1 className="text-4xl md:text-6xl font-semibold tracking-tighter text-white">
+                    Dashboard
                   </h1>
                </motion.div>
 
-               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                  <div className="glass p-4 rounded-3xl border-white/5 flex items-center gap-6 shadow-2xl">
-                     <div className="space-y-1">
-                        <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Active Threads</p>
-                        <p className="text-2xl font-black">{stats.pending}</p>
+               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <div className="bg-[#0A0A0A] p-4 rounded-xl border border-white/10 flex items-center gap-6 shadow-sm">
+                     <div className="space-y-1.5">
+                        <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">Active Threads</p>
+                        <p className="text-2xl font-semibold leading-none">{stats.pending}</p>
                      </div>
-                     <div className="w-px h-10 bg-white/10" />
-                     <div className="space-y-1">
-                        <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Completion</p>
-                        <div className="flex items-center gap-2">
-                           <div className="w-20 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                              <div className="h-full grad-accent" style={{ width: `${pct}%` }} />
-                           </div>
-                           <span className="text-sm font-black">{pct}%</span>
+                     <div className="w-px h-10 bg-white/[0.08]" />
+                     <div className="space-y-1.5 min-w-[120px]">
+                        <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest flex justify-between">
+                           Completion <span>{pct}%</span>
+                        </p>
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                           <div className="h-full bg-white transition-all duration-1000" style={{ width: `${pct}%` }} />
                         </div>
                      </div>
                   </div>
-                  <GlowingShadow onClick={openCreate}>
-                    <div className="flex items-center gap-2.5 text-sm font-black uppercase tracking-widest">
-                      <Plus size={20} /> Initialize
-                    </div>
-                  </GlowingShadow>
+                  <button onClick={openCreate} className="h-[76px] px-6 rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors shadow-sm flex items-center justify-center gap-2 text-sm font-semibold">
+                    <Plus size={18} /> New Task
+                  </button>
                </div>
             </header>
 
@@ -149,21 +144,20 @@ export default function Dashboard() {
                 >
                    {/* Background Graphics */}
                    <div className="absolute top-0 right-0 w-full h-full pointer-events-none">
-                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] rounded-full opacity-[0.03]" style={{ background: 'radial-gradient(circle, #6366F1 0%, transparent 60%)' }} />
-                       <div className="absolute top-0 right-0 p-12 text-zinc-800 opacity-20"><LayoutGrid size={200} strokeWidth={0.5} /></div>
+                       <div className="absolute top-1/2 left-1/2 w-full h-full -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.03)_0%,_transparent_70%)]" />
                     </div>
 
                    <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-end">
-                      <div className="space-y-10">
-                         <div className="space-y-4">
-                            <span className="px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] border border-indigo-500/20">Active Target</span>
-                            <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight">{nextUp.title}</h2>
+                      <div className="space-y-8">
+                         <div className="space-y-3">
+                            <span className="px-3 py-1 rounded-md bg-white/10 text-white text-[10px] font-semibold tracking-widest uppercase border border-white/5">Active Target</span>
+                            <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter leading-tight text-white">{nextUp.title}</h2>
                          </div>
                          <CountdownTimer deadline={nextUp.deadline} />
                       </div>
                       <div className="flex justify-end">
-                         <button onClick={() => openEdit(nextUp)} className="px-10 py-5 rounded-2xl bg-white text-black text-sm font-black uppercase tracking-widest hover:bg-zinc-200 transition-all shadow-2xl flex items-center gap-3 active:scale-95">
-                            Modify Parameters <ArrowRight size={18} />
+                         <button onClick={() => openEdit(nextUp)} className="px-8 py-4 rounded-xl bg-white text-black text-xs font-bold tracking-wide hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-3">
+                            Manage Task <ArrowRight size={16} />
                          </button>
                       </div>
                    </div>
@@ -202,8 +196,8 @@ export default function Dashboard() {
 
                   <div className="flex items-center gap-4">
                      {searchQuery && (
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-black text-indigo-400 uppercase tracking-widest">
-                           Results: {searchQuery}
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[11px] font-medium text-zinc-300">
+                           Search: {searchQuery}
                         </div>
                      )}
                   </div>
@@ -211,14 +205,14 @@ export default function Dashboard() {
 
                <AnimatePresence mode="popLayout">
                   {displayed.length > 0 ? (
-                    <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                       {displayed.map(e => <EventCard key={e.id} event={e} onEdit={openEdit} />)}
                     </motion.div>
                   ) : (
-                    <div className="py-40 flex flex-col items-center justify-center text-center glass rounded-[40px] border-white/5 w-full">
-                        <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-zinc-700 mb-8"><Filter size={40} /></div>
-                        <h3 className="text-2xl font-black uppercase tracking-widest">No Signals Found</h3>
-                        <p className="text-zinc-500 max-w-sm font-medium mt-4 leading-relaxed">Adjust your filters or initiate a new task sequence to populate your workspace.</p>
+                    <div className="py-24 flex flex-col items-center justify-center text-center bg-[#0A0A0A] rounded-[24px] border border-white/[0.05] w-full">
+                        <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-zinc-600 mb-6"><Filter size={24} /></div>
+                        <h3 className="text-lg font-semibold tracking-tight">No Events Found</h3>
+                        <p className="text-zinc-500 text-sm max-w-sm mt-2">Adjust your filters or define a new objective to populate your dashboard.</p>
                     </div>
                   )}
                </AnimatePresence>

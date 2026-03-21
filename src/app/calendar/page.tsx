@@ -80,12 +80,10 @@ export default function CalendarPage() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#030303] text-white relative">
-      {/* Stunning ambient backgrounds */}
+    <div className="flex flex-col min-h-screen bg-[#000000] text-zinc-100 relative selection:bg-white/20">
+      {/* Subtle modern background */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-indigo-600/10 blur-[150px] rounded-full mix-blend-screen" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-cyan-600/10 blur-[150px] rounded-full mix-blend-screen" />
-        <div className="absolute top-[30%] left-[30%] w-[40vw] h-[40vw] bg-violet-600/5 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[100vw] h-[50vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800/20 via-[#000000]/0 to-transparent" />
       </div>
 
       <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
@@ -99,33 +97,31 @@ export default function CalendarPage() {
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-8">
               <div>
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-2 mb-2 text-indigo-400">
-                  <CalIcon size={16} className="animate-pulse" />
-                  <span className="text-xs font-black uppercase tracking-[0.2em] drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]">Timeline Overview</span>
+                  className="flex items-center gap-2 mb-4 text-zinc-500">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                  <span className="text-xs font-semibold tracking-widest uppercase">Calendar View</span>
                 </motion.div>
-                <h1 className="text-4xl md:text-6xl font-black tracking-tighter drop-shadow-2xl">{format(curr, 'MMMM yyyy')}</h1>
+                <h1 className="text-4xl md:text-5xl font-semibold tracking-tighter text-white">{format(curr, 'MMMM yyyy')}</h1>
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 p-1 bg-white/[0.03] rounded-2xl border border-white/5 shadow-inner">
-                  <button onClick={onPrev} className="p-3 hover:bg-white/5 rounded-xl transition-all text-zinc-400 hover:text-white"><ChevronLeft size={20} /></button>
-                  <button onClick={() => { setCurr(new Date()); setSelectedDay(new Date()); }} className="px-6 py-2 text-xs font-bold hover:text-indigo-400 transition-colors">Today</button>
-                  <button onClick={onNext} className="p-3 hover:bg-white/5 rounded-xl transition-all text-zinc-400 hover:text-white"><ChevronRight size={20} /></button>
+                <div className="flex items-center gap-1 p-1 bg-[#0A0A0A] rounded-xl border border-white/10 shadow-sm">
+                  <button onClick={onPrev} className="p-2 hover:bg-white/5 rounded-lg transition-all text-zinc-400 hover:text-white"><ChevronLeft size={18} /></button>
+                  <button onClick={() => { setCurr(new Date()); setSelectedDay(new Date()); }} className="px-5 py-2 text-xs font-semibold hover:text-white text-zinc-300 transition-colors">Today</button>
+                  <button onClick={onNext} className="p-2 hover:bg-white/5 rounded-lg transition-all text-zinc-400 hover:text-white"><ChevronRight size={18} /></button>
                 </div>
-                <GlowingShadow onClick={() => { setEditEvent(null); setModalOpen(true); }}>
-                  <div className="flex items-center gap-2 text-sm font-bold">
-                    <Plus size={18} /> Schedule
-                  </div>
-                </GlowingShadow>
+                <button onClick={() => { setEditEvent(null); setModalOpen(true); }} className="h-10 px-5 rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors shadow-sm flex items-center justify-center gap-2 text-sm font-semibold">
+                  <Plus size={16} /> Schedule
+                </button>
               </div>
             </header>
 
             <div className="flex flex-col gap-12">
                {/* Main Calendar Grid */}
-               <div className="w-full glass-hi rounded-[40px] overflow-hidden border-white/10 shadow-2xl flex flex-col">
-                  <div className="grid grid-cols-7 border-b border-white/[0.05] bg-white/[0.01]">
+               <div className="w-full bg-[#0A0A0A] rounded-[24px] overflow-hidden border border-white/10 shadow-sm flex flex-col">
+                  <div className="grid grid-cols-7 border-b border-white/[0.08] bg-[#0A0A0A]">
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                      <div key={day} className="py-6 text-center text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">{day}</div>
+                      <div key={day} className="py-4 text-center text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{day}</div>
                     ))}
                   </div>
 
@@ -149,28 +145,28 @@ export default function CalendarPage() {
                           )}
                         >
                           <div className={cn(
-                            "w-9 h-9 flex items-center justify-center text-sm font-black rounded-2xl transition-all mb-4",
-                            isTodayDay ? "bg-indigo-500 text-white shadow-xl shadow-indigo-500/30" : isSelected ? "bg-white text-black" : "text-zinc-500"
+                            "w-7 h-7 flex items-center justify-center text-xs font-semibold rounded-lg transition-all mb-3",
+                            isTodayDay ? "bg-white text-black shadow-sm" : isSelected ? "bg-white/10 text-white" : "text-zinc-500"
                           )}>
                             {format(day, 'd')}
                           </div>
 
-                          <div className="space-y-1.5">
+                          <div className="space-y-1">
                             {dayEvents.slice(0, 3).map(e => {
                               const p = getEffectivePriority(e);
                               const col = P_COLOR[p] || P_COLOR.auto;
                               const isDone = e.status === 'completed';
                               return (
-                                <div key={e.id} className="flex items-center gap-2">
+                                <div key={e.id} className="flex items-center gap-2 px-1.5 py-0.5 rounded-[4px] bg-white/[0.02] border border-white/[0.03]">
                                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isDone ? '#444' : col }} />
-                                   <span className={cn("text-[9px] font-bold truncate", isDone ? "text-zinc-700 line-through" : "text-zinc-400")}>
+                                   <span className={cn("text-[10px] font-medium truncate", isDone ? "text-zinc-600 line-through" : "text-zinc-300")}>
                                      {e.title}
                                    </span>
                                 </div>
                               );
                             })}
                             {dayEvents.length > 3 && (
-                               <p className="text-[9px] font-black text-indigo-400 mt-2 px-1">+{dayEvents.length - 3} MORE</p>
+                               <p className="text-[10px] font-semibold text-zinc-500 mt-1.5 px-1.5">+{dayEvents.length - 3} more</p>
                             )}
                           </div>
                         </motion.div>
@@ -182,17 +178,17 @@ export default function CalendarPage() {
                {/* Below Calendar: Tasks for Selected Day Panel */}
                <div className="w-full space-y-6">
                   <motion.div 
-                    initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
                     key={selectedDay.toISOString()}
-                    className="glass-hi p-6 md:p-10 rounded-[40px] border-white/5 shadow-2xl space-y-8"
+                    className="bg-[#0A0A0A] p-6 md:p-8 rounded-[24px] border border-white/10 shadow-sm space-y-6"
                   >
                     <div>
                         <div className="flex items-center justify-between mb-2">
-                           <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Selected Date</span>
-                           {isTodayDate(selectedDay) && <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[8px] font-black uppercase">Today</span>}
+                           <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">Selected Date</span>
+                           {isTodayDate(selectedDay) && <span className="px-2 py-0.5 rounded-md bg-white/10 text-white text-[10px] font-semibold">Today</span>}
                         </div>
-                        <h2 className="text-3xl font-black text-white">{format(selectedDay, 'MMM d, yyyy')}</h2>
-                        <p className="text-xs text-zinc-500 font-medium mt-1">{selectedTasks.length} objectives identified</p>
+                        <h2 className="text-2xl font-semibold text-white tracking-tight">{format(selectedDay, 'MMM d, yyyy')}</h2>
+                        <p className="text-xs text-zinc-500 mt-1">{selectedTasks.length} tasks scheduled</p>
                     </div>
 
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto no-sb pr-2">
@@ -203,51 +199,50 @@ export default function CalendarPage() {
                                const col = P_COLOR[p] || P_COLOR.auto;
                                const isDone = e.status === 'completed';
                                return (
-                                 <motion.div
-                                   key={e.id}
-                                   initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                                   exit={{ opacity: 0, x: -20, scale: 0.9 }}
-                                   className={cn(
-                                     "group relative p-5 rounded-3xl border border-white/5 transition-all hover:bg-white/[0.04] overflow-hidden shadow-xl",
-                                     isDone ? "opacity-40" : ""
-                                   )}
-                                 >
-                                   <div className="flex items-start justify-between gap-4 mb-4">
-                                      <div className="space-y-1">
-                                         <span className="text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border" 
-                                           style={{ color: col, borderColor: `${col}40`, backgroundColor: `${col}10` }}>{e.category}</span>
-                                         <h3 className={cn("text-sm font-bold leading-tight", isDone ? "line-through" : "")}>{e.title}</h3>
-                                      </div>
-                                      <div className="flex items-center gap-1 opacity-1 group-hover:opacity-100 transition-opacity">
-                                         <button onClick={() => { setEditEvent(e); setModalOpen(true); }} className="p-2 rounded-lg hover:bg-white/10 text-zinc-500 hover:text-white transition-colors"><Edit2 size={14} /></button>
-                                         <button onClick={() => remove(e.id, e.title)} className="p-2 rounded-lg hover:bg-rose-500/10 text-zinc-500 hover:text-rose-400 transition-colors"><Trash2 size={14} /></button>
-                                      </div>
-                                   </div>
-                                   
-                                   <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500">
-                                      <div className="flex items-center gap-1.5">
-                                         <Clock size={12} />
-                                         {isDone ? 'Finished' : getTimeRemaining(e.deadline)}
-                                      </div>
-                                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isDone ? '#444' : col }} />
-                                   </div>
-                                 </motion.div>
-                               );
-                            })
-                          ) : (
-                            <div className="py-12 flex flex-col items-center justify-center text-center opacity-40">
-                               <CalIcon size={32} className="text-zinc-600 mb-4" />
-                               <p className="text-xs font-bold uppercase tracking-widest text-zinc-600">No events scheduled</p>
-                            </div>
-                          )}
-                       </AnimatePresence>
-                    </div>
+                                  <motion.div
+                                    key={e.id}
+                                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20, scale: 0.95 }}
+                                    className={cn(
+                                      "group relative p-4 rounded-xl border border-white/10 transition-all hover:bg-white/[0.02]",
+                                      isDone ? "opacity-50 grayscale" : ""
+                                    )}
+                                  >
+                                    <div className="flex items-start justify-between gap-4 mb-3">
+                                       <div className="space-y-1.5 flex-1">
+                                          <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isDone ? '#444' : col }} />
+                                            <span className="text-[10px] font-semibold tracking-widest uppercase text-zinc-500">{e.category}</span>
+                                          </div>
+                                          <h3 className={cn("text-sm font-semibold leading-tight", isDone ? "line-through text-zinc-500" : "text-white")}>{e.title}</h3>
+                                       </div>
+                                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <button onClick={() => { setEditEvent(e); setModalOpen(true); }} className="p-1.5 rounded-md hover:bg-white/10 text-zinc-500 hover:text-white transition-colors"><Edit2 size={14} /></button>
+                                          <button onClick={() => remove(e.id, e.title)} className="p-1.5 rounded-md hover:bg-rose-500/10 text-zinc-500 hover:text-rose-400 transition-colors"><Trash2 size={14} /></button>
+                                       </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center justify-between text-[11px] font-semibold text-zinc-500">
+                                       <div className="flex items-center gap-1.5">
+                                          <Clock size={12} />
+                                          {isDone ? 'Finished' : getTimeRemaining(e.deadline)}
+                                       </div>
+                                    </div>
+                                  </motion.div>
+                                );
+                             })
+                           ) : (
+                             <div className="py-10 flex flex-col items-center justify-center text-center opacity-50">
+                                <CalIcon size={24} className="text-zinc-600 mb-3" />
+                                <p className="text-xs font-semibold text-zinc-500">No tasks scheduled</p>
+                             </div>
+                           )}
+                        </AnimatePresence>
+                     </div>
 
-                    <GlowingShadow onClick={() => { setEditEvent(null); setModalOpen(true); }} className="w-full">
-                       <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest">
-                          <Plus size={16} /> Add Task
-                       </div>
-                    </GlowingShadow>
+                     <button onClick={() => { setEditEvent(null); setModalOpen(true); }} className="w-full flex items-center justify-center gap-2 h-12 rounded-xl border border-white/10 hover:bg-white/5 transition-colors text-xs font-semibold text-white">
+                        <Plus size={16} /> Add Task
+                     </button>
                   </motion.div>
                </div>
             </div>

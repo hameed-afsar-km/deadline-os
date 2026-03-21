@@ -45,16 +45,16 @@ function CustomSelect({ value, onChange, options, placeholder }: { value: string
         type="button" 
         onClick={() => setOpen(!open)}
         className={cn(
-          "w-full flex items-center justify-between text-left h-12 px-4 rounded-2xl border transition-all duration-300 outline-none",
+          "w-full flex items-center justify-between text-left h-11 px-3.5 rounded-xl border transition-all duration-200 outline-none",
           open 
-            ? "bg-white/[0.04] border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.15)]" 
-            : "bg-white/[0.02] border-white/5 hover:bg-white/[0.03] hover:border-white/10"
+            ? "bg-[#0A0A0A] border-white/40 ring-1 ring-white/40" 
+            : "bg-white/[0.03] border-white/10 hover:border-white/20"
         )}
       >
         {selected ? (
           <div className="flex items-center gap-2.5">
-            {selected.color && <div className="w-2.5 h-2.5 rounded-full" style={{ background: selected.color, boxShadow: `0 0 10px ${selected.color}60` }} />}
-            <span className="text-sm font-bold text-white tracking-wide">{selected.label}</span>
+            {selected.color && <div className="w-2.5 h-2.5 rounded-full" style={{ background: selected.color, boxShadow: `0 0 10px ${selected.color}40` }} />}
+            <span className="text-sm font-medium text-white tracking-wide">{selected.label}</span>
           </div>
         ) : (
           <span className="text-zinc-500 text-sm font-semibold">{placeholder || 'Select...'}</span>
@@ -65,11 +65,11 @@ function CustomSelect({ value, onChange, options, placeholder }: { value: string
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            initial={{ opacity: 0, y: 5, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            exit={{ opacity: 0, y: 5, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute z-50 top-[calc(100%+8px)] left-0 right-0 p-1.5 glass-hi border border-white/10 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.6)] max-h-60 overflow-y-auto no-sb"
+            className="absolute z-50 top-[calc(100%+8px)] left-0 right-0 p-1 bg-[#0A0A0A] border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto no-sb"
           >
             {options.map(o => (
               <button
@@ -77,18 +77,18 @@ function CustomSelect({ value, onChange, options, placeholder }: { value: string
                 type="button"
                 onClick={() => { onChange(o.value); setOpen(false); }}
                 className={cn(
-                  "w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm transition-all relative overflow-hidden group",
-                  value === o.value ? "bg-white/10 text-white font-bold" : "text-zinc-400 hover:bg-white/5 hover:text-white font-semibold"
+                  "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all relative overflow-hidden group",
+                  value === o.value ? "bg-white/10 text-white font-semibold" : "text-zinc-400 hover:bg-white/5 hover:text-white font-medium"
                 )}
               >
                 {value !== o.value && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                 )}
                 <div className="flex items-center gap-2.5 relative z-10">
                   {o.color && <div className="w-2 h-2 rounded-full" style={{ background: o.color }} />}
                   {o.label}
                 </div>
-                {value === o.value && <Check size={16} className="text-indigo-400 relative z-10" />}
+                {value === o.value && <Check size={16} className="text-white relative z-10" />}
               </button>
             ))}
           </motion.div>
@@ -119,24 +119,24 @@ function Combobox({ value, onChange, options }: { value: string, onChange: (v: s
         onChange={e => { onChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
         placeholder="e.g. Design, Development..."
-        className="w-full text-sm font-bold text-white h-12 px-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.03] hover:border-white/10 focus:bg-white/[0.04] focus:border-indigo-500/50 focus:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all outline-none"
+        className="w-full text-sm font-medium text-white h-11 px-3.5 rounded-xl bg-white/[0.03] border border-white/10 hover:border-white/20 focus:bg-[#0A0A0A] focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all outline-none"
       />
       
       <AnimatePresence>
         {open && filtered.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            initial={{ opacity: 0, y: 5, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            exit={{ opacity: 0, y: 5, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute z-50 top-[calc(100%+8px)] left-0 right-0 p-1.5 glass-hi border border-white/10 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.6)] max-h-48 overflow-y-auto no-sb"
+            className="absolute z-50 top-[calc(100%+8px)] left-0 right-0 p-1 bg-[#0A0A0A] border border-white/10 rounded-xl shadow-2xl max-h-48 overflow-y-auto no-sb"
           >
             {filtered.map(o => (
               <button
                 key={o}
                 type="button"
                 onClick={() => { onChange(o); setOpen(false); }}
-                className="w-full text-left px-3 py-3 rounded-xl text-sm font-semibold text-zinc-300 hover:bg-white/10 hover:text-white transition-all"
+                className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-300 hover:bg-white/10 hover:text-white transition-all"
               >
                 {o}
               </button>
@@ -210,67 +210,60 @@ export function EventModal({ event, onClose }: { event: DeadlineEvent | null; on
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6 pb-20 sm:pb-6">
+    <div className="fixed inset-0 z-[999] flex justify-end">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-black/60 backdrop-blur-[8px]"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
       />
 
-      {/* Modal Container */}
+      {/* Slide-Over Panel */}
       <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 30, scale: 0.95 }}
-        transition={{ duration: 0.5, type: 'spring', bounce: 0.35 }}
-        className="relative w-full max-w-[600px] glass-hi border border-white/10 rounded-[32px] shadow-[0_64px_128px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col max-h-full"
+        initial={{ opacity: 0, x: "100%" }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: "100%" }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        className="relative w-full md:w-[480px] bg-[#0A0A0A] border-l border-white/10 shadow-[-40px_0_100px_rgba(0,0,0,0.8)] flex flex-col h-full z-10"
       >
-        {/* Glow Effects inside modal */}
-        <div className="absolute top-0 left-0 w-[120%] h-[120%] pointer-events-none opacity-[0.15]">
-           <div className="absolute top-[-20%] left-[-20%] w-[50%] h-[50%] bg-indigo-500 rounded-full blur-[100px]" />
-           <div className="absolute bottom-[-20%] right-[-20%] w-[50%] h-[50%] bg-violet-600 rounded-full blur-[100px]" />
-        </div>
-
         {/* Header */}
-        <div className="relative flex items-center justify-between px-8 py-6 border-b border-white/[0.05] bg-white/[0.01]">
+        <div className="flex items-center justify-between px-8 py-6 border-b border-white/[0.08]">
           <div className="flex items-center gap-4">
-             <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                <Layers size={24} />
+             <div className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-zinc-300">
+                <Layers size={18} />
              </div>
              <div>
-               <h2 className="text-2xl font-black text-white tracking-tighter drop-shadow-lg">{event ? 'Modify Parameters' : 'Initialize Objective'}</h2>
-               <p className="text-[11px] text-zinc-400 font-black uppercase tracking-[0.2em] mt-1 drop-shadow-md">Data Configuration Panel</p>
+               <h2 className="text-xl font-semibold text-white tracking-tight">{event ? 'Edit Task' : 'New Task'}</h2>
+               <p className="text-[11px] text-zinc-500 font-medium tracking-wide">Configure attributes</p>
              </div>
           </div>
-          <button type="button" onClick={onClose} className="w-10 h-10 rounded-2xl glass border border-white/5 flex items-center justify-center text-zinc-400 hover:text-white transition-all hover:bg-white/10 active:scale-95 shadow-inner">
-            <X size={20} />
+          <button type="button" onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
+            <X size={18} />
           </button>
         </div>
 
-        {/* Scrollable Modal Body With Form Content */}
-        <div className="relative overflow-y-auto no-sb" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-          <form id="task-form" onSubmit={submit} className="flex flex-col h-full">
-            <div className="p-8 space-y-8 flex-1">
-              
-              {/* Title */}
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
-                  Task Designation
-                </label>
-                <input
-                  type="text" required autoFocus
-                  value={form.title}
-                  onChange={e => setForm({ ...form, title: e.target.value })}
-                  placeholder="e.g. Architect Core Systems..."
-                  className="w-full text-lg font-black text-white h-14 px-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.04] focus:bg-white/[0.06] focus:border-indigo-500/50 focus:shadow-[0_0_20px_rgba(99,102,241,0.2)] transition-all outline-none placeholder:text-zinc-600"
-                />
-              </div>
+        {/* Scrollable Body */}
+        <div className="relative overflow-y-auto no-sb flex-1">
+          <form id="task-form" onSubmit={submit} className="flex flex-col h-full px-8 py-8 space-y-8">
+            
+            {/* Title */}
+            <div className="space-y-2.5">
+              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">
+                Designation
+              </label>
+              <input
+                type="text" required autoFocus
+                value={form.title}
+                onChange={e => setForm({ ...form, title: e.target.value })}
+                placeholder="Ex: Launch Marketing Site"
+                className="w-full text-base font-semibold text-white h-12 px-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-white/20 focus:bg-[#0A0A0A] focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all outline-none placeholder:text-zinc-600"
+              />
+            </div>
 
               {/* Grid for Dropdowns & Inputs */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
                      <CalendarIcon size={12} /> Deadline
                   </label>
                   <label className="block relative cursor-pointer group">
@@ -278,21 +271,21 @@ export function EventModal({ event, onClose }: { event: DeadlineEvent | null; on
                       type="datetime-local" required
                       value={form.deadline}
                       onChange={e => setForm({ ...form, deadline: e.target.value })}
-                      className="w-full text-sm font-bold text-white h-12 px-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.03] focus:bg-white/[0.05] focus:border-indigo-500/50 focus:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all outline-none"
+                      className="w-full text-sm font-medium text-white h-11 px-3.5 rounded-xl bg-white/[0.03] border border-white/10 hover:border-white/20 focus:bg-[#0A0A0A] focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all outline-none"
                       style={{ colorScheme: 'dark' }}
                     />
                   </label>
                 </div>
 
-                <div className="space-y-3 relative z-[51]">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
+                <div className="space-y-2 relative z-[51]">
+                  <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
                     <Tag size={12} /> Category
                   </label>
                   <Combobox value={form.category} onChange={v => setForm({...form, category: v})} options={SUGGESTED_CATS} />
                 </div>
 
-                <div className="space-y-3 relative z-50">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2">Priority Level</label>
+                <div className="space-y-2 relative z-50">
+                  <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest ml-1">Priority</label>
                   <CustomSelect 
                     value={form.priority} 
                     onChange={v => setForm({...form, priority: v as Priority})} 
@@ -300,8 +293,8 @@ export function EventModal({ event, onClose }: { event: DeadlineEvent | null; on
                   />
                 </div>
 
-                <div className="space-y-3 relative z-40">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2">Execution Status</label>
+                <div className="space-y-2 relative z-40">
+                  <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest ml-1">Status</label>
                   <CustomSelect 
                     value={form.status} 
                     onChange={v => setForm({...form, status: v as Status})} 
@@ -310,35 +303,33 @@ export function EventModal({ event, onClose }: { event: DeadlineEvent | null; on
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
-                  <AlignLeft size={12} /> Extended Details
-                </label>
-                <textarea
-                  rows={4}
-                  value={form.description}
-                  onChange={e => setForm({ ...form, description: e.target.value })}
-                  placeholder="Include sub-tasks, context, or constraints..."
-                  className="w-full text-sm font-medium text-white p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.03] focus:bg-white/[0.05] focus:border-indigo-500/50 focus:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all outline-none placeholder:text-zinc-600 resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Footer actions inside form */}
-            <div className="relative p-6 px-8 border-t border-white/[0.05] bg-white/[0.02] flex items-center justify-end gap-4 shrink-0">
-               <button type="button" onClick={onClose} disabled={loading}
-                 className="px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-colors active:scale-95">
-                 Abort
-               </button>
-               <GlowingShadow type="submit" disabled={loading}>
-                 <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest px-4 py-1">
-                   {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                   {event ? 'Sync Payload' : 'Deploy Task'}
-                 </div>
-               </GlowingShadow>
+            {/* Description */}
+            <div className="space-y-2.5">
+              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                <AlignLeft size={12} /> Extended Description
+              </label>
+              <textarea
+                rows={5}
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+                placeholder="Provide further context or subtasks here..."
+                className="w-full text-sm font-medium text-white p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-white/20 focus:bg-[#0A0A0A] focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all outline-none placeholder:text-zinc-600 resize-none"
+              />
             </div>
           </form>
+        </div>
+
+        {/* Footer Sidebar Actions */}
+        <div className="p-6 border-t border-white/[0.08] bg-[#0A0A0A] flex flex-col gap-3 shrink-0">
+           <button type="submit" onClick={(e) => { e.preventDefault(); submit(e as any); }} disabled={loading}
+             className="w-full flex items-center justify-center gap-2 text-sm font-semibold h-12 rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors shadow-sm disabled:opacity-50">
+             {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+             {event ? 'Save Data' : 'Add to Workspace'}
+           </button>
+           <button type="button" onClick={onClose} disabled={loading}
+             className="w-full h-12 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">
+             Cancel
+           </button>
         </div>
       </motion.div>
     </div>

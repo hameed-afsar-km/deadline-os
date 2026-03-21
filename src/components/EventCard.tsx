@@ -56,12 +56,12 @@ export function EventCard({ event, onEdit }: { event: DeadlineEvent; onEdit: (e:
   return (
     <motion.article
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
+      exit={{ opacity: 0, scale: 0.98 }}
       className={cn(
-        'group relative glass rounded-[24px] p-6 flex flex-col gap-6 transition-all hover:bg-white/[0.04] border-white/5 shadow-xl',
-        done && 'opacity-60 grayscale-[0.5]',
+        'group relative bg-[#0A0A0A] rounded-[20px] p-5 flex flex-col gap-5 transition-all hover:bg-[#121212] border border-white/5 hover:border-white/10 shadow-sm',
+        done && 'opacity-50 grayscale-[0.8]',
       )}
     >
       <div className="flex items-start justify-between">
@@ -76,21 +76,21 @@ export function EventCard({ event, onEdit }: { event: DeadlineEvent; onEdit: (e:
          </div>
 
          <div className="relative" ref={menuRef}>
-            <button onClick={() => setMenu(!menu)} className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100">
+            <button onClick={() => setMenu(!menu)} className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/[0.05] transition-all opacity-0 group-hover:opacity-100">
                <MoreVertical size={16} />
             </button>
             <AnimatePresence>
               {menu && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 5 }}
+                  initial={{ opacity: 0, scale: 0.95, y: 5 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: 5 }}
-                  className="absolute right-0 top-full mt-2 w-44 glass-hi rounded-2xl border border-white/10 shadow-2xl p-1 z-50 overflow-hidden"
+                  exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                  className="absolute right-0 top-full mt-2 w-44 bg-[#0A0A0A] rounded-xl border border-white/10 shadow-2xl p-1 z-50 overflow-hidden"
                 >
-                  <button onClick={() => { onEdit(event); setMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-white hover:bg-white/5 transition-colors">
-                    <Edit2 size={14} className="text-zinc-400" /> Modify Details
+                  <button onClick={() => { onEdit(event); setMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-colors">
+                    <Edit2 size={14} className="text-zinc-500" /> Edit Details
                   </button>
-                  <button onClick={() => { remove(); setMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition-colors">
+                  <button onClick={() => { remove(); setMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-colors">
                     <Trash2 size={14} /> Remove Entry
                   </button>
                 </motion.div>
@@ -99,8 +99,8 @@ export function EventCard({ event, onEdit }: { event: DeadlineEvent; onEdit: (e:
          </div>
       </div>
 
-      <div className="space-y-2">
-        <h3 className={cn('text-lg font-bold tracking-tight text-white leading-tight', done && 'line-through text-zinc-500')}>
+      <div className="space-y-1.5 flex-1">
+        <h3 className={cn('text-base font-semibold tracking-tight text-white leading-tight', done && 'line-through text-zinc-500')}>
           {event.title}
         </h3>
         {event.description && (
@@ -110,34 +110,25 @@ export function EventCard({ event, onEdit }: { event: DeadlineEvent; onEdit: (e:
         )}
       </div>
 
-      <div className="flex items-center justify-between text-[11px] font-bold">
-        <div className={cn('flex items-center gap-2', overdue && !done ? 'text-rose-500' : 'text-zinc-500')}>
-          {overdue && !done ? <AlertTriangle size={14} /> : <Clock size={14} />}
-          <span>{done ? 'Task Cleared' : (overdue ? 'Past Due' : getTimeRemaining(event.deadline))}</span>
-        </div>
-        <span className="text-zinc-600">{formatDateLabel(event.deadline)}</span>
-      </div>
-
-      <div className="space-y-3 pt-2">
-        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: done ? '100%' : '35%' }}
-            className="h-full rounded-full"
-            style={{ background: done ? '#10B981' : (overdue ? '#F43F5E' : color), boxShadow: `0 0 12px ${done ? '#10B981' : color}40` }}
-          />
+      <div className="flex flex-col gap-4 pt-4 border-t border-white/[0.04]">
+        <div className="flex items-center justify-between text-[11px] font-semibold">
+          <div className={cn('flex items-center gap-1.5', overdue && !done ? 'text-rose-500' : 'text-zinc-400')}>
+            {overdue && !done ? <AlertTriangle size={13} /> : <Clock size={13} />}
+            <span>{done ? 'Resolved' : (overdue ? 'Past Due' : getTimeRemaining(event.deadline))}</span>
+          </div>
+          <span className="text-zinc-600">{formatDateLabel(event.deadline)}</span>
         </div>
 
         <button
           onClick={toggleStatus}
           className={cn(
-            'w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all',
+            'w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[11px] font-semibold uppercase tracking-widest transition-all border outline-none',
             done
-              ? 'bg-white/[0.04] text-zinc-500 hover:bg-white/[0.08] border border-white/5'
-              : 'bg-white text-black hover:bg-zinc-200 shadow-xl shadow-white/5 active:scale-[0.98]'
+              ? 'bg-transparent text-zinc-500 border-white/5 hover:bg-white/[0.02] hover:text-white'
+              : 'bg-white text-black border-transparent hover:bg-zinc-200 active:scale-[0.98]'
           )}
         >
-          {done ? <><CheckCircle2 size={16} /> Re-open</> : 'Clear Task'}
+          {done ? <><CheckCircle2 size={14} /> Reopen Issue</> : 'Mark Complete'}
         </button>
       </div>
     </motion.article>
