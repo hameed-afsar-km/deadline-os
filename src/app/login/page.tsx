@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { signInWithEmail, signInWithGoogle } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { BeamsBackground } from '@/components/ui/beams-background';
@@ -41,88 +41,55 @@ export default function LoginPage() {
   };
 
   return (
-    <BeamsBackground className="px-5 py-12">
+    <BeamsBackground className="px-6 py-20 flex items-center justify-center">
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-[420px] relative"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[440px]"
       >
-        <div className="glass-hi hud-border p-8 md:p-10 rounded-2xl relative overflow-hidden">
-          {/* Animated Scanning Line */}
-          <motion.div
-            animate={{ top: ['0%', '100%', '0%'] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-            className="absolute left-0 right-0 h-[1px] bg-cyan-500/20 z-0 pointer-events-none"
-          />
+        <div className="glass-hi p-10 md:p-12 rounded-[28px] shadow-2xl border border-white/10 relative overflow-hidden">
+          {/* Subtle Background Glow */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 blur-[80px]" />
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/10 blur-[80px]" />
 
           <div className="relative z-10">
-            {/* Logo */}
-            <div className="flex items-center gap-3 mb-10">
-              <div className="w-10 h-10 rounded-lg grad-accent flex items-center justify-center text-white font-bold text-lg glow-accent relative">
-                D
-                <div className="absolute -inset-1 border border-cyan-500/20 rounded-lg animate-pulse" />
+            <div className="flex flex-col items-center mb-10 text-center">
+              <div className="w-14 h-14 rounded-2xl grad-accent flex items-center justify-center text-white mb-6 shadow-xl shadow-indigo-500/20">
+                <span className="text-2xl font-black">D</span>
               </div>
-              <div>
-                <span className="font-bold text-xl tracking-tighter text-white block leading-none">DEADLINE</span>
-                <span className="text-[10px] font-bold tracking-[0.2em] text-cyan-500 uppercase">Operating System</span>
-              </div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">Welcome Back</h1>
+              <p className="text-sm text-zinc-400 font-medium tracking-tight">Sign in to manage your productivity orbit</p>
             </div>
 
-            <h1 className="text-2xl font-bold tracking-tight text-white mb-2 glow-text">Authentication Required</h1>
-            <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-8">Access restricted to authorized personnel</p>
-
-            {/* Google */}
-            <motion.button
-              whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.08)' }} whileTap={{ scale: 0.99 }}
-              onClick={handleGoogle}
-              type="button"
-              className="w-full flex items-center justify-center gap-3 py-3 rounded-lg glass border border-white/[0.05] text-[13px] font-bold text-zinc-300 transition-all mb-8 uppercase tracking-wider"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://www.google.com/favicon.ico" className="w-3.5 h-3.5 grayscale brightness-200" alt="" />
-              Authorize with Google
-            </motion.button>
-
-            {/* Divider */}
-            <div className="relative mb-8">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/[0.05]" /></div>
-              <div className="relative flex justify-center">
-                <span className="px-4 text-[9px] font-bold text-zinc-600 uppercase tracking-[0.3em] bg-[#0A0A10]">Sequential Bypass</span>
-              </div>
-            </div>
-
-            {/* Email form */}
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
-                <div className="flex justify-between items-end">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Identity Identifier</label>
-                  <span className="text-[9px] text-cyan-500 opacity-50 font-mono">@system.secure</span>
-                </div>
+                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Email Address</label>
                 <div className="relative group">
-                  <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-cyan-500 transition-colors pointer-events-none" />
+                  <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-white transition-colors pointer-events-none" />
                   <input
                     type="email" required
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}
-                    placeholder="EMAIL_ADDRESS"
-                    className="inp pl-10 font-mono text-xs tracking-wider"
+                    placeholder="name@company.com"
+                    className="inp pl-12"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-end">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Access Cipher</label>
-                  <span className="text-[9px] text-zinc-600 font-mono">AES_256_ENCRYPTED</span>
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Password</label>
+                  <Link href="#" className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors">Forgot?</Link>
                 </div>
                 <div className="relative group">
-                  <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-cyan-500 transition-colors pointer-events-none" />
+                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-white transition-colors pointer-events-none" />
                   <input
                     type="password" required
                     value={form.password}
                     onChange={e => setForm({ ...form, password: e.target.value })}
                     placeholder="••••••••"
-                    className="inp pl-10 font-mono text-xs"
+                    className="inp pl-12"
                   />
                 </div>
               </div>
@@ -130,24 +97,37 @@ export default function LoginPage() {
               <motion.button
                 whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
                 type="submit" disabled={loading}
-                className="w-full py-4 rounded-lg text-xs font-black text-white grad-accent hover:opacity-90 transition-all flex items-center justify-center gap-3 disabled:opacity-50 glow-accent uppercase tracking-[0.2em] shadow-lg shadow-cyan-500/20"
+                className="w-full py-4 rounded-xl text-sm font-bold text-white grad-accent shadow-xl shadow-indigo-500/20 hover:opacity-90 transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
               >
-                {loading ? 'Decrypting...' : <><span>Initialize Session</span><ArrowRight size={14} /></>}
+                {loading ? 'Signing in...' : <><LogIn size={18} /> Sign in Account</>}
               </motion.button>
             </form>
 
-            <p className="text-center text-[11px] text-zinc-500 font-medium mt-10">
-              New identity required?{' '}
-              <Link href="/signup" className="text-cyan-400 font-bold hover:text-cyan-300 transition-colors uppercase tracking-wider">Register Unit</Link>
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/[0.08]" /></div>
+              <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-black text-zinc-500">
+                <span className="px-4 bg-transparent backdrop-blur-md">Or Connect With</span>
+              </div>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.04)' }} whileTap={{ scale: 0.99 }}
+              onClick={handleGoogle}
+              type="button"
+              className="w-full flex items-center justify-center gap-3 py-4 rounded-xl glass border border-white/[0.05] text-[13px] font-bold text-zinc-300 transition-all hover:border-white/10"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="https://www.google.com/favicon.ico" className="w-4 h-4 grayscale opacity-70" alt="" />
+              Continue with Google
+            </motion.button>
+
+            <p className="text-center text-sm text-zinc-500 font-medium mt-10">
+              New to DeadlineOS?{' '}
+              <Link href="/signup" className="text-indigo-400 font-bold hover:text-indigo-300 transition-colors">Create Account</Link>
             </p>
           </div>
         </div>
-
-        {/* Decorative elements */}
-        <div className="absolute -top-1 left-8 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
-        <div className="absolute -bottom-1 right-8 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
       </motion.div>
     </BeamsBackground>
   );
 }
-

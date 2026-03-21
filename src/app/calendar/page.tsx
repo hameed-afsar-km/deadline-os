@@ -8,8 +8,8 @@ import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import { EventModal } from '@/components/EventModal';
 import { DeadlineEvent } from '@/types';
-import { getEffectivePriority, isOverdue } from '@/utils/priority';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { getEffectivePriority } from '@/utils/priority';
+import { ChevronLeft, ChevronRight, Loader2, Calendar as CalIcon, Plus } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -22,13 +22,7 @@ const P_COLOR: Record<string, string> = {
   high:   '#F43F5E',
   medium: '#F59E0B',
   low:    '#10B981',
-  auto:   '#A78BFA',
-};
-
-const slideVariants = {
-  enter: (d: number) => ({ x: d > 0 ? 40 : -40, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit:  (d: number) => ({ x: d < 0 ? 40 : -40, opacity: 0 }),
+  auto:   '#6366F1',
 };
 
 export default function CalendarPage() {
@@ -45,15 +39,14 @@ export default function CalendarPage() {
   useEffect(() => { if (!authLoading && !user) router.replace('/login'); }, [user, authLoading, router]);
 
   if (authLoading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Loader2 size={28} className="animate-spin text-violet-400" />
+    <div className="min-h-screen flex items-center justify-center bg-[#030303]">
+      <Loader2 size={32} className="animate-spin text-indigo-500" />
     </div>
   );
   if (!user) return null;
 
   const onPrev = () => { setDir(-1); setCurr(subMonths(curr, 1)); };
   const onNext = () => { setDir(1);  setCurr(addMonths(curr, 1)); };
-  const openCreate = () => { setEditEvent(null); setModalOpen(true); };
 
   const startM = startOfMonth(curr);
   const endM   = endOfMonth(startM);
@@ -71,118 +64,115 @@ export default function CalendarPage() {
     });
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#050508]">
+    <div className="flex flex-col h-screen overflow-hidden bg-[#030303] text-white">
       <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
 
       <div className="flex flex-1 overflow-hidden relative">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={openCreate} />
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={() => { setEditEvent(null); setModalOpen(true); }} />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 no-sb z-10">
-          <div className="max-w-[1400px] mx-auto h-full flex flex-col gap-6">
+        {/* Background Accents */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+          <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-indigo-500/10 blur-[100px] rounded-full" />
+          <div className="absolute bottom-[20%] left-[10%] w-[30%] h-[30%] bg-purple-500/10 blur-[100px] rounded-full" />
+        </div>
+
+        <main className="flex-1 overflow-y-auto p-6 md:p-10 no-sb z-10">
+          <div className="max-w-[1400px] mx-auto space-y-8">
             
-            {/* Header / Controls */}
-            <div className="flex items-center justify-between pb-4 border-b border-white/[0.05]">
-              <div className="flex flex-col">
-                <span className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.3em] mb-1">Temporal Scheduling Interface</span>
-                <div className="flex items-center gap-4">
-                  <h1 className="text-3xl font-black text-white tracking-tighter uppercase">{format(curr, 'MMMM yyyy')}</h1>
-                  <div className="flex items-center gap-1 p-1 glass rounded-lg border-white/[0.05]">
-                    <button onClick={onPrev} className="p-1.5 hover:bg-white/5 rounded-md text-zinc-400 hover:text-white transition-colors"><ChevronLeft size={16} /></button>
-                    <button onClick={() => setCurr(new Date())} className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-colors">Current</button>
-                    <button onClick={onNext} className="p-1.5 hover:bg-white/5 rounded-md text-zinc-400 hover:text-white transition-colors"><ChevronRight size={16} /></button>
-                  </div>
+            {/* Calendar Controls */}
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
+              <div>
+                <div className="flex items-center gap-2 mb-2 text-indigo-400">
+                  <CalIcon size={16} />
+                  <span className="text-xs font-bold uppercase tracking-widest">Temporal View</span>
                 </div>
+                <h1 className="text-4xl font-extrabold tracking-tight">{format(curr, 'MMMM yyyy')}</h1>
               </div>
-              
-              <div className="hidden lg:flex items-center gap-8 px-6 py-3 glass rounded-xl border-cyan-500/10">
-                <div className="text-center">
-                  <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5">Deployment Load</p>
-                  <p className="text-lg font-black text-white">{events.length} <span className="text-[10px] text-zinc-600">UNITS</span></p>
-                </div>
-              </div>
-            </div>
 
-            {/* Calendar Grid Container */}
-            <div className="flex-1 min-h-[600px] flex flex-col pt-2">
-              {/* Day Headers */}
-              <div className="grid grid-cols-7 mb-2">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                  <div key={d} className="text-center py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 border-b border-white/[0.03]">
-                    {d}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1 p-1 glass rounded-2xl border-white/5 shadow-inner">
+                  <button onClick={onPrev} className="p-2 hover:bg-white/5 rounded-xl transition-colors text-zinc-400 hover:text-white">
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button onClick={() => setCurr(new Date())} className="px-5 py-2 text-xs font-bold hover:bg-white/5 rounded-xl transition-colors">
+                    Today
+                  </button>
+                  <button onClick={onNext} className="p-2 hover:bg-white/5 rounded-xl transition-colors text-zinc-400 hover:text-white">
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+                <button onClick={() => { setEditEvent(null); setModalOpen(true); }} className="px-6 py-3 rounded-2xl grad-accent text-sm font-bold shadow-lg shadow-indigo-500/20 hover:scale-[1.02] transition-all flex items-center gap-2">
+                  <Plus size={18} /> Schedule
+                </button>
+              </div>
+            </header>
+
+            {/* Calendar Table */}
+            <div className="glass-hi rounded-[32px] overflow-hidden border-white/10 shadow-2xl flex flex-col">
+              {/* Table Header */}
+              <div className="grid grid-cols-7 border-b border-white/5 bg-white/[0.02]">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  <div key={day} className="py-5 text-center text-[11px] font-bold uppercase tracking-widest text-zinc-500">
+                    {day}
                   </div>
                 ))}
               </div>
 
-              {/* Grid Layout */}
-              <div className="flex-1 relative overflow-hidden rounded-xl border border-white/[0.04]">
-                <AnimatePresence custom={dir} mode="wait" initial={false}>
-                  <motion.div
-                    key={curr.toISOString()}
-                    custom={dir}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="grid grid-cols-7 absolute inset-0 divide-x divide-y divide-white/[0.04]"
-                  >
-                    {days.map((day, i) => {
-                      const isTodayDate = isToday(day);
-                      const isOOR = !isSameMonth(day, startM);
-                      const dayEvents = getEventsForDay(day);
+              {/* Table Grid */}
+              <div className="grid grid-cols-7 flex-1 min-h-[600px]">
+                <AnimatePresence mode="wait">
+                  {days.map((day, i) => {
+                    const dayEvents = getEventsForDay(day);
+                    const notCurrentM = !isSameMonth(day, startM);
+                    const isTodayDay = isToday(day);
 
-                      return (
-                        <div
-                          key={i}
-                          className={cn(
-                            "relative min-h-[100px] group transition-all p-2",
-                            isOOR ? "bg-black/20 opacity-30" : "hover:bg-white/[0.02]",
-                            isTodayDate && "bg-cyan-500/[0.03]"
-                          )}
-                        >
-                          {/* Day Number HUD */}
-                          <div className="flex justify-between items-start mb-2">
-                            <span className={cn(
-                              "text-[10px] font-black font-mono w-6 h-6 flex items-center justify-center rounded-sm transition-all",
-                              isTodayDate ? "bg-cyan-500 text-black glow-accent" : "text-zinc-500 group-hover:text-zinc-300"
-                            )}>
-                              {format(day, 'd')}
-                            </span>
-                            {isTodayDate && <div className="text-[9px] font-black text-cyan-500 uppercase tracking-tighter glow-text">CURRENT</div>}
-                          </div>
-
-                          {/* Events Stack */}
-                          <div className="space-y-1">
-                            {dayEvents.slice(0, 4).map(e => {
-                              const done = e.status === 'completed';
-                              return (
-                                <motion.button
-                                  initial={{ x: -4, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-                                  key={e.id}
-                                  onClick={() => { setEditEvent(e); setModalOpen(true); }}
-                                  className={cn(
-                                    "w-full text-left px-2 py-1 rounded-sm text-[9px] font-bold border truncate transition-all",
-                                    done 
-                                      ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-600 opacity-60 line-through" 
-                                      : "bg-cyan-500/10 border-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 hover:bg-cyan-500/15"
-                                  )}
-                                >
-                                  {e.title}
-                                </motion.button>
-                              );
-                            })}
-                            {dayEvents.length > 4 && (
-                              <p className="text-[8px] font-bold text-zinc-600 px-2 uppercase tracking-widest mt-1">+ {dayEvents.length - 4} EXTRAS</p>
-                            )}
-                          </div>
-
-                          {/* Corner Accents (Pseudo HUD) */}
-                          <div className="absolute top-0 right-0 w-1 h-1 border-t border-r border-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <div className="absolute bottom-0 left-0 w-1 h-1 border-b border-l border-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    return (
+                      <div
+                        key={i}
+                        className={cn(
+                          "relative min-h-[120px] p-3 border-r border-b border-white/[0.04] transition-colors group",
+                          notCurrentM ? "bg-black/20 opacity-30" : "hover:bg-white/[0.02]",
+                          isTodayDay && "bg-indigo-500/[0.03]"
+                        )}
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <span className={cn(
+                            "w-8 h-8 flex items-center justify-center text-sm font-bold rounded-xl transition-all",
+                            isTodayDay ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30" : "text-zinc-500 group-hover:text-zinc-300"
+                          )}>
+                            {format(day, 'd')}
+                          </span>
                         </div>
-                      );
-                    })}
-                  </motion.div>
+
+                        <div className="space-y-1.5 overflow-hidden">
+                          {dayEvents.slice(0, 4).map(e => {
+                            const p = getEffectivePriority(e);
+                            const col = P_COLOR[p] || P_COLOR.auto;
+                            const isDone = e.status === 'completed';
+
+                            return (
+                              <button
+                                key={e.id}
+                                onClick={() => { setEditEvent(e); setModalOpen(true); }}
+                                className={cn(
+                                  "w-full text-left px-2.5 py-1.5 rounded-lg text-[10px] font-bold truncate transition-all flex items-center gap-2 border border-transparent shadow-sm",
+                                  isDone 
+                                    ? "bg-white/5 text-zinc-600 line-through grayscale" 
+                                    : "bg-white/[0.04] text-zinc-200 border-white/[0.03] hover:border-white/10 hover:bg-white/[0.08]"
+                                )}
+                              >
+                                {!isDone && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: col, boxShadow: `0 0 8px ${col}40` }} />}
+                                {e.title}
+                              </button>
+                            );
+                          })}
+                          {dayEvents.length > 4 && (
+                            <p className="text-[10px] font-bold text-zinc-600 px-2">+ {dayEvents.length - 4} more</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </AnimatePresence>
               </div>
             </div>

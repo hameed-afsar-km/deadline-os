@@ -2,39 +2,38 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, Plus, X } from 'lucide-react';
 import { useEventStore } from '@/store/useEventStore';
-import { isOverdue, isToday } from '@/utils/priority';
+import { LayoutGrid, Calendar, Plus, X, PieChart, Star, TrendingUp } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { isOverdue, isToday } from '@/utils/priority';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
-  open: boolean;
+  open?: boolean;
   onClose: () => void;
   onCreateEvent: () => void;
 }
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard',  icon: LayoutDashboard },
-  { href: '/calendar',  label: 'Calendar',   icon: CalendarDays },
+  { href: '/dashboard', label: 'Primary Inbox', icon: LayoutGrid },
+  { href: '/calendar',  label: 'Timeline View',  icon: Calendar },
 ];
 
 export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
   const pathname = usePathname();
-  const events   = useEventStore(s => s.events);
+  const { events } = useEventStore();
 
-  const todayN   = events.filter(e => isToday(e) && e.status === 'pending').length;
-  const overdueN = events.filter(e => isOverdue(e)).length;
-  const doneN    = events.filter(e => e.status === 'completed').length;
   const totalN   = events.length;
+  const doneN    = events.filter(e => e.status === 'completed').length;
+  const overdueN = events.filter(e => isOverdue(e)).length;
+  const todayN   = events.filter(e => isToday(e) && e.status === 'pending').length;
   const pct      = totalN ? Math.round((doneN / totalN) * 100) : 0;
 
   return (
     <>
-      {/* Mobile overlay */}
       <AnimatePresence>
         {open && (
-          <motion.div
+           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 z-40 md:hidden bg-black/60 backdrop-blur-md"
@@ -42,100 +41,89 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
         )}
       </AnimatePresence>
 
-      {/* Sidebar panel */}
       <aside className={cn(
-        'fixed md:static left-0 top-[64px] h-[calc(100vh-64px)] md:h-auto z-40 w-[240px] flex flex-col',
-        'glass border-r border-white/[0.04] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
+        'fixed md:static left-0 h-full md:h-auto z-40 w-[280px] flex flex-col',
+        'glass-hi border-r border-white/5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]',
         'md:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full',
       )}>
 
-        {/* Mobile close */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.04] md:hidden">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Navigation</span>
-          <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors"><X size={16} /></button>
+        <div className="flex items-center justify-between px-6 py-6 border-b border-white/[0.05] md:hidden">
+          <span className="font-bold text-lg text-white">Project Galaxy</span>
+          <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white"><X size={20} /></button>
         </div>
 
-        {/* Create task button */}
-        <div className="p-4 border-b border-white/[0.04]">
-          <motion.button
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            onClick={() => { onCreateEvent(); onClose(); }}
-            className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-black text-white grad-accent glow-accent uppercase tracking-[0.2em]"
-          >
-            <Plus size={15} /> Initialize Unit
-          </motion.button>
+        <div className="p-6 border-b border-white/[0.05]">
+          <button onClick={() => { onCreateEvent(); onClose(); }}
+            className="w-full h-12 rounded-2xl grad-accent flex items-center justify-center gap-2.5 text-sm font-bold text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+            <Plus size={20} /> Create Task
+          </button>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto no-sb">
-          <p className="px-3 mb-3 text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600">Core Protocol</p>
+        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto no-sb">
+          <p className="px-3 mb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Navigation</p>
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
               <Link key={href} href={href} onClick={onClose}>
-                <motion.div whileHover={{ x: 2 }} transition={{ type: 'spring', stiffness: 400 }}
+                <motion.div whileHover={{ x: 2 }} 
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all relative group',
+                    'flex items-center gap-4 px-4 py-3 rounded-2xl text-[13px] font-bold transition-all relative group',
                     active
-                      ? 'bg-cyan-500/10 text-white border border-cyan-500/10'
-                      : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.03]'
+                      ? 'bg-indigo-500/10 text-white border border-indigo-500/10'
+                      : 'text-zinc-500 hover:text-white hover:bg-white/[0.04]'
                   )}>
-                  {active && <motion.div layoutId="sidebar-active" className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-cyan-500 rounded-r-sm glow-accent" />}
-                  <Icon size={14} className={cn('transition-colors', active ? 'text-cyan-400' : 'group-hover:text-cyan-500')} />
+                  {active && <motion.div layoutId="sidebar-active" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-500 rounded-r-full shadow-[0_0_12px_rgba(99,102,241,0.5)]" />}
+                  <Icon size={18} className={cn('transition-colors', active ? 'text-indigo-400' : 'group-hover:text-indigo-500')} />
                   {label}
                 </motion.div>
               </Link>
             );
           })}
 
-          {/* ── Stats Summary ── */}
-          <div className="mt-10 space-y-2">
-            <p className="px-3 mb-4 text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600">Data Analytics</p>
+          <div className="mt-12 space-y-6 pt-6 border-t border-white/[0.05]">
+            <p className="px-3 mb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Insights Summary</p>
 
             {[
-              { label: 'Current Load',  val: todayN,   color: '#06B6D4' },
-              { label: 'Criticial Gap', val: overdueN, color: '#F43F5E' },
-              { label: 'Processed',     val: doneN,    color: '#10B981' },
+              { label: 'Upcoming Today',  val: todayN,   color: '#6366F1' },
+              { label: 'Attention Needed', val: overdueN, color: '#F43F5E' },
+              { label: 'Completed Rate',   val: `${pct}%`, color: '#10B981' },
             ].map(({ label, val, color }) => (
-              <div key={label} className="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors group">
-                <div className="flex items-center gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter group-hover:text-zinc-400">{label}</span>
+              <div key={label} className="px-3 py-2 transition-all">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[11px] font-bold text-zinc-500 uppercase flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
+                    {label}
+                  </span>
+                  <span className="text-xs font-bold text-white tabular-nums">{val}</span>
                 </div>
-                <span className="text-[11px] font-mono font-black text-white">{val.toString().padStart(2, '0')}</span>
               </div>
             ))}
 
-            {/* Progress bar */}
-            <div className="px-3 pt-6 relative group">
-              <div className="flex items-center justify-between mb-2.5">
-                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Efficiency Rate</span>
-                <span className="text-[11px] font-black text-cyan-400 tabular-nums">{pct}%</span>
-              </div>
-              <div className="h-1 bg-white/[0.03] rounded-sm overflow-hidden relative">
+            <div className="px-3 pt-4 relative group">
+              <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden mb-3">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${pct}%` }}
-                  transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
-                  className="h-full rounded-sm grad-accent relative shadow-[0_0_10px_rgba(6,182,212,0.3)]"
+                  transition={{ duration: 1.2, ease: 'easeOut' }}
+                  className="h-full rounded-full grad-accent shadow-[0_0_15px_rgba(99,102,241,0.2)]"
                 />
               </div>
-              <p className="text-[9px] text-zinc-600 mt-2 text-right font-bold font-mono tracking-tighter">{doneN} / {totalN} UNITS</p>
-              
-              <div className="absolute -top-1 right-2 w-4 h-[1px] bg-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex justify-between items-center text-[10px] font-bold text-zinc-500 uppercase">
+                <span>Total Workflow</span>
+                <span className="text-zinc-400">{doneN} / {totalN} Tasks</span>
+              </div>
             </div>
           </div>
         </nav>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-white/[0.04] bg-black/20">
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg glass border border-white/[0.02]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse glow-em" />
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black text-zinc-300 uppercase tracking-widest">Relay Status</span>
-              <span className="text-[8px] font-bold text-zinc-600 uppercase">FIREBASE_V9_STABLE</span>
-            </div>
+        <div className="p-6 border-t border-white/[0.05] bg-neutral-900/10">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl glass-hi border border-white/[0.05] shadow-inner">
+             <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,187,129,0.5)]" />
+             <div className="flex flex-col">
+               <span className="text-[10px] font-bold text-white uppercase tracking-widest">Workspace Online</span>
+               <span className="text-[9px] text-zinc-500 font-medium">Real-time sync active</span>
+             </div>
           </div>
         </div>
       </aside>
