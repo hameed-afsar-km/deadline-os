@@ -6,6 +6,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { useRouter } from 'next/navigation';
 import { motion, useScroll, useTransform, AnimatePresence, type Variants } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Zap, BarChart3, ShieldCheck, Clock, ChevronDown } from 'lucide-react';
+import { EtherealShadow } from '@/components/ui/etheral-shadow';
 
 /* ── Data ── */
 const FEATURES = [
@@ -99,9 +100,24 @@ export default function HomePage() {
       </motion.header>
 
       {/* ── Hero ── */}
-      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20">
-        <motion.div style={{ y: heroY, opacity: heroOp }} className="flex flex-col items-center max-w-4xl mx-auto gap-7">
-          
+      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20 overflow-hidden">
+
+        {/* Etheral Shadow Background */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <EtherealShadow
+            color="rgba(109, 40, 217, 0.85)"
+            animation={{ scale: 100, speed: 70 }}
+            noise={{ opacity: 0.6, scale: 1.2 }}
+            sizing="fill"
+            style={{ width: '100%', height: '100%' }}
+          />
+          {/* Darken the effect so text remains readable */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0F]/60 via-[#0A0A0F]/30 to-[#0A0A0F]/80" />
+        </div>
+
+        {/* Hero content — sits above the background */}
+        <motion.div style={{ y: heroY, opacity: heroOp }} className="relative z-10 flex flex-col items-center max-w-4xl mx-auto gap-7">
+
           <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }}
             className="pill glass-hi text-[--c-accent] border border-violet-500/20 text-[0.7rem] gap-2 px-4 py-1.5 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
             <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
@@ -109,8 +125,8 @@ export default function HomePage() {
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-5xl md:text-7xl lg:text-[5.5rem] font-extrabold tracking-tighter leading-[1.05]"
+            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
+            className="text-5xl md:text-7xl lg:text-[5.5rem] font-extrabold tracking-tighter leading-[1.05] drop-shadow-2xl"
           >
             The deadline manager<br />
             <span className="text-grad">that thinks for you.</span>
@@ -118,7 +134,7 @@ export default function HomePage() {
 
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}
-            className="max-w-2xl text-lg text-[--c-muted] font-medium leading-relaxed"
+            className="max-w-2xl text-lg text-zinc-300 font-medium leading-relaxed drop-shadow-lg"
           >
             DeadlineOS automatically prioritizes your tasks, syncs them across all your devices in real-time,
             and gives you a command-center overview of your entire schedule.
@@ -126,27 +142,27 @@ export default function HomePage() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }} className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/signup">
-              <button className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-bold text-white grad-accent glow-accent hover:opacity-90 transition-all active:scale-95">
+              <button className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-bold text-white grad-accent glow-accent hover:opacity-90 transition-all active:scale-95 shadow-2xl">
                 Start for free <ArrowRight size={18} />
               </button>
             </Link>
             <Link href="/login">
-              <button className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold text-white glass-hi border border-white/10 hover:border-white/20 transition-all active:scale-95">
+              <button className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold text-white glass-hi border border-white/20 hover:border-white/40 transition-all active:scale-95 backdrop-blur-xl">
                 Sign in
               </button>
             </Link>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex flex-wrap justify-center gap-6 text-xs text-[--c-muted] font-medium mt-2">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex flex-wrap justify-center gap-6 text-xs text-zinc-400 font-medium mt-2">
             {['No credit card required', 'Free forever plan', 'Real-time cloud sync'].map(t => (
-              <span key={t} className="flex items-center gap-1.5"><CheckCircle2 size={13} className="text-emerald-500" />{t}</span>
+              <span key={t} className="flex items-center gap-1.5"><CheckCircle2 size={13} className="text-emerald-400" />{t}</span>
             ))}
           </motion.div>
         </motion.div>
 
         {/* Scroll cue */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
-          className="absolute bottom-10 flex flex-col items-center gap-2 text-[--c-muted]">
+          className="absolute bottom-10 z-10 flex flex-col items-center gap-2 text-zinc-400">
           <span className="text-xs font-medium tracking-wide">Scroll to explore</span>
           <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.6 }}>
             <ChevronDown size={18} />
