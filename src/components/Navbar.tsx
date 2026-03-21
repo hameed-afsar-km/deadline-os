@@ -45,8 +45,7 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
   const initial = user?.displayName?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? 'U';
 
   return (
-    <header className="fixed top-4 inset-x-0 z-50 h-[68px] flex items-center px-4 pointer-events-none">
-      <div className="w-full max-w-[1400px] mx-auto h-full glass-hi border border-white/10 rounded-[24px] shadow-2xl backdrop-blur-3xl px-6 flex items-center justify-between pointer-events-auto relative overflow-hidden">
+    <header className="w-full max-w-[1400px] mx-auto h-[68px] glass-hi border border-white/10 rounded-[24px] shadow-2xl backdrop-blur-3xl px-6 flex items-center justify-between relative">
         
         {/* Subtle accent glow behind the island */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent" />
@@ -63,14 +62,7 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
             <Link href="/" className="flex items-center gap-3 select-none group focus:outline-none">
               <span className="font-black text-xl text-white tracking-tighter group-hover:text-indigo-400 transition-colors">DeadlineOS</span>
             </Link>
-            
-            <div className="hidden lg:block h-4 w-[1px] bg-white/10" />
-            
-            <Link href="/" className="hidden lg:flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-zinc-500 hover:text-indigo-400 transition-colors group">
-              <Home size={14} className="group-hover:scale-110 transition-transform" />
-              Portal
-            </Link>
-          </div>
+                      </div>
         </div>
 
         {/* Search Container - Expanded & Centered */}
@@ -92,11 +84,6 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
         </div>
 
         <div className="flex items-center gap-4 ml-auto px-1">
-          {/* Mobile Home Link */}
-          <Link href="/" className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-all md:hidden" title="Go to Site">
-            <Home size={18} />
-          </Link>
-
           {/* Notifications */}
           <div ref={notifRef} className="relative">
             <button 
@@ -184,7 +171,6 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
             )}
           </AnimatePresence>
         </div>
-      </div>
-    </header>
+      </header>
   );
 }

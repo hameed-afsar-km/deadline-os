@@ -107,12 +107,15 @@ export default function Dashboard() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[100vw] h-[50vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800/20 via-[#000000]/0 to-transparent" />
       </div>
 
-      <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
-
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={openCreate} />
 
-        <main className="flex-1 overflow-y-auto p-6 md:p-10 no-sb relative z-10">
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="w-full pt-6 px-6 md:pt-8 md:px-10 flex-shrink-0">
+            <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
+          </div>
+
+          <main className="flex-1 overflow-y-auto p-6 md:p-10 pt-10 md:pt-12 no-sb relative z-10">
           <div className="max-w-[1400px] mx-auto space-y-16">
             
             <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
@@ -232,6 +235,7 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+    </div>
 
       <AnimatePresence>
         {modalOpen && <EventModal event={editingEvent} onClose={() => setModalOpen(false)} />}

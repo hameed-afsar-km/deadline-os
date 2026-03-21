@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEventStore } from '@/store/useEventStore';
-import { LayoutGrid, Calendar, Plus, X, PieChart, Star, TrendingUp, Home } from 'lucide-react';
+import { LayoutGrid, Calendar, Plus, X, PieChart, Star, TrendingUp } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { isOverdue, isToday } from '@/utils/priority';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,7 +16,6 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS = [
-  { href: '/',          label: 'Return to Site', icon: Home },
   { href: '/dashboard', label: 'Primary Inbox', icon: LayoutGrid },
   { href: '/calendar',  label: 'Timeline View',  icon: Calendar },
 ];
@@ -44,7 +43,7 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
       </AnimatePresence>
 
       <aside className={cn(
-        'fixed md:static left-0 h-full md:h-auto z-40 w-[280px] flex flex-col',
+        'fixed md:static left-0 h-full md:h-full z-40 w-[280px] flex flex-col',
         'glass-hi border-r border-white/5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]',
         'md:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full',
