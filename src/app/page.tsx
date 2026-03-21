@@ -8,6 +8,7 @@ import { motion, useScroll, useTransform, AnimatePresence, type Variants } from 
 import { ArrowRight, CheckCircle2, Zap, BarChart3, ShieldCheck, Clock, ChevronDown } from 'lucide-react';
 import { EtherealShadow } from '@/components/ui/etheral-shadow';
 import { Footer } from '@/components/Footer';
+import { ShinyButton } from '@/components/ui/shiny-button';
 
 /* ── Data ── */
 const FEATURES = [
@@ -88,12 +89,10 @@ export default function HomePage() {
 
         <div className="flex items-center gap-3">
           <Link href="/login">
-            <button className="px-4 py-2 rounded-xl text-sm font-semibold text-[--c-muted] hover:text-white transition-colors">Sign in</button>
+            <button className="px-4 py-2 rounded-full text-sm font-semibold text-[--c-muted] hover:text-white transition-colors">Sign in</button>
           </Link>
           <Link href="/signup">
-            <button className="px-5 py-2 rounded-xl text-sm font-bold text-white grad-accent hover:opacity-90 transition-opacity shadow-[0_4px_20px_rgba(124,58,237,0.4)]">
-              Get Started
-            </button>
+            <ShinyButton className="!py-2 !px-5 !text-sm">Get Started</ShinyButton>
           </Link>
         </div>
       </motion.header>
@@ -154,14 +153,9 @@ export default function HomePage() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.2 }} className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/signup">
-              <button className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-bold text-white grad-accent glow-accent hover:opacity-90 transition-all active:scale-95 shadow-2xl">
-                Start for free <ArrowRight size={18} />
-              </button>
-            </Link>
-            <Link href="/login">
-              <button className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold text-white glass-hi border border-white/20 hover:border-white/40 transition-all active:scale-95 backdrop-blur-xl">
-                Sign in
-              </button>
+              <ShinyButton>
+                Start for free <ArrowRight size={18} className="inline-block ml-2" />
+              </ShinyButton>
             </Link>
           </motion.div>
 
