@@ -16,7 +16,20 @@ import { GlowingShadow } from '@/components/ui/glowing-shadow';
 import { Footer } from '@/components/Footer';
 
 type FilterTab = 'all' | 'pending' | 'completed';
-const CATEGORIES = ['all', 'hackathons', 'Assignments', 'competitions', 'Test', 'Client', 'Custom'];
+const CATEGORIES = [
+  'All Units',
+  'Hackathon',
+  'Assignment',
+  'Test',
+  'Project',
+  'Seminar',
+  'Application Deadline',
+  'Competition',
+  'Fee',
+  'Meeting',
+  'Internship',
+  'Custom'
+];
 
 function CountdownTimer({ deadline }: { deadline: any }) {
   const [time, setTime] = useState(getDetailedCountdown(deadline));
@@ -79,7 +92,7 @@ export default function Dashboard() {
       const q = searchQuery.toLowerCase();
       const matchSearch = e.title.toLowerCase().includes(q) || e.category.toLowerCase().includes(q);
       const matchFilter = filter === 'all' || e.status === filter;
-      const matchCat = catFilter === 'all' || e.category === catFilter;
+      const matchCat = catFilter === 'all' || e.category.toLowerCase() === catFilter.toLowerCase();
       return matchSearch && matchFilter && matchCat;
     }),
   [events, searchQuery, filter, catFilter]);
@@ -182,16 +195,13 @@ export default function Dashboard() {
                         ))}
                      </div>
 
-                     <div className="relative group">
-                        <Filter size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
-                        <select 
-                          value={catFilter}
-                          onChange={(e) => setCatFilter(e.target.value)}
-                          className="pl-10 pr-6 h-11 rounded-2xl glass-hi border-white/10 text-[10px] font-black uppercase tracking-widest bg-[#0A0A0A] focus:outline-none focus:ring-2 ring-indigo-500/50 appearance-none cursor-pointer"
-                        >
-                           {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                     </div>
+                <select 
+                  value={catFilter}
+                  onChange={(e) => setCatFilter(e.target.value)}
+                  className="pl-10 pr-6 h-11 rounded-2xl glass-hi border-white/10 text-[10px] font-bold uppercase tracking-widest bg-[#0A0A0A] focus:outline-none focus:ring-2 ring-indigo-500/50 appearance-none cursor-pointer"
+                >
+                   {CATEGORIES.map(c => <option key={c} value={c === 'All Units' ? 'all' : c}>{c}</option>)}
+                </select>
                   </div>
 
                   <div className="flex items-center gap-4">

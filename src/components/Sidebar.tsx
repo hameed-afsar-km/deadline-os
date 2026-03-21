@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEventStore } from '@/store/useEventStore';
-import { LayoutGrid, Calendar, Plus, X, PieChart, Star, TrendingUp } from 'lucide-react';
+import { LayoutGrid, Calendar, Plus, X, PieChart, Star, TrendingUp, Home } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { isOverdue, isToday } from '@/utils/priority';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +16,7 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS = [
+  { href: '/',          label: 'Return to Site', icon: Home },
   { href: '/dashboard', label: 'Primary Inbox', icon: LayoutGrid },
   { href: '/calendar',  label: 'Timeline View',  icon: Calendar },
 ];
@@ -49,10 +50,10 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
         open ? 'translate-x-0' : '-translate-x-full',
       )}>
 
-        <div className="flex items-center justify-between px-6 py-6 border-b border-white/[0.05] md:hidden">
+        <Link href="/" className="flex items-center justify-between px-6 py-6 border-b border-white/[0.05] md:hidden hover:opacity-80 transition-opacity">
           <span className="font-black text-xl text-white tracking-tighter">DeadlineOS</span>
-          <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white"><X size={24} /></button>
-        </div>
+          <button onClick={(e) => { e.preventDefault(); onClose(); }} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white"><X size={24} /></button>
+        </Link>
 
         <div className="p-6 border-b border-white/[0.05]">
           <GlowingShadow onClick={() => { onCreateEvent(); onClose(); }}>

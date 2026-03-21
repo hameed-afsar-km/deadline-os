@@ -9,6 +9,7 @@ import { getPriorityColor, getEffectivePriority, getTimeRemaining, isOverdue } f
 import { formatDateLabel } from '@/utils/dateHelpers';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils/cn';
+import { DeleteModal } from './DeleteModal';
 
 const PRIORITY_LABELS: Record<string, { label: string; bg: string; text: string }> = {
   high:   { label: 'High Priority',   bg: 'rgba(244,63,94,0.1)',  text: '#F43F5E' },
@@ -19,6 +20,7 @@ const PRIORITY_LABELS: Record<string, { label: string; bg: string; text: string 
 
 export function EventCard({ event, onEdit }: { event: DeadlineEvent; onEdit: (e: DeadlineEvent) => void }) {
   const [menu, setMenu] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const overdue  = isOverdue(event);
   const p        = getEffectivePriority(event);
@@ -44,10 +46,9 @@ export function EventCard({ event, onEdit }: { event: DeadlineEvent; onEdit: (e:
   };
 
   const remove = async () => {
-    if (!confirm(`Delete "${event.title}"?`)) return;
     try {
       await deleteEvent(event.id);
-      toast.success('Task deleted');
+      toast.success('Task removed from workspace');
     } catch {
       toast.error('Could not delete task');
     }
@@ -90,7 +91,7 @@ export function EventCard({ event, onEdit }: { event: DeadlineEvent; onEdit: (e:
                   <button onClick={() => { onEdit(event); setMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-colors">
                     <Edit2 size={14} className="text-zinc-500" /> Edit Details
                   </button>
-                  <button onClick={() => { remove(); setMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-colors">
+                  <button onClick={() => { setShowDelete(true); setMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-colors">
                     <Trash2 size={14} /> Remove Entry
                   </button>
                 </motion.div>
@@ -131,6 +132,13 @@ export function EventCard({ event, onEdit }: { event: DeadlineEvent; onEdit: (e:
           {done ? <><CheckCircle2 size={14} /> Reopen Issue</> : 'Mark Complete'}
         </button>
       </div>
+
+      <DeleteModal 
+        isOpen={showDelete} 
+        onClose={() => setShowDelete(false)} 
+        onConfirm={remove} 
+        title={event.title} 
+      />
     </motion.article>
   );
 }

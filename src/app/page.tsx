@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { motion, useScroll, useTransform, AnimatePresence, type Variants } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Zap, BarChart3, ShieldCheck, Clock, ChevronDown } from 'lucide-react';
 import { EtherealShadow } from '@/components/ui/etheral-shadow';
+import { Footer } from '@/components/Footer';
 
 /* ── Data ── */
 const FEATURES = [
@@ -63,7 +64,6 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
-  useEffect(() => { if (!loading && user) router.replace('/dashboard'); }, [user, loading, router]);
 
   if (!mounted) return null;
 
@@ -115,31 +115,44 @@ export default function HomePage() {
         </div>
 
         {/* Hero content — sits above the background */}
-        <motion.div style={{ y: heroY, opacity: heroOp }} className="relative z-10 flex flex-col items-center max-w-4xl mx-auto gap-7">
-
-          <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }}
-            className="pill glass-hi text-[--c-accent] border border-violet-500/20 text-[0.7rem] gap-2 px-4 py-1.5 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
-            <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-            Version 4.0 — Now with Real-Time Sync
-          </motion.div>
+        <motion.div style={{ y: heroY, opacity: heroOp }} className="relative z-10 flex flex-col items-center max-w-4xl mx-auto gap-10">
 
           <motion.h1
-            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-5xl md:text-7xl lg:text-[5.5rem] font-extrabold tracking-tighter leading-[1.05] drop-shadow-2xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+            className="text-5xl md:text-7xl lg:text-[6rem] font-black tracking-tighter leading-[0.95] drop-shadow-2xl"
           >
-            The deadline manager<br />
-            <span className="text-grad">that thinks for you.</span>
+            { "The deadline manager that thinks for you.".split(" ").map((word, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}
+                animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+                transition={{ 
+                  duration: 0.8, 
+                  delay: i * 0.1,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                className="inline-block mr-4 last:mr-0"
+              >
+                {word === "thinks" || word === "for" || word === "you." ? (
+                  <span className="text-grad">{word} </span>
+                ) : (
+                  <span className="text-white">{word} </span>
+                )}
+              </motion.span>
+            ))}
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}
-            className="max-w-2xl text-lg text-zinc-300 font-medium leading-relaxed drop-shadow-lg"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.8 }}
+            className="max-w-2xl text-lg text-zinc-400 font-medium leading-relaxed drop-shadow-lg"
           >
             DeadlineOS automatically prioritizes your tasks, syncs them across all your devices in real-time,
             and gives you a command-center overview of your entire schedule.
           </motion.p>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }} className="flex flex-wrap items-center justify-center gap-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.2 }} className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/signup">
               <button className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-bold text-white grad-accent glow-accent hover:opacity-90 transition-all active:scale-95 shadow-2xl">
                 Start for free <ArrowRight size={18} />
@@ -152,7 +165,7 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex flex-wrap justify-center gap-6 text-xs text-zinc-400 font-medium mt-2">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4 }} className="flex flex-wrap justify-center gap-6 text-xs text-zinc-500 font-medium mt-2">
             {['No credit card required', 'Free forever plan', 'Real-time cloud sync'].map(t => (
               <span key={t} className="flex items-center gap-1.5"><CheckCircle2 size={13} className="text-emerald-400" />{t}</span>
             ))}
@@ -229,9 +242,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="mt-auto py-12 px-6 border-t border-white/5 text-center text-sm text-[--c-muted]">
-        <p>© {new Date().getFullYear()} DeadlineOS. Built with Next.js, Firebase & Framer Motion.</p>
-      </footer>
+      <Footer />
     </main>
   );
 }

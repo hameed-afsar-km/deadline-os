@@ -4,16 +4,23 @@ import { useState } from 'react';
 import { signInWithEmail, signInWithGoogle } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { BeamsBackground } from '@/components/ui/beams-background';
 import { GlowingShadow } from '@/components/ui/glowing-shadow';
+import { useUserStore } from '@/store/useUserStore';
+import { useEffect } from 'react';
 
 export default function LoginPage() {
+  const { user, loading: authLoading } = useUserStore();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && user) router.replace('/dashboard');
+  }, [user, authLoading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +57,10 @@ export default function LoginPage() {
         className="w-full max-w-[440px]"
       >
         <div className="glass-hi p-10 md:p-12 rounded-[28px] shadow-2xl border border-white/10 relative overflow-hidden">
+          {/* Integrated Back Button */}
+          <Link href="/" className="absolute top-8 left-8 w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/10 transition-all active:scale-95 group z-20" title="Return Home">
+            <ArrowLeft size={18} />
+          </Link>
           {/* Subtle Background Glow */}
           <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)' }} />
           <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%)' }} />

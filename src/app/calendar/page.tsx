@@ -21,6 +21,7 @@ import { GlowingShadow } from '@/components/ui/glowing-shadow';
 import { deleteEvent } from '@/lib/firestore';
 import toast from 'react-hot-toast';
 import { Footer } from '@/components/Footer';
+import { DeleteModal } from '@/components/DeleteModal';
 
 const P_COLOR: Record<string, string> = {
   high:   '#F43F5E',
@@ -39,6 +40,8 @@ export default function CalendarPage() {
   const [editEvent,   setEditEvent]   = useState<DeadlineEvent | null>(null);
   const [curr,        setCurr]        = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
+  const [deleteId,    setDeleteId]    = useState<string | null>(null);
+  const [deleteTitle, setDeleteTitle] = useState('');
 
   useEffect(() => { if (!authLoading && !user) router.replace('/login'); }, [user, authLoading, router]);
 
@@ -62,11 +65,11 @@ export default function CalendarPage() {
 
   const selectedTasks = useMemo(() => getEventsForDay(selectedDay), [events, selectedDay]);
 
-  const remove = async (id: string, title: string) => {
-    if (!confirm(`Permanently delete "${title}"?`)) return;
+  const remove = async () => {
+    if (!deleteId) return;
     try {
-      await deleteEvent(id);
-      toast.success('Objective deleted');
+      await deleteEvent(deleteId);
+      toast.success('Task removed from workspace');
     } catch {
       toast.error('Task removal failed');
     }
@@ -218,7 +221,7 @@ export default function CalendarPage() {
                                        </div>
                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                           <button onClick={() => { setEditEvent(e); setModalOpen(true); }} className="p-1.5 rounded-md hover:bg-white/10 text-zinc-500 hover:text-white transition-colors"><Edit2 size={14} /></button>
-                                          <button onClick={() => remove(e.id, e.title)} className="p-1.5 rounded-md hover:bg-rose-500/10 text-zinc-500 hover:text-rose-400 transition-colors"><Trash2 size={14} /></button>
+                                          <button onClick={() => { setDeleteId(e.id); setDeleteTitle(e.title); }} className="p-1.5 rounded-md hover:bg-rose-500/10 text-zinc-500 hover:text-rose-400 transition-colors"><Trash2 size={14} /></button>
                                        </div>
                                     </div>
                                     
@@ -254,6 +257,13 @@ export default function CalendarPage() {
       <AnimatePresence>
         {modalOpen && <EventModal event={editEvent} onClose={() => { setModalOpen(false); setEditEvent(null); }} />}
       </AnimatePresence>
+
+      <DeleteModal 
+        isOpen={!!deleteId} 
+        onClose={() => setDeleteId(null)} 
+        onConfirm={remove} 
+        title={deleteTitle} 
+      />
     </div>
   );
 }

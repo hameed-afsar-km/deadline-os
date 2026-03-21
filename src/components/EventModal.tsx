@@ -3,7 +3,7 @@
 import { DeadlineEvent, Priority, Status } from '@/types';
 import { createEvent, updateEvent } from '@/lib/firestore';
 import { useUserStore } from '@/store/useUserStore';
-import { X, Loader2, Save, ChevronDown, Check, CalendarIcon, AlignLeft, Tag, Layers } from 'lucide-react';
+import { X, Loader2, Save, ChevronDown, Check, CalendarIcon, AlignLeft, Tag, Layers, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
@@ -11,7 +11,18 @@ import { toInputDatetimeLocal } from '@/utils/dateHelpers';
 import { cn } from '@/utils/cn';
 import { GlowingShadow } from '@/components/ui/glowing-shadow';
 
-const SUGGESTED_CATS = ['Hackathons', 'Assignments', 'Competitions', 'Test', 'Client', 'Custom Work', 'Personal'];
+const SUGGESTED_CATS = [
+  'Hackathon',
+  'Assignment',
+  'Test',
+  'Project',
+  'Seminar',
+  'Application Deadline',
+  'Competition',
+  'Fee',
+  'Meeting',
+  'Internship'
+];
 
 const PRIORITY_OPTIONS = [
   { value: 'auto', label: 'Auto-Select', color: '#818CF8' },
@@ -100,7 +111,9 @@ function CustomSelect({ value, onChange, options, placeholder }: { value: string
 
 function Combobox({ value, onChange, options }: { value: string, onChange: (v: string) => void, options: string[] }) {
   const [open, setOpen] = useState(false);
+  const [isCustom, setIsCustom] = useState(() => !options.includes(value) && value !== '');
   const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -110,37 +123,82 @@ function Combobox({ value, onChange, options }: { value: string, onChange: (v: s
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const filtered = options.filter(o => o.toLowerCase().includes(value.toLowerCase()) && o.toLowerCase() !== value.toLowerCase());
+  useEffect(() => {
+    if (isCustom && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isCustom]);
+
+  const displayValue = isCustom ? value : (options.includes(value) ? value : 'Select Category');
 
   return (
     <div className="relative" ref={ref}>
-      <input
-        value={value}
-        onChange={e => { onChange(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
-        placeholder="e.g. Design, Development..."
-        className="w-full text-sm font-medium text-white h-11 px-3.5 rounded-xl bg-white/[0.03] border border-white/10 hover:border-white/20 focus:bg-[#0A0A0A] focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all outline-none"
-      />
+      {isCustom ? (
+        <div className="relative flex items-center">
+          <input
+            ref={inputRef}
+            value={value === 'Custom' ? '' : value}
+            onChange={e => onChange(e.target.value)}
+            placeholder="Type custom category..."
+            className="w-full text-sm font-medium text-white h-11 pl-3.5 pr-10 rounded-xl bg-white/[0.03] border border-white/40 focus:bg-[#0A0A0A] focus:border-white focus:ring-1 focus:ring-white transition-all outline-none"
+          />
+          <button 
+            type="button" 
+            onClick={() => { setIsCustom(false); onChange(options[0]); }}
+            className="absolute right-2 w-7 h-7 rounded-lg flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      ) : (
+        <button 
+          type="button" 
+          onClick={() => setOpen(!open)}
+          className={cn(
+            "w-full flex items-center justify-between text-left h-11 px-3.5 rounded-xl border transition-all duration-200 outline-none",
+            open 
+              ? "bg-[#0A0A0A] border-white/40 ring-1 ring-white/40" 
+              : "bg-white/[0.03] border-white/10 hover:border-white/20"
+          )}
+        >
+          <span className={cn("text-sm font-medium tracking-wide", !options.includes(value) ? "text-zinc-500" : "text-white")}>
+            {displayValue}
+          </span>
+          <ChevronDown size={14} className={cn("text-zinc-500 transition-transform duration-300", open && "rotate-180 text-white")} />
+        </button>
+      )}
       
       <AnimatePresence>
-        {open && filtered.length > 0 && (
+        {open && !isCustom && (
           <motion.div
             initial={{ opacity: 0, y: 5, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 5, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute z-50 top-[calc(100%+8px)] left-0 right-0 p-1 bg-[#0A0A0A] border border-white/10 rounded-xl shadow-2xl max-h-48 overflow-y-auto no-sb"
+            className="absolute z-50 top-[calc(100%+8px)] left-0 right-0 p-1 bg-[#0A0A0A] border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto no-sb"
           >
-            {filtered.map(o => (
+            {options.map(o => (
               <button
                 key={o}
                 type="button"
                 onClick={() => { onChange(o); setOpen(false); }}
-                className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-300 hover:bg-white/10 hover:text-white transition-all"
+                className={cn(
+                  "w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all",
+                  value === o ? "bg-white/10 text-white font-semibold" : "text-zinc-300 hover:bg-white/5 hover:text-white font-medium"
+                )}
               >
                 {o}
               </button>
             ))}
+            <div className="h-px bg-white/[0.05] my-1" />
+            <button
+              type="button"
+              onClick={() => { setIsCustom(true); onChange(''); setOpen(false); }}
+              className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-indigo-400 hover:bg-indigo-500/10 transition-all flex items-center justify-between group"
+            >
+              Custom Category...
+              <Plus size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -155,7 +213,7 @@ export function EventModal({ event, onClose }: { event: DeadlineEvent | null; on
     title: '',
     description: '',
     deadline: '',
-    category: 'Work',
+    category: 'Hackathon',
     priority: 'auto' as Priority,
     status: 'pending' as Status,
   });
