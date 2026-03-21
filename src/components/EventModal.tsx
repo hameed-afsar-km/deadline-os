@@ -12,7 +12,7 @@ import { Priority, Status } from '@/types';
 import { cn } from '@/utils/cn';
 import { GlowingShadow } from '@/components/ui/glowing-shadow';
 
-const SUGGESTED_CATS = ['Study', 'Work', 'Exam', 'Project', 'Hackathon', 'Submission', 'Personal', 'Health', 'Finance'];
+const SUGGESTED_CATS = ['hackathons', 'Assignments', 'competitions', 'Test', 'Client', 'Custom'];
 
 const FIELD_CLASS = 'inp w-full text-sm';
 

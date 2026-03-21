@@ -48,12 +48,9 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
         {sidebarOpen ? <X size={20} /> : <PanelLeft size={20} />}
       </button>
 
-      {/* Logo */}
+      {/* Brand */}
       <div className="flex items-center gap-3 select-none">
-        <div className="w-10 h-10 rounded-xl grad-accent flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/20">
-          D
-        </div>
-        <span className="font-bold text-lg text-white hidden md:block tracking-tight">DeadlineOS</span>
+        <span className="font-black text-xl text-white tracking-tighter">DeadlineOS</span>
       </div>
 
       {/* Search Container */}
@@ -98,11 +95,11 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
           <AnimatePresence>
             {menuOpen && (
               <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute right-0 top-[calc(100%+12px)] w-64 glass-hi rounded-[24px] border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden z-50 p-2"
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="absolute right-0 top-[calc(100%+12px)] w-64 bg-[#0A0A0A] border-2 border-white/20 rounded-[32px] shadow-[0_32px_128px_rgba(0,0,0,1)] overflow-hidden z-[999] p-2"
               >
                 <div className="px-4 py-4 border-b border-white/5 bg-white/[0.02] rounded-t-[20px] mb-1">
                   <div className="flex items-center gap-3">

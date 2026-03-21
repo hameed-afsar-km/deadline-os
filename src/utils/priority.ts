@@ -66,11 +66,34 @@ export function getTimeRemaining(deadline: Timestamp | string): string {
   
   if (diffMs < 0) return 'OVERDUE';
   
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays > 0) return `${diffDays}D ${diffHours % 24}H`;
+  if (diffHours > 0) return `${diffHours}H ${diffMins % 60}M`;
+  if (diffMins > 0) return `${diffMins}M ${diffSecs % 60}S`;
+  return `${diffSecs}S`;
+}
+
+export function getDetailedCountdown(deadline: Timestamp | string) {
+  const d = deadline instanceof Timestamp ? deadline.toDate() : new Date(deadline);
+  const now = new Date();
+  const ms = d.getTime() - now.getTime();
   
-  if (diffDays > 0) return `${diffDays}D ${diffHours}H`;
-  if (diffHours > 0) return `${diffHours}H`;
-  const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-  return `${diffMins}M`;
+  if (ms < 0) return { days: 0, hours: 0, mins: 0, secs: 0, overdue: true };
+  
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  const days = Math.floor(h / 24);
+
+  return {
+    days,
+    hours: h % 24,
+    mins: m % 60,
+    secs: s % 60,
+    overdue: false
+  };
 }

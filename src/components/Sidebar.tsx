@@ -50,8 +50,8 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
       )}>
 
         <div className="flex items-center justify-between px-6 py-6 border-b border-white/[0.05] md:hidden">
-          <span className="font-bold text-lg text-white">Project Galaxy</span>
-          <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white"><X size={20} /></button>
+          <span className="font-black text-xl text-white tracking-tighter">DeadlineOS</span>
+          <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white"><X size={24} /></button>
         </div>
 
         <div className="p-6 border-b border-white/[0.05]">
