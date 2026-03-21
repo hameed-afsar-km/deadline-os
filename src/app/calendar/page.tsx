@@ -113,9 +113,9 @@ export default function CalendarPage() {
               </div>
             </header>
 
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-12">
+            <div className="flex flex-col gap-12">
                {/* Main Calendar Grid */}
-               <div className="xl:col-span-3 glass-hi rounded-[40px] overflow-hidden border-white/10 shadow-2xl flex flex-col">
+               <div className="w-full glass-hi rounded-[40px] overflow-hidden border-white/10 shadow-2xl flex flex-col">
                   <div className="grid grid-cols-7 border-b border-white/[0.05] bg-white/[0.01]">
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                       <div key={day} className="py-6 text-center text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">{day}</div>
@@ -172,9 +172,13 @@ export default function CalendarPage() {
                   </div>
                </div>
 
-               {/* Right Sidebar: Tasks for Selected Day */}
-               <div className="xl:col-span-1 space-y-6">
-                  <div className="glass-hi p-8 rounded-[40px] border-white/5 shadow-2xl space-y-8 sticky top-[100px]">
+               {/* Below Calendar: Tasks for Selected Day Panel */}
+               <div className="w-full space-y-6">
+                  <motion.div 
+                    initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+                    key={selectedDay.toISOString()}
+                    className="glass-hi p-6 md:p-10 rounded-[40px] border-white/5 shadow-2xl space-y-8"
+                  >
                     <div>
                         <div className="flex items-center justify-between mb-2">
                            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Selected Date</span>
@@ -237,7 +241,7 @@ export default function CalendarPage() {
                           <Plus size={16} /> Add Task
                        </div>
                     </GlowingShadow>
-                  </div>
+                  </motion.div>
                </div>
             </div>
             <Footer />

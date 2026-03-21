@@ -21,12 +21,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased min-h-screen overflow-x-hidden">
         {/* Aurora background */}
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden>
-          <div className="absolute -top-[30%] -left-[15%] w-[65%] h-[65%] rounded-full opacity-[0.12]"
-            style={{ background: 'radial-gradient(circle, #7C3AED 0%, transparent 65%)', filter: 'blur(90px)' }} />
-          <div className="absolute top-[15%] -right-[15%] w-[55%] h-[70%] rounded-full opacity-[0.09]"
-            style={{ background: 'radial-gradient(circle, #0EA5E9 0%, transparent 65%)', filter: 'blur(110px)' }} />
-          <div className="absolute -bottom-[25%] left-[25%] w-[60%] h-[50%] rounded-full opacity-[0.07]"
-            style={{ background: 'radial-gradient(circle, #4F46E5 0%, transparent 70%)', filter: 'blur(100px)' }} />
+          <div className="absolute -top-[30%] -left-[15%] w-[65%] h-[65%] rounded-full opacity-[0.05]"
+            style={{ background: 'radial-gradient(circle, #7C3AED 0%, transparent 65%)' }} />
+          <div className="absolute top-[15%] -right-[15%] w-[55%] h-[70%] rounded-full opacity-[0.04]"
+            style={{ background: 'radial-gradient(circle, #0EA5E9 0%, transparent 65%)' }} />
+          <div className="absolute -bottom-[25%] left-[25%] w-[60%] h-[50%] rounded-full opacity-[0.03]"
+            style={{ background: 'radial-gradient(circle, #4F46E5 0%, transparent 70%)' }} />
         </div>
 
         <div className="relative z-10 flex flex-col min-h-screen">

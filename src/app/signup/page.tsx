@@ -49,8 +49,8 @@ export default function SignupPage() {
       >
         <div className="glass-hi p-10 md:p-12 rounded-[28px] shadow-2xl border border-white/10 relative overflow-hidden">
           {/* Subtle Background Glow */}
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 blur-[80px]" />
-          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/10 blur-[80px]" />
+          <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)' }} />
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%)' }} />
 
           <div className="relative z-10">
             <div className="flex flex-col items-center mb-10 text-center">

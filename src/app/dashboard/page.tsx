@@ -142,9 +142,9 @@ export default function Dashboard() {
                 >
                    {/* Background Graphics */}
                    <div className="absolute top-0 right-0 w-full h-full pointer-events-none">
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-indigo-500/[0.03] blur-[160px] rounded-full" />
-                      <div className="absolute top-0 right-0 p-12 text-zinc-800 opacity-20"><LayoutGrid size={200} strokeWidth={0.5} /></div>
-                   </div>
+                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] rounded-full opacity-[0.03]" style={{ background: 'radial-gradient(circle, #6366F1 0%, transparent 60%)' }} />
+                       <div className="absolute top-0 right-0 p-12 text-zinc-800 opacity-20"><LayoutGrid size={200} strokeWidth={0.5} /></div>
+                    </div>
 
                    <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-end">
                       <div className="space-y-10">

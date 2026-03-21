@@ -7,8 +7,8 @@ export function Footer() {
   return (
     <footer className="relative w-full border-t border-white/5 py-12 px-10 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none opacity-20">
-        <div className="absolute -bottom-20 -left-20 w-[60%] h-[120%] bg-indigo-500/10 blur-[150px] rounded-full" />
-        <div className="absolute bottom-0 -right-20 w-[40%] h-[100%] bg-purple-500/10 blur-[150px] rounded-full" />
+        <div className="absolute -bottom-20 -left-20 w-[60%] h-[120%] rounded-full opacity-[0.1]" style={{ background: 'radial-gradient(circle, #6366F1 0%, transparent 60%)' }} />
+        <div className="absolute bottom-0 -right-20 w-[40%] h-[100%] rounded-full opacity-[0.1]" style={{ background: 'radial-gradient(circle, #A855F7 0%, transparent 60%)' }} />
       </div>
 
       <div className="max-w-[1400px] mx-auto relative z-10">
