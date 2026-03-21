@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -23,6 +23,6 @@ const app =
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const auth = app ? getAuth(app) : undefined as unknown as any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const db = app ? getFirestore(app) : undefined as unknown as any;
+export const db = app ? initializeFirestore(app, { experimentalForceLongPolling: true }) : undefined as unknown as any;
 
 export default app;
