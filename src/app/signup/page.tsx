@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { signUpWithEmail, signInWithGoogle } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Lock, User, ArrowRight, Activity } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
@@ -15,97 +15,123 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.password.length < 6) return toast.error('Password must be at least 6 characters.');
     setLoading(true);
     try {
       await signUpWithEmail(form.email, form.password, form.name);
-      toast.success('Matrix entry initialized');
+      toast.success('Account created! Welcome to DeadlineOS.');
       router.push('/dashboard');
-    } catch { toast.error('Initialization failed'); }
-    finally { setLoading(false); }
+    } catch (err: any) {
+      const code = err?.code;
+      if (code === 'auth/email-already-in-use') toast.error('An account with this email already exists.');
+      else if (code === 'auth/weak-password') toast.error('Password is too weak.');
+      else toast.error(err?.message || 'Registration failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogle = async () => {
     try {
       await signInWithGoogle();
-      toast.success('Secure OAuth link successful');
+      toast.success('Signed in with Google');
       router.push('/dashboard');
-    } catch (err: any) { 
+    } catch (err: any) {
       console.error(err);
-      toast.error(`OAuth Fault: ${err.code || err.message || 'Unknown'}`); 
+      toast.error(`OAuth Fault: ${err.code || err.message || 'Unknown'}`);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative font-sans text-zinc-100 selection:bg-cyan-500/30">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-cyan-600/20 blur-[120px] pointer-events-none mix-blend-screen" />
-
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-[440px] glass-panel p-10 sm:p-14 rounded-[40px] shadow-[0_30px_100px_rgba(0,0,0,1)] border border-white/10 overflow-hidden"
+    <div className="min-h-screen flex items-center justify-center px-5 py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[420px]"
       >
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[64px] -mx-20 -my-20 pointer-events-none" />
-
-        <div className="flex flex-col items-center mb-12 relative z-10">
-          <motion.div whileHover={{ rotate: 180 }} transition={{ duration: 0.6 }} className="w-16 h-16 rounded-[20px] flex items-center justify-center text-white bg-gradient-to-br from-cyan-400 to-indigo-500 shadow-[0_0_30px_rgba(99,102,241,0.4)] mb-8 border border-white/20">
-            <Activity size={28} strokeWidth={2} />
-          </motion.div>
-          <h1 className="text-3xl font-black tracking-tight text-white mb-3">
-            Initialize Node
-          </h1>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">Construct new matrix</p>
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-10">
+          <span className="w-10 h-10 rounded-xl grad-accent flex items-center justify-center text-white font-extrabold text-lg glow-accent">D</span>
+          <span className="font-bold text-xl tracking-tight text-white">DeadlineOS</span>
         </div>
 
-        <form onSubmit={handleSignup} className="space-y-6 relative z-10">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Designation</label>
-            <div className="relative group">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-cyan-400 transition-colors" size={18} />
-              <input type="text" required value={form.name} onChange={e=>setForm({...form,name:e.target.value})}
-                placeholder="Agent Name"
-                className="w-full pl-12 pr-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-white/5 focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-zinc-700 text-white shadow-inner" />
-            </div>
-          </div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">Create your account</h1>
+        <p className="text-sm text-[--c-muted] font-medium mb-8">Start managing your deadlines smarter.</p>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Identity Vector</label>
-            <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-cyan-400 transition-colors" size={18} />
-              <input type="email" required value={form.email} onChange={e=>setForm({...form,email:e.target.value})}
-                placeholder="operator@nexus.com"
-                className="w-full pl-12 pr-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-white/5 focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-zinc-700 text-white shadow-inner" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Generation Key</label>
-            <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-cyan-400 transition-colors" size={18} />
-              <input type="password" required value={form.password} onChange={e=>setForm({...form,password:e.target.value})}
-                placeholder="••••••••"
-                className="w-full pl-12 pr-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-white/5 focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-zinc-700 text-white shadow-inner" />
-            </div>
-          </div>
-
-          <button disabled={loading} type="submit"
-            className="w-full py-4 mt-8 rounded-2xl bg-gradient-to-r from-cyan-400 to-indigo-500 text-white text-xs font-black uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 border border-cyan-400/50">
-            {loading ? 'Synthesizing...' : 'Establish Matrix'} <ArrowRight size={16} />
-          </button>
-        </form>
-
-        <div className="relative my-10 relative z-10">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
-          <div className="relative flex justify-center"><span className="px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-700 glass-panel rounded-full blur-[0.5px]">OR</span></div>
-        </div>
-
-        <button onClick={handleGoogle}
-          className="w-full py-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs font-black tracking-widest uppercase transition-colors flex items-center justify-center gap-4 relative z-10 shadow-inner">
+        {/* Google */}
+        <motion.button
+          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+          onClick={handleGoogle}
+          type="button"
+          className="w-full flex items-center justify-center gap-3 py-3 rounded-xl glass-hi border border-white/[0.1] text-sm font-semibold text-white hover:border-white/20 transition-colors mb-6"
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="" />
-          Google OAuth
-        </button>
+          Continue with Google
+        </motion.button>
 
-        <p className="text-center text-zinc-500 text-xs font-bold uppercase tracking-widest mt-12 relative z-10">
-          Node active? <Link href="/login" className="text-indigo-400 hover:text-indigo-300 transition-colors drop-shadow-md">Authenticate</Link>
+        {/* Divider */}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/[0.07]" /></div>
+          <div className="relative flex justify-center"><span className="px-3 text-xs text-[--c-muted] font-medium glass" style={{ borderRadius: '99px' }}>or sign up with email</span></div>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSignup} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[--c-muted] uppercase tracking-wide">Full Name</label>
+            <div className="relative">
+              <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--c-muted] pointer-events-none" />
+              <input
+                type="text" required
+                value={form.name}
+                onChange={e => setForm({ ...form, name: e.target.value })}
+                placeholder="Your name"
+                className="inp pl-10"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[--c-muted] uppercase tracking-wide">Email</label>
+            <div className="relative">
+              <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--c-muted] pointer-events-none" />
+              <input
+                type="email" required
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                placeholder="you@example.com"
+                className="inp pl-10"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[--c-muted] uppercase tracking-wide">Password</label>
+            <div className="relative">
+              <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--c-muted] pointer-events-none" />
+              <input
+                type="password" required minLength={6}
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                placeholder="Min. 6 characters"
+                className="inp pl-10"
+              />
+            </div>
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            type="submit" disabled={loading}
+            className="w-full py-3 rounded-xl text-sm font-bold text-white grad-accent hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-60 glow-accent mt-2"
+          >
+            {loading ? 'Creating account…' : <><span>Create account</span><ArrowRight size={15} /></>}
+          </motion.button>
+        </form>
+
+        <p className="text-center text-sm text-[--c-muted] mt-8">
+          Already have an account?{' '}
+          <Link href="/login" className="text-violet-400 font-semibold hover:text-violet-300 transition-colors">Sign in</Link>
         </p>
       </motion.div>
     </div>

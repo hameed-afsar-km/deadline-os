@@ -3,132 +3,194 @@
 import { DeadlineEvent } from '@/types';
 import { createEvent, updateEvent } from '@/lib/firestore';
 import { useUserStore } from '@/store/useUserStore';
-import { X, Loader2, Save, Terminal } from 'lucide-react';
+import { X, Loader2, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { toDate } from '@/utils/dateHelpers';
+import { toInputDatetimeLocal } from '@/utils/dateHelpers';
 import { Priority, Status } from '@/types';
 
-const SUGGESTED_CATS = ['Study','Hackathon','Submission','Personal','Project'];
+const SUGGESTED_CATS = ['Study', 'Work', 'Exam', 'Project', 'Hackathon', 'Submission', 'Personal', 'Health', 'Finance'];
 
-export function EventModal({ event, onClose }: { event:DeadlineEvent|null; onClose:()=>void }) {
+const FIELD_CLASS = 'inp w-full text-sm';
+
+export function EventModal({ event, onClose }: { event: DeadlineEvent | null; onClose: () => void }) {
   const { user } = useUserStore();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ title:'', description:'', deadline:'', category:'Project' });
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    deadline: '',
+    category: 'Work',
+    priority: 'auto' as Priority,
+    status: 'pending' as Status,
+  });
 
   useEffect(() => {
     if (event) {
-      const d = toDate(event.deadline);
-      const offset = d.getTimezoneOffset()*60000;
-      const iso = new Date(d.getTime()-offset).toISOString().slice(0,16);
-      setForm({ title:event.title, description:event.description||'', deadline:iso, category:event.category });
+      setForm({
+        title:       event.title,
+        description: event.description || '',
+        deadline:    toInputDatetimeLocal(event.deadline),
+        category:    event.category,
+        priority:    event.priority,
+        status:      event.status,
+      });
     } else {
-      const d = new Date(); d.setHours(d.getHours()+24);
-      const offset = d.getTimezoneOffset()*60000;
-      setForm(f => ({ ...f, deadline:new Date(d.getTime()-offset).toISOString().slice(0,16) }));
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      setForm(f => ({ ...f, deadline: toInputDatetimeLocal(d.toISOString()) }));
     }
   }, [event]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return toast.error('Authentication Error');
+    if (!user) return toast.error('Not authenticated');
     setLoading(true);
     try {
       const data = {
-        ...form,
-        reminders: [] as string[],
-        priority:  'auto' as Priority,
-        status:    (event ? event.status : 'pending') as Status,
+        title:       form.title,
+        description: form.description,
+        deadline:    form.deadline,
+        category:    form.category,
+        priority:    form.priority,
+        status:      form.status,
+        reminders:   [] as string[],
       };
-
       if (event) {
         await updateEvent(event.id, data);
-        toast.success('Sequence updated');
+        toast.success('Task updated');
       } else {
         await createEvent(user.uid, data);
-        toast.success('Node injected successfully');
+        toast.success('Task created');
       }
       onClose();
     } catch (err) {
       console.error(err);
-      toast.error('Connection fault detected.');
+      toast.error('Failed to save task');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 perspective-1000">
+    <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-6">
       {/* Backdrop */}
-      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration: 0.5 }}
-        onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-3xl" />
-
-      {/* Modal / Panel */}
       <motion.div
-        initial={{ opacity:0, scale:0.9, rotateX: 10, y:20 }}
-        animate={{ opacity:1, scale:1, rotateX: 0, y:0 }}
-        exit={{ opacity:0, scale:0.95, rotateX: -10, y:20 }}
-        transition={{ duration:.4, type:'spring', bounce:0.3 }}
-        className="relative z-10 w-full max-w-[500px] glass-panel rounded-[40px] shadow-[0_30px_100px_rgba(0,0,0,1)] border border-white/10 overflow-hidden"
-      >
-        <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/20 rounded-full blur-[80px] -mx-20 -mt-20 pointer-events-none" />
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+      />
 
+      {/* Sheet / Modal */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 40 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        className="relative w-full md:max-w-[480px] glass-hi border border-white/[0.08] rounded-t-3xl md:rounded-3xl shadow-[0_40px_120px_rgba(0,0,0,0.9)] overflow-hidden z-10"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-8 py-8 border-b border-white/5 relative z-10">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.07]">
           <div>
-            <h2 className="text-3xl font-black tracking-tight text-white drop-shadow-lg">
-              {event ? 'Modify Node' : 'Initialize Node'}
-            </h2>
-            <p className="text-xs text-cyan-400 uppercase tracking-widest font-bold mt-2">Configure target parameters</p>
+            <h2 className="text-[1.1rem] font-bold text-white tracking-tight">{event ? 'Edit Task' : 'New Task'}</h2>
+            <p className="text-xs text-[--c-muted] font-medium mt-0.5">{event ? 'Update the task details below.' : 'Fill in the details to create a new task.'}</p>
           </div>
-          <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 flex items-center justify-center transition-colors text-zinc-400 hover:text-white">
-            <X size={20} />
+          <button onClick={onClose} className="w-8 h-8 rounded-xl glass border border-white/[0.07] flex items-center justify-center text-[--c-muted] hover:text-white transition-colors">
+            <X size={16} />
           </button>
         </div>
 
-        <form onSubmit={submit} className="p-8 space-y-6 relative z-10">
+        {/* Form */}
+        <form onSubmit={submit} className="p-6 space-y-5">
           {/* Title */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 drop-shadow-sm">Designation</label>
-            <input type="text" required autoFocus value={form.title} onChange={e=>setForm({...form,title:e.target.value})}
-              placeholder="Primary objective"
-              className="w-full px-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-black/60 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 outline-none transition-all placeholder:text-zinc-600 text-white shadow-inner" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[--c-muted] uppercase tracking-wide">Task Title *</label>
+            <input
+              type="text" required autoFocus
+              value={form.title}
+              onChange={e => setForm({ ...form, title: e.target.value })}
+              placeholder="e.g. Submit assignment"
+              className={FIELD_CLASS}
+            />
           </div>
 
-          <div className="grid grid-cols-2 gap-5">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Terminal State (T-0)</label>
-              <input type="datetime-local" required value={form.deadline} onChange={e=>setForm({...form,deadline:e.target.value})}
-                className="w-full px-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-black/60 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 outline-none transition-all text-white shadow-inner" />
+          {/* Deadline + Category side by side */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[--c-muted] uppercase tracking-wide">Deadline *</label>
+              <input
+                type="datetime-local" required
+                value={form.deadline}
+                onChange={e => setForm({ ...form, deadline: e.target.value })}
+                className={FIELD_CLASS}
+              />
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Vector Category</label>
-              <input list="cats" type="text" required value={form.category} onChange={e=>setForm({...form,category:e.target.value})}
-                placeholder="Ex. Core"
-                className="w-full px-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-black/60 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 outline-none transition-all placeholder:text-zinc-600 text-white shadow-inner" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[--c-muted] uppercase tracking-wide">Category</label>
+              <input
+                list="cats"
+                value={form.category}
+                onChange={e => setForm({ ...form, category: e.target.value })}
+                placeholder="e.g. Study"
+                className={FIELD_CLASS}
+              />
               <datalist id="cats">
-                {SUGGESTED_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                {SUGGESTED_CATS.map(c => <option key={c} value={c} />)}
               </datalist>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Directive Details (Optional)</label>
-            <textarea rows={3} value={form.description} onChange={e=>setForm({...form,description:e.target.value})}
-              placeholder="Attach relevant telemetry data..."
-              className="w-full px-5 py-4 text-sm font-semibold bg-black/40 border border-white/10 rounded-2xl focus:bg-black/60 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 outline-none transition-all resize-none placeholder:text-zinc-600 text-white shadow-inner" />
+          {/* Priority + Status */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[--c-muted] uppercase tracking-wide">Priority</label>
+              <select
+                value={form.priority}
+                onChange={e => setForm({ ...form, priority: e.target.value as Priority })}
+                className={FIELD_CLASS}
+              >
+                <option value="auto">Auto (Smart)</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[--c-muted] uppercase tracking-wide">Status</label>
+              <select
+                value={form.status}
+                onChange={e => setForm({ ...form, status: e.target.value as Status })}
+                className={FIELD_CLASS}
+              >
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+          {/* Description */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[--c-muted] uppercase tracking-wide">Description</label>
+            <textarea
+              rows={3}
+              value={form.description}
+              onChange={e => setForm({ ...form, description: e.target.value })}
+              placeholder="Optional notes about this task…"
+              className={`${FIELD_CLASS} resize-none`}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3 pt-1 border-t border-white/[0.06]">
             <button type="button" onClick={onClose} disabled={loading}
-              className="flex-1 py-4 text-xs tracking-widest font-black uppercase rounded-2xl glass-panel hover:bg-white/10 text-zinc-400 hover:text-white transition-colors border border-white/5">
-              Abort
+              className="flex-1 py-3 rounded-xl text-sm font-semibold text-[--c-muted] glass border border-white/[0.07] hover:text-white hover:border-white/[0.14] transition-colors">
+              Cancel
             </button>
             <button type="submit" disabled={loading}
-              className="flex-[2] py-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-400 hover:scale-[1.02] active:scale-95 text-white shadow-[0_0_30px_rgba(99,102,241,0.3)] font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 transition-all disabled:opacity-50">
-              {loading ? <Loader2 size={16} className="animate-spin" /> : <Terminal size={14} />}
-              {event ? 'Update Protocol' : 'Deploy Node'}
+              className="flex-[2] py-3 rounded-xl text-sm font-bold text-white grad-accent hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-60 glow-accent">
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={15} />}
+              {event ? 'Save Changes' : 'Create Task'}
             </button>
           </div>
         </form>
