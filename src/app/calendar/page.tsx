@@ -17,6 +17,7 @@ import {
   startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, isToday
 } from 'date-fns';
 import { cn } from '@/utils/cn';
+import { GlowingShadow } from '@/components/ui/glowing-shadow';
 
 const P_COLOR: Record<string, string> = {
   high:   '#F43F5E',
@@ -101,9 +102,11 @@ export default function CalendarPage() {
                     <ChevronRight size={20} />
                   </button>
                 </div>
-                <button onClick={() => { setEditEvent(null); setModalOpen(true); }} className="px-6 py-3 rounded-2xl grad-accent text-sm font-bold shadow-lg shadow-indigo-500/20 hover:scale-[1.02] transition-all flex items-center gap-2">
-                  <Plus size={18} /> Schedule
-                </button>
+                <GlowingShadow onClick={() => { setEditEvent(null); setModalOpen(true); }}>
+                  <div className="flex items-center gap-2 text-sm font-bold">
+                    <Plus size={18} /> Schedule
+                  </div>
+                </GlowingShadow>
               </div>
             </header>
 

@@ -8,6 +8,7 @@ import { Mail, Lock, User, ArrowRight, UserPlus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { BeamsBackground } from '@/components/ui/beams-background';
+import { GlowingShadow } from '@/components/ui/glowing-shadow';
 
 export default function SignupPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -103,13 +104,14 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+              <GlowingShadow
                 type="submit" disabled={loading}
-                className="w-full py-4 rounded-xl text-sm font-bold text-white grad-accent shadow-xl shadow-indigo-500/20 hover:opacity-90 transition-all flex items-center justify-center gap-2 mt-6 disabled:opacity-50"
+                className="mt-6"
               >
-                {loading ? 'Creating...' : <><UserPlus size={18} /> Join Now</>}
-              </motion.button>
+                <div className="flex items-center gap-2 text-sm font-bold">
+                  {loading ? 'Creating...' : <><UserPlus size={18} /> Join Now</>}
+                </div>
+              </GlowingShadow>
             </form>
 
             <div className="relative my-8">

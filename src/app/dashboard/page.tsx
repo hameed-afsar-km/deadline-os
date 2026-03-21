@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, LayoutGrid, CheckCircle2, Clock, Sparkles } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { isOverdue, isToday, getTimeRemaining } from '@/utils/priority';
+import { GlowingShadow } from '@/components/ui/glowing-shadow';
 
 type FilterTab = 'all' | 'pending' | 'completed';
 
@@ -100,9 +101,11 @@ export default function Dashboard() {
                   ))}
                   <div className="w-10 h-10 rounded-full border-2 border-[#030303] glass flex items-center justify-center text-[10px] font-bold text-zinc-400">+4</div>
                 </div>
-                <button onClick={openCreate} className="px-6 py-3 rounded-2xl grad-accent text-sm font-bold shadow-lg shadow-indigo-500/20 hover:scale-[1.02] transition-all flex items-center gap-2">
-                  <Plus size={18} /> New Task
-                </button>
+                <GlowingShadow onClick={openCreate}>
+                  <div className="flex items-center gap-2 text-sm font-bold">
+                    <Plus size={18} /> New Task
+                  </div>
+                </GlowingShadow>
               </div>
             </header>
 

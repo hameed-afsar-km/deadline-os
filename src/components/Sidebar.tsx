@@ -7,6 +7,7 @@ import { LayoutGrid, Calendar, Plus, X, PieChart, Star, TrendingUp } from 'lucid
 import { cn } from '@/utils/cn';
 import { isOverdue, isToday } from '@/utils/priority';
 import { motion, AnimatePresence } from 'framer-motion';
+import { GlowingShadow } from '@/components/ui/glowing-shadow';
 
 interface SidebarProps {
   open?: boolean;
@@ -54,10 +55,11 @@ export function Sidebar({ open, onClose, onCreateEvent }: SidebarProps) {
         </div>
 
         <div className="p-6 border-b border-white/[0.05]">
-          <button onClick={() => { onCreateEvent(); onClose(); }}
-            className="w-full h-12 rounded-2xl grad-accent flex items-center justify-center gap-2.5 text-sm font-bold text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
-            <Plus size={20} /> Create Task
-          </button>
+          <GlowingShadow onClick={() => { onCreateEvent(); onClose(); }}>
+            <div className="flex items-center gap-2.5 text-sm font-bold">
+              <Plus size={20} /> Create Task
+            </div>
+          </GlowingShadow>
         </div>
 
         <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto no-sb">

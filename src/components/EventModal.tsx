@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { toInputDatetimeLocal } from '@/utils/dateHelpers';
 import { Priority, Status } from '@/types';
 import { cn } from '@/utils/cn';
+import { GlowingShadow } from '@/components/ui/glowing-shadow';
 
 const SUGGESTED_CATS = ['Study', 'Work', 'Exam', 'Project', 'Hackathon', 'Submission', 'Personal', 'Health', 'Finance'];
 
@@ -181,14 +182,15 @@ export function EventModal({ event, onClose }: { event: DeadlineEvent | null; on
 
           <div className="flex items-center gap-4 pt-4">
             <button type="button" onClick={onClose} disabled={loading}
-              className="flex-1 py-4 rounded-2xl text-sm font-bold text-zinc-500 hover:text-white hover:bg-white/[0.04] transition-all border border-transparent hover:border-white/5 active:scale-95">
+              className="px-6 py-4 rounded-2xl text-sm font-bold text-zinc-500 hover:text-white hover:bg-white/[0.04] transition-all border border-transparent hover:border-white/5 active:scale-95">
               Discard
             </button>
-            <button type="submit" disabled={loading}
-              className="flex-[2] py-4 rounded-2xl text-sm font-bold text-white grad-accent shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-              {event ? 'Sync Changes' : 'Initialize Task'}
-            </button>
+            <GlowingShadow type="submit" disabled={loading} className="flex-[2]">
+              <div className="flex items-center justify-center gap-2 text-sm font-bold">
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                {event ? 'Sync Changes' : 'Initialize Task'}
+              </div>
+            </GlowingShadow>
           </div>
         </form>
       </motion.div>
