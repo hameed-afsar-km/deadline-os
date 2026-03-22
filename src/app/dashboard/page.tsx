@@ -73,13 +73,6 @@ export default function Dashboard() {
   const [filter,       setFilter]       = useState<FilterTab>('all');
   const [catFilter,    setCatFilter]    = useState('all');
 
-  if (authLoading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#000000]">
-      <Loader2 size={32} className="animate-spin text-indigo-500" />
-    </div>
-  );
-  if (!user) return null;
-
   const stats = useMemo(() => ({
     total:     events.length,
     overdue:   events.filter(e => isOverdue(e)).length,
@@ -112,6 +105,13 @@ export default function Dashboard() {
 
   const openEdit  = (e: DeadlineEvent) => { setEditingEvent(e); setModalOpen(true); };
   const openCreate = () => { setEditingEvent(null); setModalOpen(true); };
+
+  if (authLoading) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#000000]">
+      <Loader2 size={32} className="animate-spin text-indigo-500" />
+    </div>
+  );
+  if (!user) return null;
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#000000] text-zinc-100 relative selection:bg-white/20">
