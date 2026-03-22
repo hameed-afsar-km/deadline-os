@@ -36,7 +36,11 @@ export const signUpWithEmail = async (
   return result.user;
 };
 
-export const logOut = () => signOut(auth);
+export const logOut = async () => {
+  if (auth) {
+    await signOut(auth);
+  }
+};
 
 export const onAuthChange = (callback: (user: User | null) => void) => {
   if (!auth) return () => {};

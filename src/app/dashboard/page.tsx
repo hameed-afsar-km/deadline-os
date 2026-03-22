@@ -9,7 +9,8 @@ import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import { DeadlineEvent } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, LayoutGrid, CheckCircle2, Clock, Sparkles, Filter, Search, X, ArrowRight } from 'lucide-react';
+import { Plus, LayoutGrid, CheckCircle2, Clock, Sparkles, Filter, Search, X, ArrowRight, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { isOverdue, isToday, getTimeRemaining, getDetailedCountdown } from '@/utils/priority';
 import { GlowingShadow } from '@/components/ui/glowing-shadow';
@@ -59,13 +60,25 @@ function CountdownTimer({ deadline }: { deadline: any }) {
 }
 
 export default function Dashboard() {
-  const { user } = useUserStore();
+  const router = useRouter();
+  const { user, loading: authLoading } = useUserStore();
   const { events, searchQuery } = useEventStore();
+
+  useEffect(() => {
+    if (!authLoading && !user) router.replace('/login');
+  }, [user, authLoading, router]);
   const [sidebarOpen,  setSidebarOpen]  = useState(false);
   const [modalOpen,    setModalOpen]    = useState(false);
   const [editingEvent, setEditingEvent] = useState<DeadlineEvent | null>(null);
   const [filter,       setFilter]       = useState<FilterTab>('all');
   const [catFilter,    setCatFilter]    = useState('all');
+
+  if (authLoading) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#000000]">
+      <Loader2 size={32} className="animate-spin text-indigo-500" />
+    </div>
+  );
+  if (!user) return null;
 
   const stats = useMemo(() => ({
     total:     events.length,
@@ -111,7 +124,7 @@ export default function Dashboard() {
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={openCreate} />
 
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="w-full pt-6 px-6 md:pt-8 md:px-10 flex-shrink-0">
+          <div className="w-full pt-6 px-6 md:pt-8 md:px-10 flex-shrink-0 relative z-20">
             <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
           </div>
 

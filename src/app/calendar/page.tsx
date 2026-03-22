@@ -89,7 +89,9 @@ export default function CalendarPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[100vw] h-[50vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800/20 via-[#000000]/0 to-transparent" />
       </div>
 
-      <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
+      <div className="w-full pt-6 px-6 md:pt-8 md:px-10 flex-shrink-0 relative z-20">
+        <Navbar onMenuToggle={() => setSidebarOpen(s => !s)} sidebarOpen={sidebarOpen} />
+      </div>
 
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onCreateEvent={() => { setEditEvent(null); setModalOpen(true); }} />

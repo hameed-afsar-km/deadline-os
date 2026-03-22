@@ -45,7 +45,7 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
   const initial = user?.displayName?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? 'U';
 
   return (
-    <header className="w-full max-w-[1400px] mx-auto h-[68px] glass-hi border border-white/10 rounded-[24px] shadow-2xl backdrop-blur-3xl px-6 flex items-center justify-between relative">
+    <header className="w-full max-w-[1400px] mx-auto h-[68px] glass-hi border border-white/10 rounded-[24px] shadow-2xl backdrop-blur-3xl px-6 flex items-center justify-between relative z-50">
         
         {/* Subtle accent glow behind the island */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent" />
@@ -161,7 +161,16 @@ export function Navbar({ onMenuToggle, sidebarOpen }: NavbarProps) {
 
                 <div className="p-1 space-y-1">
                   <button
-                    onClick={async () => { await logOut(); toast.success('Cleared Session'); router.replace('/login'); }}
+                    onClick={async () => {
+                      try {
+                        await logOut();
+                        toast.success('Successfully Signed Out');
+                        router.replace('/login');
+                      } catch (err: any) {
+                        console.error('Sign Out Fail:', err);
+                        toast.error('Sign out failed. Please try again.');
+                      }
+                    }}
                     className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition-colors group"
                   >
                     <span>Sign Out</span> <LogOut size={16} className="group-hover:translate-x-1 transition-transform" />
